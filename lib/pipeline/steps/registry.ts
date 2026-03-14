@@ -1,14 +1,13 @@
 import type { StepType, StepHandler } from "../types";
 import { apiRequestHandler } from "./api-request";
 import { aiSdkHandler } from "./ai-sdk";
+import { sandboxHandler } from "./sandbox";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stepRegistry: Record<StepType, StepHandler<any>> = {
   api_request: apiRequestHandler,
   ai_sdk: aiSdkHandler,
-  sandbox: () => {
-    throw new Error("sandbox handler not implemented");
-  },
+  sandbox: sandboxHandler,
   condition: () => {
     throw new Error("condition handler not implemented");
   },
