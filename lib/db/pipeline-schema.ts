@@ -91,3 +91,37 @@ export const pipelineEdges = pgTable(
     index("pipeline_edge_target_idx").on(table.targetNodeId),
   ],
 );
+
+export const runStatusEnum = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+] as const;
+
+export const pipelineRuns = pgTable(
+  "pipeline_run",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipelines.id, { onDelete: "cascade" }),
+    status: text("status", { enum: runStatusEnum })
+      .notNull()
+      .default("pending"),
+    triggerPayload: jsonb("trigger_payload").$type<Record<string, unknown>>(),
+    graphSnapshot: jsonb("graph_snapshot")
+      .$type<{ nodes: unknown[]; edges: unknown[] }>()
+      .notNull(),
+    workflowRunId: text("workflow_run_id"),
+    startedAt: timestamp("started_at"),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("pipeline_run_pipeline_idx").on(table.pipelineId),
+    index("pipeline_run_status_idx").on(table.status),
+  ],
+);
