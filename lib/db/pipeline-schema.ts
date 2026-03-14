@@ -125,3 +125,37 @@ export const pipelineRuns = pgTable(
     index("pipeline_run_status_idx").on(table.status),
   ],
 );
+
+export const stepResultStatusEnum = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "skipped",
+] as const;
+
+export const stepResults = pgTable(
+  "step_result",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    runId: text("run_id")
+      .notNull()
+      .references(() => pipelineRuns.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    status: text("status", { enum: stepResultStatusEnum })
+      .notNull()
+      .default("pending"),
+    input: jsonb("input").$type<Record<string, unknown>>(),
+    output: jsonb("output").$type<Record<string, unknown>>(),
+    error: jsonb("error").$type<Record<string, unknown>>(),
+    durationMs: integer("duration_ms"),
+    startedAt: timestamp("started_at"),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => [
+    uniqueIndex("step_result_run_node_uidx").on(table.runId, table.nodeId),
+    index("step_result_run_idx").on(table.runId),
+  ],
+);
