@@ -7,7 +7,7 @@
 - [x] 1.5 Create Drizzle schema for `pipeline_runs` table with id, pipeline_id, status enum, trigger_payload jsonb, graph_snapshot jsonb, workflow_run_id, started_at, completed_at
 - [x] 1.6 Create Drizzle schema for `step_results` table with id, run_id, node_id (plain text, not FK — references node ID within the run's graph_snapshot), status enum, input/output/error jsonb, duration_ms, started_at, completed_at, unique constraint on (run_id, node_id)
 - [x] 1.7 Define Drizzle relations for all pipeline tables
-- [ ] 1.8 Generate and apply database migration
+- [x] 1.8 Generate and apply database migration
 
 ## 2. Shared Types & Utilities
 
