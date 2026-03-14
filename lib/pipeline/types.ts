@@ -12,7 +12,7 @@ export interface ApiRequestConfig {
 
 export interface AiSdkConfig {
   type: "ai_sdk";
-  provider: string;
+  /** Gateway model string, e.g. "openai/gpt-4o" or "anthropic/claude-sonnet-4.5" */
   model: string;
   promptTemplate: string;
   temperature?: number;
@@ -78,8 +78,7 @@ export const defaultConfigs: Record<StepType, NodeConfig> = {
   },
   ai_sdk: {
     type: "ai_sdk",
-    provider: "openai",
-    model: "gpt-4o",
+    model: "openai/gpt-4o",
     promptTemplate: "",
     temperature: 0.7,
   },

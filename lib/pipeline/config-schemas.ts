@@ -10,8 +10,7 @@ export const apiRequestConfigSchema = z.object({
 
 export const aiSdkConfigSchema = z.object({
   type: z.literal("ai_sdk"),
-  provider: z.string().min(1),
-  model: z.string().min(1),
+  model: z.string().regex(/^.+\/.+$/, "Must be in provider/model format, e.g. openai/gpt-4o"),
   promptTemplate: z.string().min(1),
   temperature: z.number().min(0).max(2).optional(),
   maxTokens: z.number().int().positive().optional(),

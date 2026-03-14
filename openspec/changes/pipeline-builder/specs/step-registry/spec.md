@@ -30,12 +30,12 @@ The system SHALL provide an `api_request` step type that makes an HTTP request. 
 
 ### Requirement: AI SDK step
 
-The system SHALL provide an `ai_sdk` step type that invokes an LLM via the AI SDK. Config MUST include provider, model, prompt template (with dot-path expressions), and optional parameters (temperature, maxTokens, responseFormat). The handler MUST return the generated text/object, token usage, and latency.
+The system SHALL provide an `ai_sdk` step type that invokes an LLM via the AI SDK's Vercel AI Gateway. Config MUST include model (a gateway string in `provider/model` format, e.g. `"openai/gpt-4o"`), prompt template (with dot-path expressions), and optional parameters (temperature, maxTokens, responseFormat). The handler MUST return the generated text/object, token usage, and latency.
 
 #### Scenario: Generate text
 
-- **WHEN** an ai_sdk step is configured with provider "openai", model "gpt-4o", and a prompt template referencing upstream output
-- **THEN** the handler resolves the template, calls generateText, and returns `{ "text": "...", "usage": { "promptTokens": N, "completionTokens": N }, "latencyMs": N }`
+- **WHEN** an ai_sdk step is configured with model "openai/gpt-4o" and a prompt template referencing upstream output
+- **THEN** the handler resolves the template, calls generateText via the gateway, and returns `{ "text": "...", "usage": { "promptTokens": N, "completionTokens": N }, "latencyMs": N }`
 
 #### Scenario: Generate structured object
 
