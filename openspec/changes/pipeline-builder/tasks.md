@@ -24,7 +24,7 @@
 - [x] 3.2 Implement `api_request` handler: resolve dot-path expressions in URL/body template, make HTTP request, return status + parsed body
 - [x] 3.3 Implement `ai_sdk` handler: resolve prompt template, call generateText/generateObject via AI SDK, return text/object + usage + latencyMs
 - [x] 3.4 Implement `sandbox` handler: pass resolved input to Vercel Sandbox, execute code, capture output, enforce timeout
-- [ ] 3.5 Implement `condition` handler: evaluate expression with comparison operators against resolved inputs, return `{ branch: "<handle>" }`
+- [x] 3.5 Implement `condition` handler: evaluate expression with comparison operators against resolved inputs, return `{ branch: "<handle>" }`
 - [ ] 3.6 Implement `transform` handler: resolve mapping of dot-path expressions, construct output object
 - [ ] 3.7 Implement `metric_capture` handler: resolve extract_path, return `{ metric, value }`
 - [ ] 3.8 Wire all handlers into the step registry record
