@@ -10,6 +10,15 @@ import {
 } from "drizzle-orm/pg-core";
 import { organization, user } from "./auth-schema";
 
+export const stepTypeEnum = [
+  "api_request",
+  "ai_sdk",
+  "sandbox",
+  "condition",
+  "transform",
+  "metric_capture",
+] as const;
+
 export const pipelines = pgTable(
   "pipeline",
   {
@@ -37,4 +46,22 @@ export const pipelines = pgTable(
     ),
     index("pipeline_org_idx").on(table.organizationId),
   ],
+);
+
+export const pipelineNodes = pgTable(
+  "pipeline_node",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipelines.id, { onDelete: "cascade" }),
+    type: text("type", { enum: stepTypeEnum }).notNull(),
+    label: text("label"),
+    config: jsonb("config").$type<Record<string, unknown>>().default({}),
+    positionX: real("position_x").notNull().default(0),
+    positionY: real("position_y").notNull().default(0),
+  },
+  (table) => [index("pipeline_node_pipeline_idx").on(table.pipelineId)],
 );
