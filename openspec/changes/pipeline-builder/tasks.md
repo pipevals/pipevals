@@ -11,8 +11,8 @@
 
 ## 2. Shared Types & Utilities
 
-- [ ] 2.1 Define `StepType` enum and discriminated union types for node configs (ApiRequestConfig, AiSdkConfig, SandboxConfig, ConditionConfig, TransformConfig, MetricCaptureConfig)
-- [ ] 2.2 Define `StepInput` and `StepOutput` types and the `StepHandler` function signature
+- [x] 2.1 Define `StepType` enum and discriminated union types for node configs (ApiRequestConfig, AiSdkConfig, SandboxConfig, ConditionConfig, TransformConfig, MetricCaptureConfig)
+- [x] 2.2 Define `StepInput` and `StepOutput` types and the `StepHandler` function signature
 - [ ] 2.3 Implement dot-path resolver utility (`resolveDotPath(obj, path) → value`) with error handling for unresolvable paths
 - [ ] 2.4 Implement graph validation utility: cycle detection (topological sort via Kahn's algorithm), condition node handle validation, DAG constraint checks, 50-node limit
 - [ ] 2.5 Add Zod schemas for each node config type to validate on API save
