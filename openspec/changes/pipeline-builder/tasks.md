@@ -28,7 +28,7 @@
 - [x] 3.6 Implement `transform` handler: resolve mapping of dot-path expressions, construct output object
 - [x] 3.7 Implement `metric_capture` handler: resolve extract_path, return `{ metric, value }`
 - [x] 3.8 Wire all handlers into the step registry record
-- [ ] 3.9 Write unit tests for `api_request` handler: successful call returns status + body, non-2xx throws error with status and body
+- [x] 3.9 Write unit tests for `api_request` handler: successful call returns status + body, non-2xx throws error with status and body
 - [ ] 3.10 Write unit tests for `ai_sdk` handler: generateText returns text + usage + latencyMs, generateObject returns structured output when responseFormat configured
 - [ ] 3.11 Write unit tests for `sandbox` handler: successful execution returns output, timeout exceeded throws timeout error
 - [ ] 3.12 Write unit tests for `condition` handler: each comparison operator (==, !=, >, <, >=, <=), true and false branch selection
