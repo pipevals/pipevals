@@ -65,3 +65,29 @@ export const pipelineNodes = pgTable(
   },
   (table) => [index("pipeline_node_pipeline_idx").on(table.pipelineId)],
 );
+
+export const pipelineEdges = pgTable(
+  "pipeline_edge",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipelines.id, { onDelete: "cascade" }),
+    sourceNodeId: text("source_node_id")
+      .notNull()
+      .references(() => pipelineNodes.id, { onDelete: "cascade" }),
+    sourceHandle: text("source_handle"),
+    targetNodeId: text("target_node_id")
+      .notNull()
+      .references(() => pipelineNodes.id, { onDelete: "cascade" }),
+    targetHandle: text("target_handle"),
+    label: text("label"),
+  },
+  (table) => [
+    index("pipeline_edge_pipeline_idx").on(table.pipelineId),
+    index("pipeline_edge_source_idx").on(table.sourceNodeId),
+    index("pipeline_edge_target_idx").on(table.targetNodeId),
+  ],
+);
