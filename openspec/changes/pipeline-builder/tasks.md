@@ -32,8 +32,8 @@
 - [x] 3.10 Write unit tests for `ai_sdk` handler: generateText returns text + usage + latencyMs, generateObject returns structured output when responseFormat configured
 - [x] 3.11 Write unit tests for `sandbox` handler: successful execution returns output, timeout exceeded throws timeout error
 - [x] 3.12 Write unit tests for `condition` handler: each comparison operator (==, !=, >, <, >=, <=), true and false branch selection
-- [ ] 3.13 Write unit tests for `transform` handler: resolves mapping of dot-paths, fails on unresolvable path
-- [ ] 3.14 Write unit tests for `metric_capture` handler: extracts value at dot-path, returns metric name and value
+- [x] 3.13 Write unit tests for `transform` handler: resolves mapping of dot-paths, fails on unresolvable path
+- [x] 3.14 Write unit tests for `metric_capture` handler: extracts value at dot-path, returns metric name and value
 
 ## 4. Graph Walker & Workflow
 
