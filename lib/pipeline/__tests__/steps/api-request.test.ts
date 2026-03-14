@@ -68,7 +68,7 @@ describe("apiRequestHandler", () => {
       method: "GET",
     };
 
-    expect(apiRequestHandler(config, emptyInput)).rejects.toThrow("404");
+    await expect(apiRequestHandler(config, emptyInput)).rejects.toThrow("404");
   });
 
   test("resolves dot-path in URL", async () => {
