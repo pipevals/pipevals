@@ -3,6 +3,7 @@ import { apiRequestHandler } from "./api-request";
 import { aiSdkHandler } from "./ai-sdk";
 import { sandboxHandler } from "./sandbox";
 import { conditionHandler } from "./condition";
+import { transformHandler } from "./transform";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stepRegistry: Record<StepType, StepHandler<any>> = {
@@ -10,9 +11,7 @@ export const stepRegistry: Record<StepType, StepHandler<any>> = {
   ai_sdk: aiSdkHandler,
   sandbox: sandboxHandler,
   condition: conditionHandler,
-  transform: () => {
-    throw new Error("transform handler not implemented");
-  },
+  transform: transformHandler,
   metric_capture: () => {
     throw new Error("metric_capture handler not implemented");
   },
