@@ -21,7 +21,7 @@
 ## 3. Step Registry
 
 - [x] 3.1 Create `lib/pipeline/steps/` directory structure with the registry entry point
-- [ ] 3.2 Implement `api_request` handler: resolve dot-path expressions in URL/body template, make HTTP request, return status + parsed body
+- [x] 3.2 Implement `api_request` handler: resolve dot-path expressions in URL/body template, make HTTP request, return status + parsed body
 - [ ] 3.3 Implement `ai_sdk` handler: resolve prompt template, call generateText/generateObject via AI SDK, return text/object + usage + latencyMs
 - [ ] 3.4 Implement `sandbox` handler: pass resolved input to sandbox runtime, execute code, capture output, enforce timeout
 - [ ] 3.5 Implement `condition` handler: evaluate expression with comparison operators against resolved inputs, return `{ branch: "<handle>" }`

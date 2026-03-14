@@ -1,9 +1,9 @@
 import type { StepType, StepHandler } from "../types";
+import { apiRequestHandler } from "./api-request";
 
-export const stepRegistry: Record<StepType, StepHandler> = {
-  api_request: () => {
-    throw new Error("api_request handler not implemented");
-  },
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const stepRegistry: Record<StepType, StepHandler<any>> = {
+  api_request: apiRequestHandler,
   ai_sdk: () => {
     throw new Error("ai_sdk handler not implemented");
   },
