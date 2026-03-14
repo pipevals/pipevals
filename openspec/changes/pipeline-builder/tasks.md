@@ -1,7 +1,7 @@
 ## 1. Database Schema & Dependencies
 
 - [x] 1.1 Install `@xyflow/react` and `zustand` via bun
-- [ ] 1.2 Create Drizzle schema for `pipelines` table with id, name, description, organization_id, created_by, timestamps, and unique constraint on (name, organization_id)
+- [x] 1.2 Create Drizzle schema for `pipelines` table with id, name, description, organization_id, created_by, timestamps, and unique constraint on (name, organization_id)
 - [ ] 1.3 Create Drizzle schema for `pipeline_nodes` table with id, pipeline_id, type enum, label, config jsonb, position_x, position_y
 - [ ] 1.4 Create Drizzle schema for `pipeline_edges` table with id, pipeline_id, source_node_id, source_handle, target_node_id, target_handle, label
 - [ ] 1.5 Create Drizzle schema for `pipeline_runs` table with id, pipeline_id, status enum, trigger_payload jsonb, graph_snapshot jsonb, workflow_run_id, started_at, completed_at
