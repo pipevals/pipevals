@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -159,3 +160,66 @@ export const stepResults = pgTable(
     index("step_result_run_idx").on(table.runId),
   ],
 );
+
+// --- Relations ---
+
+export const pipelinesRelations = relations(pipelines, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [pipelines.organizationId],
+    references: [organization.id],
+  }),
+  creator: one(user, {
+    fields: [pipelines.createdBy],
+    references: [user.id],
+  }),
+  nodes: many(pipelineNodes),
+  edges: many(pipelineEdges),
+  runs: many(pipelineRuns),
+}));
+
+export const pipelineNodesRelations = relations(
+  pipelineNodes,
+  ({ one, many }) => ({
+    pipeline: one(pipelines, {
+      fields: [pipelineNodes.pipelineId],
+      references: [pipelines.id],
+    }),
+    sourceEdges: many(pipelineEdges, { relationName: "sourceNode" }),
+    targetEdges: many(pipelineEdges, { relationName: "targetNode" }),
+  }),
+);
+
+export const pipelineEdgesRelations = relations(pipelineEdges, ({ one }) => ({
+  pipeline: one(pipelines, {
+    fields: [pipelineEdges.pipelineId],
+    references: [pipelines.id],
+  }),
+  sourceNode: one(pipelineNodes, {
+    fields: [pipelineEdges.sourceNodeId],
+    references: [pipelineNodes.id],
+    relationName: "sourceNode",
+  }),
+  targetNode: one(pipelineNodes, {
+    fields: [pipelineEdges.targetNodeId],
+    references: [pipelineNodes.id],
+    relationName: "targetNode",
+  }),
+}));
+
+export const pipelineRunsRelations = relations(
+  pipelineRuns,
+  ({ one, many }) => ({
+    pipeline: one(pipelines, {
+      fields: [pipelineRuns.pipelineId],
+      references: [pipelines.id],
+    }),
+    stepResults: many(stepResults),
+  }),
+);
+
+export const stepResultsRelations = relations(stepResults, ({ one }) => ({
+  run: one(pipelineRuns, {
+    fields: [stepResults.runId],
+    references: [pipelineRuns.id],
+  }),
+}));
