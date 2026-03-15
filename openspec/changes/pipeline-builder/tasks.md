@@ -56,7 +56,7 @@
 - [x] 5.3 Create `GET /api/pipelines/:id` route: return pipeline with nodes and edges in xyflow-compatible shape, return 404 for missing or wrong-org pipelines
 - [x] 5.4 Create `PUT /api/pipelines/:id` route: validate DAG, upsert nodes and edges with stable client-generated IDs (insert new, update existing, delete removed) in a transaction
 - [x] 5.5 Create `DELETE /api/pipelines/:id` route: cascade delete pipeline and all related data
-- [ ] 5.6 Create `POST /api/pipelines/:id/runs` route: load current graph, serialize as graph_snapshot, create run row with snapshot, validate pipeline has nodes, trigger Vercel Workflow, return 202 with runId (400 if pipeline is empty)
+- [x] 5.6 Create `POST /api/pipelines/:id/runs` route: load current graph, serialize as graph_snapshot, create run row with snapshot, validate pipeline has nodes, trigger Vercel Workflow, return 202 with runId (400 if pipeline is empty)
 - [ ] 5.7 Create `GET /api/pipelines/:pipelineId/runs` route: list runs ordered by most recent
 - [ ] 5.8 Create `GET /api/pipelines/:pipelineId/runs/:runId` route: return run status with all step_results
 - [ ] 5.9 Add auth middleware: all routes require authenticated user with active organization
