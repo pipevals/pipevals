@@ -61,7 +61,7 @@
 - [x] 5.8 Create `GET /api/pipelines/:pipelineId/runs/:runId` route: return run status with all step_results
 - [x] 5.9 Add auth middleware: all routes require authenticated user with active organization
 - [x] 5.10 Write integration tests for pipeline CRUD: 201 on create, 409 on duplicate name, 200 on list, 200 on get with graph, 404 on missing pipeline, 200 on valid PUT, 400 on cyclic graph, 400 on oversized graph, 204 on delete
-- [ ] 5.11 Write integration tests for run endpoints: 202 on trigger with payload, 400 on trigger empty pipeline, 200 on get run status with step_results, 200 on list runs ordered by recent
+- [x] 5.11 Write integration tests for run endpoints: 202 on trigger with payload, 400 on trigger empty pipeline, 200 on get run status with step_results, 200 on list runs ordered by recent
 - [ ] 5.12 Write integration tests for auth: 401 on unauthenticated requests across all routes
 
 ## 6. Pipeline Builder UI

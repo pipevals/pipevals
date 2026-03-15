@@ -1,0 +1,198 @@
+import { describe, expect, test, mock, beforeAll } from "bun:test";
+import { setupTestDb, createAuthenticatedUser, type TestContext } from "./setup";
+
+// --- Bootstrap test DB before any mocks that depend on it ---
+const { db: testDb, auth: testAuth } = await setupTestDb();
+
+let activeHeaders: Headers;
+
+mock.module("next/headers", () => ({
+  headers: () => Promise.resolve(activeHeaders),
+}));
+
+mock.module("@/lib/auth", () => ({ auth: testAuth }));
+mock.module("@/lib/db", () => ({ db: testDb }));
+
+const mockWorkflowStart = mock(() =>
+  Promise.resolve({ runId: `wf-${crypto.randomUUID()}` }),
+);
+mock.module("workflow/api", () => ({ start: mockWorkflowStart }));
+mock.module("@/lib/pipeline/walker/workflow", () => ({
+  runPipelineWorkflow: () => {},
+}));
+
+const { POST: triggerRun, GET: listRuns } = await import(
+  "@/app/api/pipelines/[id]/runs/route"
+);
+const { GET: getRun } = await import(
+  "@/app/api/pipelines/[id]/runs/[runId]/route"
+);
+const {
+  pipelines,
+  pipelineNodes,
+  pipelineEdges,
+  stepResults,
+} = await import("@/lib/db/pipeline-schema");
+
+let ctx: TestContext;
+
+async function seedPipeline(opts: { nodes?: boolean } = {}) {
+  const pipelineId = crypto.randomUUID();
+  await testDb.insert(pipelines).values({
+    id: pipelineId,
+    name: `pipeline-${pipelineId.slice(0, 8)}`,
+    organizationId: ctx.organizationId,
+    createdBy: ctx.userId,
+  });
+
+  if (opts.nodes !== false) {
+    const n1 = crypto.randomUUID();
+    const n2 = crypto.randomUUID();
+    await testDb.insert(pipelineNodes).values([
+      { id: n1, pipelineId, type: "api_request", label: "Fetch", config: { url: "https://example.com", method: "GET" } },
+      { id: n2, pipelineId, type: "transform", label: "Map", config: { mapping: {} } },
+    ]);
+    await testDb.insert(pipelineEdges).values({
+      id: crypto.randomUUID(),
+      pipelineId,
+      sourceNodeId: n1,
+      targetNodeId: n2,
+    });
+  }
+
+  return pipelineId;
+}
+
+function runsParams(id: string) {
+  return { params: Promise.resolve({ id }) };
+}
+function runDetailParams(id: string, runId: string) {
+  return { params: Promise.resolve({ id, runId }) };
+}
+
+describe("run endpoints (PGlite integration)", () => {
+  beforeAll(async () => {
+    ctx = await createAuthenticatedUser();
+    activeHeaders = ctx.headers;
+  });
+
+  describe("POST /api/pipelines/:id/runs", () => {
+    test("202 on trigger with payload", async () => {
+      const pipelineId = await seedPipeline();
+
+      const req = new Request("http://localhost/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload: { prompt: "explain quantum computing" } }),
+      });
+
+      const res = await triggerRun(req, runsParams(pipelineId));
+      expect(res.status).toBe(202);
+
+      const data = await res.json();
+      expect(data.runId).toBeDefined();
+      expect(mockWorkflowStart).toHaveBeenCalled();
+    });
+
+    test("400 on trigger empty pipeline", async () => {
+      const pipelineId = await seedPipeline({ nodes: false });
+
+      const req = new Request("http://localhost/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const res = await triggerRun(req, runsParams(pipelineId));
+      expect(res.status).toBe(400);
+
+      const data = await res.json();
+      expect(data.error).toContain("no nodes");
+    });
+
+    test("404 on nonexistent pipeline", async () => {
+      const req = new Request("http://localhost/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const res = await triggerRun(req, runsParams("nonexistent-id"));
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("GET /api/pipelines/:id/runs", () => {
+    test("200 on list runs ordered by recent", async () => {
+      const pipelineId = await seedPipeline();
+
+      for (let i = 0; i < 2; i++) {
+        const req = new Request("http://localhost/runs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload: { i } }),
+        });
+        await triggerRun(req, runsParams(pipelineId));
+      }
+
+      const res = await listRuns(
+        new Request("http://localhost/runs"),
+        runsParams(pipelineId),
+      );
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.length).toBeGreaterThanOrEqual(2);
+
+      const dates = data.map((r: { createdAt: string }) => new Date(r.createdAt).getTime());
+      for (let i = 1; i < dates.length; i++) {
+        expect(dates[i - 1]).toBeGreaterThanOrEqual(dates[i]);
+      }
+    });
+  });
+
+  describe("GET /api/pipelines/:pipelineId/runs/:runId", () => {
+    test("200 on get run status with step_results", async () => {
+      const pipelineId = await seedPipeline();
+
+      const triggerReq = new Request("http://localhost/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload: { question: "test" } }),
+      });
+      const triggerRes = await triggerRun(triggerReq, runsParams(pipelineId));
+      const { runId } = await triggerRes.json();
+
+      await testDb.insert(stepResults).values({
+        runId,
+        nodeId: "some-node",
+        status: "completed",
+        output: { text: "result" },
+        durationMs: 42,
+      });
+
+      const res = await getRun(
+        new Request("http://localhost"),
+        runDetailParams(pipelineId, runId),
+      );
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.id).toBe(runId);
+      expect(data.status).toBe("pending");
+      expect(data.stepResults).toHaveLength(1);
+      expect(data.stepResults[0].nodeId).toBe("some-node");
+      expect(data.stepResults[0].output).toEqual({ text: "result" });
+    });
+
+    test("404 on nonexistent run", async () => {
+      const pipelineId = await seedPipeline();
+
+      const res = await getRun(
+        new Request("http://localhost"),
+        runDetailParams(pipelineId, "nonexistent-run"),
+      );
+      expect(res.status).toBe(404);
+    });
+  });
+});
