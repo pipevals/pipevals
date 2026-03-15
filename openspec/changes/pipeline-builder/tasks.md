@@ -51,7 +51,7 @@
 
 ## 5. Pipeline REST API
 
-- [ ] 5.1 Create `POST /api/pipelines` route: validate input, create pipeline scoped to user's organization
+- [x] 5.1 Create `POST /api/pipelines` route: validate input, create pipeline scoped to user's organization
 - [ ] 5.2 Create `GET /api/pipelines` route: list pipelines for user's organization
 - [ ] 5.3 Create `GET /api/pipelines/:id` route: return pipeline with nodes and edges in xyflow-compatible shape, return 404 for missing or wrong-org pipelines
 - [ ] 5.4 Create `PUT /api/pipelines/:id` route: validate DAG, upsert nodes and edges with stable client-generated IDs (insert new, update existing, delete removed) in a transaction
