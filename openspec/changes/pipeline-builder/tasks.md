@@ -69,7 +69,7 @@
 - [x] 6.1 Create zustand store for pipeline builder state: nodes, edges, selected node, dirty flag, save/load actions
 - [x] 6.2 Create the xyflow canvas component with pan, zoom, and minimap
 - [x] 6.3 Create custom node components for each step type with typed input/output handles (condition nodes get multiple labeled output handles)
-- [ ] 6.4 Create the node palette sidebar with draggable step type entries
+- [x] 6.4 Create the node palette sidebar with draggable step type entries
 - [ ] 6.5 Implement drag-from-palette-to-canvas to create new nodes with default config
 - [ ] 6.6 Implement edge creation with cycle prevention (validate before accepting connection)
 - [ ] 6.7 Implement node and edge deletion: select node/edge and press delete/backspace to remove, deleting a node removes all connected edges
