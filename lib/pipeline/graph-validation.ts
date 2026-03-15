@@ -40,6 +40,27 @@ function buildGraph(nodes: GraphNode[], edges: GraphEdge[]): Graph {
   return g;
 }
 
+/**
+ * Returns true if adding an edge from `source` to `target` would introduce a cycle.
+ */
+export function wouldCreateCycle(
+  edges: { source: string; target: string }[],
+  source: string,
+  target: string,
+): boolean {
+  if (source === target) return true;
+  const g = new Graph({ directed: true });
+  for (const e of edges) {
+    g.setNode(e.source);
+    g.setNode(e.target);
+    g.setEdge(e.source, e.target);
+  }
+  g.setNode(source);
+  g.setNode(target);
+  g.setEdge(source, target);
+  return !alg.isAcyclic(g);
+}
+
 export function validateGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],

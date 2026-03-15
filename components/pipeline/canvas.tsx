@@ -8,6 +8,8 @@ import {
   BackgroundVariant,
   useReactFlow,
   type NodeMouseHandler,
+  type Connection,
+  type IsValidConnection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, type DragEvent } from "react";
@@ -15,6 +17,7 @@ import {
   usePipelineBuilderStore,
   type PipelineNode,
 } from "@/lib/stores/pipeline-builder";
+import { wouldCreateCycle } from "@/lib/pipeline/graph-validation";
 import { nodeTypes } from "./nodes";
 import { DRAG_TYPE_KEY } from "./node-palette";
 import type { StepType } from "@/lib/pipeline/types";
@@ -39,6 +42,17 @@ export function PipelineCanvas() {
   const onPaneClick = useCallback(() => {
     selectNode(null);
   }, [selectNode]);
+
+  const isValidConnection: IsValidConnection = useCallback(
+    (connection) => {
+      const source = connection.source;
+      const target = connection.target;
+      if (!source || !target) return false;
+      if (source === target) return false;
+      return !wouldCreateCycle(edges, source, target);
+    },
+    [edges],
+  );
 
   const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
@@ -72,6 +86,7 @@ export function PipelineCanvas() {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        isValidConnection={isValidConnection}
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
