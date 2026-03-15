@@ -6,15 +6,18 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
+  useReactFlow,
   type NodeMouseHandler,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback } from "react";
+import { useCallback, type DragEvent } from "react";
 import {
   usePipelineBuilderStore,
   type PipelineNode,
 } from "@/lib/stores/pipeline-builder";
 import { nodeTypes } from "./nodes";
+import { DRAG_TYPE_KEY } from "./node-palette";
+import type { StepType } from "@/lib/pipeline/types";
 
 export function PipelineCanvas() {
   const nodes = usePipelineBuilderStore((s) => s.nodes);
@@ -23,6 +26,8 @@ export function PipelineCanvas() {
   const onEdgesChange = usePipelineBuilderStore((s) => s.onEdgesChange);
   const onConnect = usePipelineBuilderStore((s) => s.onConnect);
   const selectNode = usePipelineBuilderStore((s) => s.selectNode);
+  const addNode = usePipelineBuilderStore((s) => s.addNode);
+  const { screenToFlowPosition } = useReactFlow();
 
   const onNodeClick: NodeMouseHandler<PipelineNode> = useCallback(
     (_event, node) => {
@@ -35,6 +40,27 @@ export function PipelineCanvas() {
     selectNode(null);
   }, [selectNode]);
 
+  const onDragOver = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: DragEvent) => {
+      event.preventDefault();
+      const type = event.dataTransfer.getData(DRAG_TYPE_KEY) as StepType;
+      if (!type) return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      addNode(type, position);
+    },
+    [screenToFlowPosition, addNode],
+  );
+
   return (
     <div className="h-full w-full">
       <ReactFlow
@@ -46,6 +72,8 @@ export function PipelineCanvas() {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         fitView
         deleteKeyCode={["Backspace", "Delete"]}
         className="bg-background"
