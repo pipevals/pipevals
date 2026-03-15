@@ -3,7 +3,20 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { pipelines } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
+
+export async function GET() {
+  const authResult = await requireAuth();
+  if ("error" in authResult) return authResult.error;
+  const { organizationId } = authResult;
+
+  const result = await db.query.pipelines.findMany({
+    where: eq(pipelines.organizationId, organizationId),
+    orderBy: desc(pipelines.updatedAt),
+  });
+
+  return NextResponse.json(result);
+}
 
 const createPipelineSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
