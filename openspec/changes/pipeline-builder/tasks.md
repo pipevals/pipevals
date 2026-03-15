@@ -66,7 +66,7 @@
 
 ## 6. Pipeline Builder UI
 
-- [ ] 6.1 Create zustand store for pipeline builder state: nodes, edges, selected node, dirty flag, save/load actions
+- [x] 6.1 Create zustand store for pipeline builder state: nodes, edges, selected node, dirty flag, save/load actions
 - [ ] 6.2 Create the xyflow canvas component with pan, zoom, and minimap
 - [ ] 6.3 Create custom node components for each step type with typed input/output handles (condition nodes get multiple labeled output handles)
 - [ ] 6.4 Create the node palette sidebar with draggable step type entries
