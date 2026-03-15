@@ -76,7 +76,7 @@
 - [x] 6.8 Create the node configuration panel: renders type-specific form fields when a node is selected
 - [x] 6.9 Wire save/load: save button persists graph via PUT API, page load fetches via GET API
 - [x] 6.10 Create the pipeline list page with create/delete actions
-- [ ] 6.11 Create the pipeline editor page layout: palette sidebar + canvas + config panel
+- [x] 6.11 Create the pipeline editor page layout: palette sidebar + canvas + config panel
 
 ## 7. Pipeline Run Viewer
 
