@@ -37,8 +37,10 @@ export class BranchResolver {
 
     if (incomingEdges.length === 0) return true;
 
-    const activeEdges = incomingEdges.filter((edge) =>
-      this.isEdgeActive(edge, graph),
+    const activeEdges = incomingEdges.filter(
+      (edge) =>
+        this.isEdgeActive(edge, graph) &&
+        this.isNodeReachable(edge.sourceNodeId, graph, completedNodes),
     );
 
     if (activeEdges.length === 0) return false;
