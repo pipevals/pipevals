@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   validateGraph,
+  wouldCreateCycle,
   type GraphNode,
   type GraphEdge,
 } from "../graph-validation";
@@ -144,5 +145,66 @@ describe("validateGraph", () => {
   test("accepts a single node with no edges", () => {
     const result = validateGraph([node("a")], []);
     expect(result.valid).toBe(true);
+  });
+});
+
+function simpleEdge(source: string, target: string) {
+  return { source, target };
+}
+
+describe("wouldCreateCycle", () => {
+  //  ╭───╮
+  //  │ a │
+  //  ╰─⟲─╯   (+ a → a)
+  test("self-loop returns true", () => {
+    expect(wouldCreateCycle([], "a", "a")).toBe(true);
+  });
+
+  //  a → b
+  //  ↑     │
+  //  └─ ← ─┘   (+ b → a)
+  test("direct back-edge creates a cycle", () => {
+    const edges = [simpleEdge("a", "b")];
+    expect(wouldCreateCycle(edges, "b", "a")).toBe(true);
+  });
+
+  //  a → b → c
+  //  ↑         │
+  //  └─── ← ──┘   (+ c → a)
+  test("indirect cycle through chain", () => {
+    const edges = [simpleEdge("a", "b"), simpleEdge("b", "c")];
+    expect(wouldCreateCycle(edges, "c", "a")).toBe(true);
+  });
+
+  //  a → b
+  //  └─ ─ ─→ c   (+ a → c, no cycle)
+  test("valid connection returns false", () => {
+    const edges = [simpleEdge("a", "b")];
+    expect(wouldCreateCycle(edges, "a", "c")).toBe(false);
+  });
+
+  //  a → b   x → y
+  //  ↑              │
+  //  └──── ← ──────┘   (+ y → a, no cycle)
+  test("connection between disconnected subgraphs is valid", () => {
+    const edges = [simpleEdge("a", "b"), simpleEdge("x", "y")];
+    expect(wouldCreateCycle(edges, "y", "a")).toBe(false);
+  });
+
+  //  (no edges)   a ─ ─ → b   (+ a → b)
+  test("no existing edges, new edge is valid", () => {
+    expect(wouldCreateCycle([], "a", "b")).toBe(false);
+  });
+
+  //  a → b → c → d
+  //      ↑         │
+  //      └─── ← ──┘   (+ d → b)
+  test("cycle in subpath of chain", () => {
+    const edges = [
+      simpleEdge("a", "b"),
+      simpleEdge("b", "c"),
+      simpleEdge("c", "d"),
+    ];
+    expect(wouldCreateCycle(edges, "d", "b")).toBe(true);
   });
 });
