@@ -14,6 +14,7 @@ import {
   usePipelineBuilderStore,
   type PipelineNode,
 } from "@/lib/stores/pipeline-builder";
+import { nodeTypes } from "./nodes";
 
 export function PipelineCanvas() {
   const nodes = usePipelineBuilderStore((s) => s.nodes);
@@ -39,6 +40,7 @@ export function PipelineCanvas() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
