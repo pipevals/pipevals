@@ -57,7 +57,7 @@
 - [x] 5.4 Create `PUT /api/pipelines/:id` route: validate DAG, upsert nodes and edges with stable client-generated IDs (insert new, update existing, delete removed) in a transaction
 - [x] 5.5 Create `DELETE /api/pipelines/:id` route: cascade delete pipeline and all related data
 - [x] 5.6 Create `POST /api/pipelines/:id/runs` route: load current graph, serialize as graph_snapshot, create run row with snapshot, validate pipeline has nodes, trigger Vercel Workflow, return 202 with runId (400 if pipeline is empty)
-- [ ] 5.7 Create `GET /api/pipelines/:pipelineId/runs` route: list runs ordered by most recent
+- [x] 5.7 Create `GET /api/pipelines/:pipelineId/runs` route: list runs ordered by most recent
 - [ ] 5.8 Create `GET /api/pipelines/:pipelineId/runs/:runId` route: return run status with all step_results
 - [ ] 5.9 Add auth middleware: all routes require authenticated user with active organization
 - [ ] 5.10 Write integration tests for pipeline CRUD: 201 on create, 409 on duplicate name, 200 on list, 200 on get with graph, 404 on missing pipeline, 200 on valid PUT, 400 on cyclic graph, 400 on oversized graph, 204 on delete

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelines, pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
@@ -92,4 +92,38 @@ export async function POST(request: Request, { params }: RouteParams) {
     .where(eq(pipelineRuns.id, run.id));
 
   return NextResponse.json({ runId: run.id }, { status: 202 });
+}
+
+export async function GET(_request: Request, { params }: RouteParams) {
+  const authResult = await requireAuth();
+  if ("error" in authResult) return authResult.error;
+  const { organizationId } = authResult;
+
+  const { id } = await params;
+
+  const pipeline = await db.query.pipelines.findFirst({
+    where: and(
+      eq(pipelines.id, id),
+      eq(pipelines.organizationId, organizationId),
+    ),
+  });
+
+  if (!pipeline) {
+    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+  }
+
+  const runs = await db
+    .select({
+      id: pipelineRuns.id,
+      status: pipelineRuns.status,
+      triggerPayload: pipelineRuns.triggerPayload,
+      startedAt: pipelineRuns.startedAt,
+      completedAt: pipelineRuns.completedAt,
+      createdAt: pipelineRuns.createdAt,
+    })
+    .from(pipelineRuns)
+    .where(eq(pipelineRuns.pipelineId, id))
+    .orderBy(desc(pipelineRuns.createdAt));
+
+  return NextResponse.json(runs);
 }
