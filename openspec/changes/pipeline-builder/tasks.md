@@ -43,7 +43,7 @@
 - [x] 4.4 Implement conditional branch logic: after condition node evaluates, determine active edges, only enqueue downstream nodes on active branches
 - [x] 4.5 Implement step result recording: insert/update step_results rows with status transitions (running → completed/failed), capture input, output, error, duration_ms
 - [x] 4.6 Implement run status management: update pipeline_runs status (pending → running → completed/failed) with timestamps
-- [ ] 4.7 Create the Vercel Workflow definition (`run-pipeline`) that orchestrates the full walk: load graph → sort → walk levels → dispatch to registry → record results
+- [x] 4.7 Create the Vercel Workflow definition (`run-pipeline`) that orchestrates the full walk: load graph → sort → walk levels → dispatch to registry → record results
 - [ ] 4.8 Write unit tests for topological sort: linear chain, fan-out parallelism, fan-in waits for all upstream
 - [ ] 4.9 Write unit tests for input resolution: resolve `steps.<nodeId>.<path>`, resolve `trigger.<path>`, unresolvable path throws descriptive error
 - [ ] 4.10 Write unit tests for conditional branching: true branch taken / false branch skipped, convergence after condition (merge node with mixed active/inactive incoming edges executes without waiting for inactive path)
