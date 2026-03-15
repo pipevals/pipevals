@@ -72,7 +72,7 @@
 - [x] 6.4 Create the node palette sidebar with draggable step type entries
 - [x] 6.5 Implement drag-from-palette-to-canvas to create new nodes with default config
 - [x] 6.6 Implement edge creation with cycle prevention (validate before accepting connection)
-- [ ] 6.7 Implement node and edge deletion: select node/edge and press delete/backspace to remove, deleting a node removes all connected edges
+- [x] 6.7 Implement node and edge deletion: select node/edge and press delete/backspace to remove, deleting a node removes all connected edges
 - [ ] 6.8 Create the node configuration panel: renders type-specific form fields when a node is selected
 - [ ] 6.9 Wire save/load: save button persists graph via PUT API, page load fetches via GET API
 - [ ] 6.10 Create the pipeline list page with create/delete actions
