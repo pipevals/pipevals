@@ -37,7 +37,7 @@
 
 ## 4. Graph Walker & Workflow
 
-- [ ] 4.1 Implement graph loader: deserialize graph from run's graph_snapshot jsonb, build adjacency structures (do NOT query live pipeline_nodes/edges)
+- [x] 4.1 Implement graph loader: deserialize graph from run's graph_snapshot jsonb, build adjacency structures (do NOT query live pipeline_nodes/edges)
 - [ ] 4.2 Implement topological sort with level grouping for parallel execution
 - [ ] 4.3 Implement input resolver: for each node, gather upstream outputs from results map using edge connections, build StepInput with `steps.<nodeId>` and `trigger` namespaces
 - [ ] 4.4 Implement conditional branch logic: after condition node evaluates, determine active edges, only enqueue downstream nodes on active branches
