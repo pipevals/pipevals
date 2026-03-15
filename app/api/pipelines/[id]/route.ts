@@ -6,33 +6,18 @@ import {
   pipelineNodes,
   pipelineEdges,
 } from "@/lib/db/pipeline-schema";
-import { requireAuth } from "@/lib/api/auth";
+import { requirePipeline } from "@/lib/api/auth";
 import { validateGraph } from "@/lib/pipeline/graph-validation";
 import { eq, and, ne, notInArray, inArray } from "drizzle-orm";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
-  if ("error" in authResult) return authResult.error;
-  const { organizationId } = authResult;
-
   const { id } = await params;
+  const result = await requirePipeline(id, true);
+  if ("error" in result) return result.error;
 
-  const pipeline = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.id, id),
-      eq(pipelines.organizationId, organizationId),
-    ),
-    with: {
-      nodes: true,
-      edges: true,
-    },
-  });
-
-  if (!pipeline) {
-    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
-  }
+  const { pipeline } = result;
 
   const nodes = pipeline.nodes.map((n) => ({
     id: n.id,
@@ -70,7 +55,7 @@ const nodeSchema = z.object({
   position: z.object({ x: z.number(), y: z.number() }),
   data: z.object({
     label: z.string().nullable().optional(),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   }),
 });
 
@@ -91,22 +76,9 @@ const updatePipelineSchema = z.object({
 });
 
 export async function PUT(request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
-  if ("error" in authResult) return authResult.error;
-  const { organizationId } = authResult;
-
   const { id } = await params;
-
-  const pipeline = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.id, id),
-      eq(pipelines.organizationId, organizationId),
-    ),
-  });
-
-  if (!pipeline) {
-    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
-  }
+  const result = await requirePipeline(id);
+  if ("error" in result) return result.error;
 
   const parsed = updatePipelineSchema.safeParse(await request.json());
   if (!parsed.success) {
@@ -280,22 +252,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
-  if ("error" in authResult) return authResult.error;
-  const { organizationId } = authResult;
-
   const { id } = await params;
-
-  const pipeline = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.id, id),
-      eq(pipelines.organizationId, organizationId),
-    ),
-  });
-
-  if (!pipeline) {
-    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
-  }
+  const result = await requirePipeline(id);
+  if ("error" in result) return result.error;
 
   await db.delete(pipelines).where(eq(pipelines.id, id));
 

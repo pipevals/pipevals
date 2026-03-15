@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { pipelines, pipelineRuns } from "@/lib/db/pipeline-schema";
-import { requireAuth } from "@/lib/api/auth";
+import { pipelineRuns } from "@/lib/db/pipeline-schema";
+import { requirePipeline } from "@/lib/api/auth";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 
@@ -16,28 +16,13 @@ const triggerSchema = z
   .optional();
 
 export async function POST(request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
-  if ("error" in authResult) return authResult.error;
-  const { organizationId } = authResult;
-
   const { id } = await params;
+  const result = await requirePipeline(id, true);
+  if ("error" in result) return result.error;
 
-  const pipeline = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.id, id),
-      eq(pipelines.organizationId, organizationId),
-    ),
-    with: {
-      nodes: true,
-      edges: true,
-    },
-  });
+  const { nodes, edges } = result.pipeline;
 
-  if (!pipeline) {
-    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
-  }
-
-  if (pipeline.nodes.length === 0) {
+  if (nodes.length === 0) {
     return NextResponse.json(
       { error: "Pipeline has no nodes to execute" },
       { status: 400 },
@@ -56,7 +41,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   const triggerPayload = parsed.data?.payload ?? {};
 
   const graphSnapshot = {
-    nodes: pipeline.nodes.map((n) => ({
+    nodes: nodes.map((n) => ({
       id: n.id,
       type: n.type,
       label: n.label,
@@ -64,7 +49,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       positionX: n.positionX,
       positionY: n.positionY,
     })),
-    edges: pipeline.edges.map((e) => ({
+    edges: edges.map((e) => ({
       id: e.id,
       sourceNodeId: e.sourceNodeId,
       sourceHandle: e.sourceHandle,
@@ -95,22 +80,9 @@ export async function POST(request: Request, { params }: RouteParams) {
 }
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
-  if ("error" in authResult) return authResult.error;
-  const { organizationId } = authResult;
-
   const { id } = await params;
-
-  const pipeline = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.id, id),
-      eq(pipelines.organizationId, organizationId),
-    ),
-  });
-
-  if (!pipeline) {
-    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
-  }
+  const result = await requirePipeline(id);
+  if ("error" in result) return result.error;
 
   const runs = await db
     .select({
