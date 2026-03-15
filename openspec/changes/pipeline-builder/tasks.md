@@ -45,7 +45,7 @@
 - [x] 4.6 Implement run status management: update pipeline_runs status (pending → running → completed/failed) with timestamps
 - [x] 4.7 Create the Vercel Workflow definition (`run-pipeline`) that orchestrates the full walk: load graph → sort → walk levels → dispatch to registry → record results
 - [x] 4.8 Write unit tests for topological sort: linear chain, fan-out parallelism, fan-in waits for all upstream
-- [ ] 4.9 Write unit tests for input resolution: resolve `steps.<nodeId>.<path>`, resolve `trigger.<path>`, unresolvable path throws descriptive error
+- [x] 4.9 Write unit tests for input resolution: resolve `steps.<nodeId>.<path>`, resolve `trigger.<path>`, unresolvable path throws descriptive error
 - [ ] 4.10 Write unit tests for conditional branching: true branch taken / false branch skipped, convergence after condition (merge node with mixed active/inactive incoming edges executes without waiting for inactive path)
 - [ ] 4.11 Write unit tests for dot-path resolver: nested paths, missing intermediate keys, null values
 
