@@ -1,10 +1,10 @@
 ## 1. Auth Hardening
 
-- [ ] 1.1 Add runtime validation in `lib/auth.ts` that throws if `BETTER_AUTH_SECRET` is unset or shorter than 32 characters
-- [ ] 1.2 Configure `rateLimit` in `lib/auth.ts` with `{ enabled: true, window: 60, max: 10, storage: "memory" }`
-- [ ] 1.3 Configure `organization()` plugin with `{ organizationLimit: 5, membershipLimit: 100 }`
-- [ ] 1.4 Switch plugin imports in `lib/auth.ts` from `better-auth/plugins` barrel to dedicated paths (`better-auth/plugins/organization`, `better-auth/plugins/admin`, `better-auth/plugins/bearer`)
-- [ ] 1.5 Update `.env.example` to document `BETTER_AUTH_SECRET` minimum length and generation command
+- [x] 1.1 Add runtime validation in `lib/auth.ts` that throws if `BETTER_AUTH_SECRET` is unset or shorter than 32 characters
+- [x] 1.2 Configure `rateLimit` in `lib/auth.ts` with `{ enabled: true, window: 60, max: 10, storage: "memory" }`
+- [x] 1.3 Configure `organization()` plugin with `{ organizationLimit: 5, membershipLimit: 100 }`
+- [x] 1.4 Switch plugin imports in `lib/auth.ts` from `better-auth/plugins` barrel to dedicated paths (`better-auth/plugins/organization`, `better-auth/plugins/admin`, `better-auth/plugins/bearer`)
+- [x] 1.5 Update `.env.example` to document `BETTER_AUTH_SECRET` minimum length and generation command
 
 ## 2. Bundle Optimization
 
