@@ -3,6 +3,8 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 import type { PipelineNodeData } from "@/lib/stores/pipeline-builder";
+import type { StepResultStatus } from "@/lib/stores/run-viewer";
+import { StatusBadge } from "./status-badge";
 
 interface BaseNodeProps extends NodeProps {
   data: PipelineNodeData;
@@ -19,6 +21,7 @@ export function BaseNode({
   outputs,
 }: BaseNodeProps) {
   const singleOutput = !outputs || outputs.length === 0;
+  const stepStatus = data.stepStatus as StepResultStatus | undefined;
 
   return (
     <div
@@ -46,6 +49,11 @@ export function BaseNode({
           <div className="truncate text-xs font-medium text-foreground">
             {data.label || "Untitled"}
           </div>
+          {stepStatus && (
+            <div className="mt-1">
+              <StatusBadge status={stepStatus} />
+            </div>
+          )}
         </div>
       </div>
 

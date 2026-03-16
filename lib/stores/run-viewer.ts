@@ -63,16 +63,32 @@ export interface RunViewerState {
   edges: RunEdge[];
   selectedNodeId: string | null;
   loading: boolean;
+  error: string | null;
 
   selectNode: (nodeId: string | null) => void;
   load: (pipelineId: string, runId: string) => Promise<void>;
   setRun: (run: RunData) => void;
 }
 
-function snapshotToFlow(snapshot: GraphSnapshot): {
+function buildStepStatusMap(
+  stepResults: StepResult[],
+): Record<string, StepResultStatus> {
+  const map: Record<string, StepResultStatus> = {};
+  for (const sr of stepResults) {
+    map[sr.nodeId] = sr.status;
+  }
+  return map;
+}
+
+function snapshotToFlow(
+  snapshot: GraphSnapshot,
+  stepResults: StepResult[] = [],
+): {
   nodes: RunNode[];
   edges: RunEdge[];
 } {
+  const statusMap = buildStepStatusMap(stepResults);
+
   const nodes: RunNode[] = snapshot.nodes.map((n) => ({
     id: n.id,
     type: n.type,
@@ -80,6 +96,7 @@ function snapshotToFlow(snapshot: GraphSnapshot): {
     data: {
       label: n.label,
       config: n.config,
+      stepStatus: statusMap[n.id] ?? ("pending" as StepResultStatus),
     },
     draggable: false,
     connectable: false,
@@ -104,24 +121,35 @@ export const useRunViewerStore = create<RunViewerState>((set) => ({
   edges: [],
   selectedNodeId: null,
   loading: false,
+  error: null,
 
   selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
 
   setRun: (run) => {
-    const { nodes, edges } = snapshotToFlow(run.graphSnapshot);
+    const { nodes, edges } = snapshotToFlow(
+      run.graphSnapshot,
+      run.stepResults,
+    );
     set({ run, nodes, edges });
   },
 
   load: async (pipelineId, runId) => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const res = await fetch(
         `/api/pipelines/${pipelineId}/runs/${runId}`,
       );
       if (!res.ok) throw new Error("Failed to load run");
       const data: RunData = await res.json();
-      const { nodes, edges } = snapshotToFlow(data.graphSnapshot);
+      const { nodes, edges } = snapshotToFlow(
+        data.graphSnapshot,
+        data.stepResults,
+      );
       set({ run: data, nodes, edges, selectedNodeId: null });
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : "Failed to load run",
+      });
     } finally {
       set({ loading: false });
     }
