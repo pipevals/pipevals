@@ -1,7 +1,7 @@
 ## 1. Domain Gate Helper
 
-- [ ] 1.1 Create an `isAutoInviteEnabled()` helper (in `lib/auth.ts` or a shared module) that parses `BETTER_AUTH_URL`, extracts the hostname, and checks it against a hardcoded `AUTO_INVITE_HOSTS` set (`localhost`)
-- [ ] 1.2 Export the well-known slug constant `DEFAULT_ORG_SLUG = "demo"` alongside the helper
+- [x] 1.1 Create an `isAutoInviteEnabled()` helper (in `lib/auth.ts` or a shared module) that parses `BETTER_AUTH_URL`, extracts the hostname, and checks it against a hardcoded `AUTO_INVITE_HOSTS` set (`localhost`)
+- [x] 1.2 Export the well-known slug constant `DEFAULT_ORG_SLUG = "demo"` alongside the helper
 
 ## 2. Guest Role — Access Control Config
 
