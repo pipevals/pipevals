@@ -19,10 +19,10 @@
 
 ## 4. Seed Script — Default Organization via Better Auth SDK
 
-- [ ] 4.1 Update `lib/db/seed.ts` to import `auth` from `lib/auth` and call `auth.api.createOrganization` to create the demo org (`name: "Demo"`, `slug: "demo"`), gated behind `isAutoInviteEnabled()`
-- [ ] 4.2 Before creating, check if the org already exists (query by slug); skip creation if it does
-- [ ] 4.3 Add logging — print whether the org was created or already existed
-- [ ] 4.4 Run `bun run db:seed` and verify the org appears in the database; run it again to confirm idempotency
+- [x] 4.1 Update `lib/db/seed.ts` to import `auth` from `lib/auth` and call `auth.api.createOrganization` to create the demo org (`name: "Demo"`, `slug: "demo"`), gated behind `isAutoInviteEnabled()`
+- [x] 4.2 Before creating, check if the org already exists (query by slug); skip creation if it does
+- [x] 4.3 Add logging — print whether the org was created or already existed
+- [x] 4.4 Run `bun run db:seed` and verify the org appears in the database; run it again to confirm idempotency
 
 ## 5. Auth Hook — Auto-Membership on Registration
 
