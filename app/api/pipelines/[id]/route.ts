@@ -114,46 +114,49 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const incomingNodeIds = nodes.map((n) => n.id);
   const incomingEdgeIds = edges.map((e) => e.id);
 
-  if (incomingNodeIds.length > 0) {
-    const nodeConflicts = await db
-      .select({ id: pipelineNodes.id })
-      .from(pipelineNodes)
-      .where(
-        and(
-          inArray(pipelineNodes.id, incomingNodeIds),
-          ne(pipelineNodes.pipelineId, id),
-        ),
-      );
-    if (nodeConflicts.length > 0) {
-      return NextResponse.json(
-        {
-          error: "Node IDs conflict with another pipeline",
-          ids: nodeConflicts.map((c) => c.id),
-        },
-        { status: 409 },
-      );
-    }
+  const [nodeConflicts, edgeConflicts] = await Promise.all([
+    incomingNodeIds.length > 0
+      ? db
+          .select({ id: pipelineNodes.id })
+          .from(pipelineNodes)
+          .where(
+            and(
+              inArray(pipelineNodes.id, incomingNodeIds),
+              ne(pipelineNodes.pipelineId, id),
+            ),
+          )
+      : Promise.resolve([]),
+    incomingEdgeIds.length > 0
+      ? db
+          .select({ id: pipelineEdges.id })
+          .from(pipelineEdges)
+          .where(
+            and(
+              inArray(pipelineEdges.id, incomingEdgeIds),
+              ne(pipelineEdges.pipelineId, id),
+            ),
+          )
+      : Promise.resolve([]),
+  ]);
+
+  if (nodeConflicts.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Node IDs conflict with another pipeline",
+        ids: nodeConflicts.map((c) => c.id),
+      },
+      { status: 409 },
+    );
   }
 
-  if (incomingEdgeIds.length > 0) {
-    const edgeConflicts = await db
-      .select({ id: pipelineEdges.id })
-      .from(pipelineEdges)
-      .where(
-        and(
-          inArray(pipelineEdges.id, incomingEdgeIds),
-          ne(pipelineEdges.pipelineId, id),
-        ),
-      );
-    if (edgeConflicts.length > 0) {
-      return NextResponse.json(
-        {
-          error: "Edge IDs conflict with another pipeline",
-          ids: edgeConflicts.map((c) => c.id),
-        },
-        { status: 409 },
-      );
-    }
+  if (edgeConflicts.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Edge IDs conflict with another pipeline",
+        ids: edgeConflicts.map((c) => c.id),
+      },
+      { status: 409 },
+    );
   }
 
   await db.transaction(async (tx) => {

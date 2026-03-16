@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { NodeProps } from "@xyflow/react";
 import { BaseNode } from "./base-node";
 import type { PipelineNodeData } from "@/lib/stores/pipeline-builder";
@@ -40,12 +41,17 @@ function ConditionNode(props: StepNodeProps) {
   const handles =
     (props.data.config as { handles?: string[] })?.handles ?? ["true", "false"];
 
+  const outputs = useMemo(
+    () => handles.map((h) => ({ id: h, label: h })),
+    [handles],
+  );
+
   return (
     <BaseNode
       {...props}
       icon={<span>?</span>}
       color="bg-emerald-600"
-      outputs={handles.map((h) => ({ id: h, label: h }))}
+      outputs={outputs}
     />
   );
 }

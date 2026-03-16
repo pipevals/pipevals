@@ -13,8 +13,8 @@
 
 ## 3. Performance
 
-- [ ] 3.1 In `app/api/pipelines/[id]/route.ts` PUT handler, wrap the `nodeConflicts` and `edgeConflicts` queries in `Promise.all`
-- [ ] 3.2 In `components/pipeline/nodes/index.tsx`, memoize the `outputs` array in `ConditionNode` using `useMemo`
+- [x] 3.1 In `app/api/pipelines/[id]/route.ts` PUT handler, wrap the `nodeConflicts` and `edgeConflicts` queries in `Promise.all`
+- [x] 3.2 In `components/pipeline/nodes/index.tsx`, memoize the `outputs` array in `ConditionNode` using `useMemo`
 
 ## 4. Server-Side Data Fetching
 
