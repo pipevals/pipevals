@@ -3,6 +3,7 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { RunViewerCanvas } from "./run-viewer-canvas";
 import { ResultPanel } from "./result-panel";
+import { RunSummary } from "./run-summary";
 import { useRunLoader } from "./use-run-loader";
 
 export function RunViewer({
@@ -33,6 +34,7 @@ export function RunViewer({
   return (
     <ReactFlowProvider>
       <div className="flex h-screen flex-col">
+        <RunSummary />
         <div className="flex min-h-0 flex-1">
           <div className="min-w-0 flex-1">
             <RunViewerCanvas />

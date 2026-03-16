@@ -1,7 +1,7 @@
 "use client";
 
-import { DateTime, Duration } from "luxon";
 import { useRunViewerStore } from "@/lib/stores/run-viewer";
+import { formatDuration, formatTimestamp } from "@/lib/format";
 import { StatusBadge } from "./nodes/status-badge";
 
 function JsonBlock({ data }: { data: unknown }) {
@@ -33,20 +33,6 @@ function Section({
       {children}
     </div>
   );
-}
-
-export function formatDuration(ms: number): string {
-  const dur = Duration.fromMillis(ms);
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60_000) return dur.toFormat("s.SSS's'");
-  return dur.toFormat("m'm' s's'");
-}
-
-export function formatTimestamp(ts: string | null): string {
-  if (!ts) return "—";
-  const dt = DateTime.fromISO(ts);
-  if (!dt.isValid) return "—";
-  return dt.toFormat("HH:mm:ss.SSS");
 }
 
 export function ResultPanel() {

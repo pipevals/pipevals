@@ -85,6 +85,6 @@
 - [x] 7.3 Add edge highlighting: traversed edges highlighted, inactive branch edges dimmed
 - [x] 7.4 Implement node click → result inspection panel showing input, output, error, duration
 - [x] 7.5 Implement polling: fetch run status every 2s while status is pending/running, stop on terminal status
-- [ ] 7.6 Create run summary panel: overall status, total duration, step counts, captured metrics
+- [x] 7.6 Create run summary panel: overall status, total duration, step counts, captured metrics
 - [ ] 7.7 Create the run list page for a pipeline with status indicators and trigger-run button
 - [ ] 7.8 Create the run detail page layout: canvas + summary panel + inspection panel
