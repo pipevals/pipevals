@@ -82,7 +82,7 @@
 
 - [x] 7.1 Create the run viewer canvas: render graph from run's graph_snapshot (not live pipeline), read-only (no drag, no edge creation)
 - [x] 7.2 Add status badge overlays to nodes based on step_results (pending, running, completed, failed, skipped)
-- [ ] 7.3 Add edge highlighting: traversed edges highlighted, inactive branch edges dimmed
+- [x] 7.3 Add edge highlighting: traversed edges highlighted, inactive branch edges dimmed
 - [ ] 7.4 Implement node click → result inspection panel showing input, output, error, duration
 - [ ] 7.5 Implement polling: fetch run status every 2s while status is pending/running, stop on terminal status
 - [ ] 7.6 Create run summary panel: overall status, total duration, step counts, captured metrics
