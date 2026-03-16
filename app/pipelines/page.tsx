@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getPipelinesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
+
+export const metadata: Metadata = {
+  title: "Pipelines",
+};
 
 export default async function PipelinesPage() {
   const session = await auth.api.getSession({ headers: await headers() });

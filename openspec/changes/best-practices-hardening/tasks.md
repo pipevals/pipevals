@@ -31,7 +31,7 @@
 
 ## 6. Metadata
 
-- [ ] 6.1 Update root `app/layout.tsx` metadata to `{ title: { default: "Pipevals", template: "%s - Pipevals" }, description: "..." }`
-- [ ] 6.2 Add static metadata to `app/pipelines/page.tsx` with title "Pipelines"
-- [ ] 6.3 Add `generateMetadata` to `app/pipelines/[id]/page.tsx` that fetches the pipeline name and returns it as the title
-- [ ] 6.4 Add static metadata to `app/pipelines/[id]/runs/[runId]/page.tsx` with title "Run Details"
+- [x] 6.1 Update root `app/layout.tsx` metadata to `{ title: { default: "Pipevals", template: "%s - Pipevals" }, description: "..." }`
+- [x] 6.2 Add static metadata to `app/pipelines/page.tsx` with title "Pipelines"
+- [x] 6.3 Add `generateMetadata` to `app/pipelines/[id]/page.tsx` that fetches the pipeline name and returns it as the title
+- [x] 6.4 Add static metadata to `app/pipelines/[id]/runs/[runId]/page.tsx` with title "Run Details"

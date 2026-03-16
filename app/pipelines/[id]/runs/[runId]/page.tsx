@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { RunViewer } from "@/components/pipeline/run-viewer";
+
+export const metadata: Metadata = {
+  title: "Run Details",
+};
 
 export default async function RunDetailPage({
   params,
