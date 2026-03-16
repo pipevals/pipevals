@@ -7,11 +7,14 @@ import type { TestHelpers } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { guestRole, createGuestHooks } from "@/lib/auth-guest";
 
-function createAuth(db: ReturnType<typeof drizzle>) {
+type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
+
+function createAuth(db: DrizzleDb, baseURL = "http://localhost:3000") {
   return betterAuth({
     secret: "test-secret-at-least-32-characters-long",
-    baseURL: "http://localhost:3000",
+    baseURL,
     database: drizzleAdapter(db, { provider: "pg" }),
     plugins: [organization(), admin(), bearer(), testUtils()],
   });
@@ -19,37 +22,93 @@ function createAuth(db: ReturnType<typeof drizzle>) {
 
 type TestAuth = ReturnType<typeof createAuth>;
 
-let _pg: PGlite;
-let _db: ReturnType<typeof drizzle>;
-let _auth: TestAuth;
-let _test: TestHelpers;
+// Module-level cache: Bun isolates modules per test file, so each file that
+// imports this module gets its own in-memory database. Within a single file,
+// repeated calls to setupTestDb() reuse the same instance to avoid redundant
+// migration and auth initialization overhead.
+const _cache = new Map<
+  string,
+  { pg: PGlite; db: DrizzleDb; auth: TestAuth; test: TestHelpers }
+>();
 
-export async function setupTestDb() {
-  if (_db) return { pg: _pg, db: _db, auth: _auth, test: _test };
-
-  _pg = new PGlite();
-  _db = drizzle({ client: _pg, schema });
-
+async function runMigrations(pg: PGlite) {
   const migrationSql = readFileSync(
     join(process.cwd(), "drizzle/0000_fair_toxin.sql"),
     "utf-8",
   );
-
   const statements = migrationSql
     .split("--> statement-breakpoint")
     .map((s) => s.trim())
     .filter(Boolean);
-
   for (const stmt of statements) {
-    await _pg.exec(stmt);
+    await pg.exec(stmt);
   }
+}
 
-  _auth = createAuth(_db);
+export async function setupTestDb(): Promise<{
+  pg: PGlite;
+  db: DrizzleDb;
+  auth: TestAuth;
+  test: TestHelpers;
+}> {
+  const cacheKey = "default";
+  const cached = _cache.get(cacheKey);
+  if (cached) return cached;
 
-  const ctx = await _auth.$context as { test: TestHelpers };
-  _test = ctx.test;
+  const pg = new PGlite();
+  const db = drizzle({ client: pg, schema });
+  await runMigrations(pg);
 
-  return { pg: _pg, db: _db, auth: _auth, test: _test };
+  const auth = createAuth(db);
+  const ctx = (await auth.$context) as { test: TestHelpers };
+  const test = ctx.test;
+
+  const result = { pg, db, auth, test };
+  _cache.set(cacheKey, result);
+  return result;
+}
+
+export type GuestTestContext = {
+  pg: PGlite;
+  db: DrizzleDb;
+  auth: ReturnType<typeof createAuthWithGuestHooks>;
+  test: TestHelpers;
+};
+
+function createAuthWithGuestHooks(db: DrizzleDb, baseURL: string) {
+  return betterAuth({
+    secret: "test-secret-at-least-32-characters-long",
+    baseURL,
+    database: drizzleAdapter(db, { provider: "pg" }),
+    hooks: createGuestHooks(db),
+    plugins: [
+      organization({ roles: { guest: guestRole } }),
+      admin(),
+      bearer(),
+      testUtils(),
+    ],
+  });
+}
+
+// Same isolation guarantee as _cache above. Keyed by baseURL so that test
+// files that need distinct auth instances can pass different URLs.
+const _guestCache = new Map<string, GuestTestContext>();
+
+export async function setupGuestTestDb(baseURL: string): Promise<GuestTestContext> {
+  const cached = _guestCache.get(baseURL);
+  if (cached) return cached;
+
+  const pg = new PGlite();
+  const db = drizzle({ client: pg, schema });
+  await runMigrations(pg);
+
+  const auth = createAuthWithGuestHooks(db, baseURL);
+  const ctx = (await auth.$context) as { test: TestHelpers };
+  const test = ctx.test;
+
+  const result = { pg, db, auth, test };
+  _guestCache.set(baseURL, result);
+  return result;
 }
 
 export interface TestContext {

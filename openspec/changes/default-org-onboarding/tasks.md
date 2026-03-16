@@ -11,11 +11,11 @@
 
 ## 3. Guest Role — Unit Tests
 
-- [ ] 3.1 Extract guest role + hooks config into a shared helper so both `lib/auth.ts` and tests can use it, or create a `createAuthWithGuestConfig` factory in the test setup
-- [ ] 3.2 Test: guest CAN call whitelisted endpoints (`set-active`, `get-full-organization`, `list`) — expect 200
-- [ ] 3.3 Test: guest CANNOT call non-whitelisted read endpoints (`list-members`, `list-invitations`, `get-active-member`) — expect 403
-- [ ] 3.4 Test: guest CANNOT call write endpoints (`invite-member`, `update-member-role`, `remove-member`) — expect 403
-- [ ] 3.5 Test: non-guest member CAN call the same endpoints — expect 200 (sanity check)
+- [x] 3.1 Extract guest role + hooks config into a shared helper so both `lib/auth.ts` and tests can use it, or create a `createAuthWithGuestConfig` factory in the test setup
+- [x] 3.2 Test: guest CAN call whitelisted endpoints (`set-active`, `get-full-organization`, `list`) — expect 200
+- [x] 3.3 Test: guest CANNOT call non-whitelisted read endpoints (`list-members`, `list-invitations`, `get-active-member`) — expect 403
+- [x] 3.4 Test: guest CANNOT call write endpoints (`invite-member`, `update-member-role`, `remove-member`) — expect 403
+- [x] 3.5 Test: non-guest member CAN call the same endpoints — expect 200 (sanity check)
 
 ## 4. Seed Script — Default Organization via Better Auth SDK
 
