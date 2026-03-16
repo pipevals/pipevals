@@ -8,8 +8,8 @@
 
 ## 2. Bundle Optimization
 
-- [ ] 2.1 In `components/pipeline/pipeline-editor.tsx`, dynamically import `PipelineCanvas` with `next/dynamic` and `ssr: false`, provide a skeleton fallback
-- [ ] 2.2 In `components/pipeline/run-viewer.tsx`, dynamically import `RunViewerCanvas` with `next/dynamic` and `ssr: false`, provide a skeleton fallback
+- [x] 2.1 In `components/pipeline/pipeline-editor.tsx`, dynamically import `PipelineCanvas` with `next/dynamic` and `ssr: false`, provide a skeleton fallback
+- [x] 2.2 In `components/pipeline/run-viewer.tsx`, dynamically import `RunViewerCanvas` with `next/dynamic` and `ssr: false`, provide a skeleton fallback
 
 ## 3. Performance
 

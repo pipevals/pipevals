@@ -1,10 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { ReactFlowProvider } from "@xyflow/react";
-import { RunViewerCanvas } from "./run-viewer-canvas";
 import { ResultPanel } from "./result-panel";
 import { RunSummary } from "./run-summary";
 import { useRunLoader } from "./use-run-loader";
+
+const RunViewerCanvas = dynamic(
+  () => import("./run-viewer-canvas").then((m) => m.RunViewerCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-muted/30">
+        <p className="text-xs text-muted-foreground">Loading canvas…</p>
+      </div>
+    ),
+  },
+);
 
 export function RunViewer({
   pipelineId,

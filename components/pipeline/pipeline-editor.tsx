@@ -1,11 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { ReactFlowProvider } from "@xyflow/react";
-import { PipelineCanvas } from "./canvas";
 import { NodePalette } from "./node-palette";
 import { ConfigPanel } from "./config-panel";
 import { PipelineToolbar } from "./toolbar";
 import { usePipelineLoader } from "./use-pipeline-loader";
+
+const PipelineCanvas = dynamic(() => import("./canvas").then((m) => m.PipelineCanvas), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-muted/30">
+      <p className="text-xs text-muted-foreground">Loading canvas…</p>
+    </div>
+  ),
+});
 
 export function PipelineEditor({ pipelineId }: { pipelineId: string }) {
   const { loading } = usePipelineLoader(pipelineId);
