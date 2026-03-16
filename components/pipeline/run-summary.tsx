@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { computeDuration } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import {
   useRunViewerStore,
   type RunStatus,
@@ -103,7 +105,17 @@ export function RunSummary() {
   const metrics = extractMetrics(run);
 
   return (
-    <div className="flex items-center gap-6 border-b border-border bg-background px-4 py-2">
+    <div className="flex items-center gap-4 border-b border-border bg-background px-4 py-2">
+      <Button size="sm" variant="ghost" asChild>
+        <Link href={`/pipelines/${run.pipelineId}/runs`}>← Runs</Link>
+      </Button>
+
+      <span className="font-mono text-[11px] text-muted-foreground">
+        {run.id.slice(0, 8)}
+      </span>
+
+      <div className="h-6 w-px bg-border" />
+
       <div
         className={cn(
           "rounded-full border px-2.5 py-1 text-xs font-medium",
