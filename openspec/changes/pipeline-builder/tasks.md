@@ -86,5 +86,5 @@
 - [x] 7.4 Implement node click → result inspection panel showing input, output, error, duration
 - [x] 7.5 Implement polling: fetch run status every 2s while status is pending/running, stop on terminal status
 - [x] 7.6 Create run summary panel: overall status, total duration, step counts, captured metrics
-- [ ] 7.7 Create the run list page for a pipeline with status indicators and trigger-run button
+- [x] 7.7 Create the run list page for a pipeline with status indicators and trigger-run button
 - [ ] 7.8 Create the run detail page layout: canvas + summary panel + inspection panel

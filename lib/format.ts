@@ -14,6 +14,13 @@ export function formatTimestamp(ts: string | null): string {
   return dt.toFormat("HH:mm:ss.SSS");
 }
 
+export function formatDateTime(ts: string | null): string {
+  if (!ts) return "—";
+  const dt = DateTime.fromISO(ts);
+  if (!dt.isValid) return "—";
+  return dt.toFormat("MMM d, HH:mm");
+}
+
 export function computeDuration(
   startedAt: string | null,
   completedAt: string | null,
