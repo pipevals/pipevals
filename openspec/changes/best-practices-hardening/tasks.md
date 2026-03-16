@@ -18,9 +18,9 @@
 
 ## 4. Server-Side Data Fetching
 
-- [ ] 4.1 Create a shared query function in `lib/api/pipelines.ts` that fetches pipelines for an organization (reusable by both the server page and the API route)
-- [ ] 4.2 Refactor `app/pipelines/page.tsx` to be an async server component that fetches pipelines and passes them as props to `PipelineList`
-- [ ] 4.3 Update `PipelineList` to accept an `initialPipelines` prop and use it for initial render, removing the `useEffect` fetch-on-mount
+- [x] 4.1 Create a shared query function in `lib/api/pipelines.ts` that fetches pipelines for an organization (reusable by both the server page and the API route)
+- [x] 4.2 Refactor `app/pipelines/page.tsx` to be an async server component that fetches pipelines and passes them as props to `PipelineList`
+- [x] 4.3 Update `PipelineList` to accept an `initialPipelines` prop and use it for initial render, removing the `useEffect` fetch-on-mount
 
 ## 5. Error & Loading UX
 

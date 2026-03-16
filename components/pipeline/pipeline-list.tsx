@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,18 +10,14 @@ import {
   CardDescription,
   CardAction,
 } from "@/components/ui/card";
+import type { PipelineSummary } from "@/lib/api/pipelines";
 
-interface Pipeline {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
+interface PipelineListProps {
+  initialPipelines: PipelineSummary[];
 }
 
-export function PipelineList() {
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
-  const [loading, setLoading] = useState(true);
+export function PipelineList({ initialPipelines }: PipelineListProps) {
+  const [pipelines, setPipelines] = useState(initialPipelines);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -34,14 +30,8 @@ export function PipelineList() {
       setError(null);
     } catch {
       setError("Failed to load pipelines");
-    } finally {
-      setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    fetchPipelines();
-  }, [fetchPipelines]);
 
   const [createController, setCreateController] = useState<AbortController | null>(null);
 
@@ -82,14 +72,6 @@ export function PipelineList() {
       setError("Failed to delete pipeline");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-xs text-muted-foreground">Loading…</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-4">

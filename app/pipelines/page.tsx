@@ -1,6 +1,18 @@
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { getPipelinesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
 
-export default function PipelinesPage() {
+export default async function PipelinesPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/sign-in");
+
+  const organizationId = session.session.activeOrganizationId;
+  if (!organizationId) redirect("/sign-in");
+
+  const pipelines = await getPipelinesForOrg(organizationId);
+
   return (
     <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-10">
       <div className="flex items-center justify-between">
@@ -11,7 +23,7 @@ export default function PipelinesPage() {
           </p>
         </div>
       </div>
-      <PipelineList />
+      <PipelineList initialPipelines={pipelines} />
     </div>
   );
 }
