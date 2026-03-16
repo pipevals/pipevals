@@ -1,19 +1,37 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { member } from "@/lib/db/schema";
 import { getPipelinesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
+import { isAutoInviteEnabled } from "@/lib/auto-invite";
 
 export const metadata: Metadata = {
   title: "Pipelines",
 };
 
 export default async function PipelinesPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
   if (!session) redirect("/sign-in");
 
-  const organizationId = session.session.activeOrganizationId;
+  let organizationId = session.session.activeOrganizationId;
+  if (!organizationId && isAutoInviteEnabled()) {
+    const membership = await db.query.member.findFirst({
+      where: eq(member.userId, session.user.id),
+    });
+    if (!membership) redirect("/sign-in");
+
+    organizationId = membership.organizationId;
+    await auth.api.setActiveOrganization({
+      headers: reqHeaders,
+      body: { organizationId },
+    });
+  }
+  
   if (!organizationId) redirect("/sign-in");
 
   const pipelines = await getPipelinesForOrg(organizationId);

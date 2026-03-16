@@ -32,6 +32,6 @@
 
 ## 6. Verification
 
-- [ ] 6.1 With `BETTER_AUTH_URL=http://localhost:3000` and the seed run, register a new user via GitHub OAuth and verify the `member` row is created with `role = "guest"` for the demo org
-- [ ] 6.2 Verify the guest user can read the organization (set active org) but cannot call member/invitation endpoints (listMembers, inviteMember, updateMemberRole, etc.)
-- [ ] 6.3 With `BETTER_AUTH_URL` set to a non-allowed host, register a new user and verify no automatic membership is created
+- [x] 6.1 With `BETTER_AUTH_URL=http://localhost:3000` and the seed run, register a new user via GitHub OAuth and verify the `member` row is created with `role = "guest"` for the demo org
+- [x] 6.2 Verify the guest user can read the organization (set active org) but cannot call member/invitation endpoints (listMembers, inviteMember, updateMemberRole, etc.)
+- [x] 6.3 With `BETTER_AUTH_URL` set to a non-allowed host, register a new user and verify no automatic membership is created

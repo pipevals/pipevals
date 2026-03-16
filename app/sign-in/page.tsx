@@ -34,7 +34,7 @@ export default function SignInPage() {
             size="lg"
             className="w-full"
             onClick={() =>
-              signIn.social({ provider: "github", callbackURL: "/" })
+              signIn.social({ provider: "github", callbackURL: "/pipelines" })
             }
           >
             <GitHubIcon />

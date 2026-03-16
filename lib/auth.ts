@@ -6,7 +6,13 @@ import { admin } from "better-auth/plugins/admin";
 import { bearer } from "better-auth/plugins/bearer";
 import { db } from "./db";
 import { guestRole, createGuestHooks } from "./auth-guest";
-import { isAutoInviteEnabled, DEFAULT_ORG_SLUG } from "./auto-invite";
+import { createAutoInviteHook } from "./auto-invite";
+
+type AddMemberParams = {
+  body: { userId: string; organizationId: string; role: string };
+};
+
+let addMemberFn: (params: AddMemberParams) => Promise<unknown>;
 
 const secret = process.env.BETTER_AUTH_SECRET;
 if (!secret || secret.length < 32) {
@@ -29,42 +35,21 @@ export const auth = betterAuth({
   },
   rateLimit: {
     enabled: true,
-    window: 60,
-    max: 10,
+    window: 10,
+    max: 100,
     storage: "memory",
   },
   databaseHooks: {
     user: {
       create: {
-        after: async (user) => {
-          if (!isAutoInviteEnabled()) return;
-          try {
-            const org = await db.query.organization.findFirst({
-              where: (o, { eq }) => eq(o.slug, DEFAULT_ORG_SLUG),
-            });
-            if (!org) {
-              console.warn(
-                `[auto-invite] Demo org not found (slug: "${DEFAULT_ORG_SLUG}"). Run the seed script.`,
-              );
-              return;
-            }
-            await auth.api.addMember({
-              body: {
-                userId: user.id,
-                organizationId: org.id,
-                role: "guest",
-              },
-            });
-          } catch (err) {
-            console.error("[auto-invite] Failed to add user to demo org:", err);
-          }
-        },
+        after: createAutoInviteHook(db, (params) => addMemberFn(params)),
       },
     },
   },
   hooks: createGuestHooks(db),
   plugins: [
     organization({
+      allowUserToCreateOrganization: false,
       organizationLimit: 5,
       membershipLimit: 100,
       roles: { guest: guestRole },
@@ -74,5 +59,10 @@ export const auth = betterAuth({
     nextCookies(),
   ],
 });
+
+addMemberFn = (params) =>
+  auth.api.addMember({
+    body: { ...params.body, role: "guest" as const },
+  });
 
 export type Session = typeof auth.$Infer.Session;
