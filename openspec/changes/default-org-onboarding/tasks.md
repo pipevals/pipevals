@@ -5,25 +5,33 @@
 
 ## 2. Guest Role — Access Control Config
 
-- [ ] 2.1 Define a static access control config using `createAccessControl` and `defaultStatements` from `better-auth/plugins/access`
-- [ ] 2.2 Add a `guest` role via `ac.newRole()` with read-only permission on `organization` only (no `member` or `invitation` access)
-- [ ] 2.3 Pass the `ac` and `roles` config to the `organization()` plugin in `lib/auth.ts`
+- [x] 2.1 Define a static access control config using `createAccessControl` and `defaultStatements` from `better-auth/plugins/access`
+- [x] 2.2 Add a `guest` role via `ac.newRole()` with read-only permission on `organization` only (no `member` or `invitation` access)
+- [x] 2.3 Pass the `ac` and `roles` config to the `organization()` plugin in `lib/auth.ts`
 
-## 3. Seed Script — Default Organization via Better Auth SDK
+## 3. Guest Role — Unit Tests
 
-- [ ] 3.1 Update `lib/db/seed.ts` to import `auth` from `lib/auth` and call `auth.api.createOrganization` to create the demo org (`name: "Demo"`, `slug: "demo"`), gated behind `isAutoInviteEnabled()`
-- [ ] 3.2 Before creating, check if the org already exists (query by slug); skip creation if it does
-- [ ] 3.3 Add logging — print whether the org was created or already existed
-- [ ] 3.4 Run `bun run db:seed` and verify the org appears in the database; run it again to confirm idempotency
+- [ ] 3.1 Extract guest role + hooks config into a shared helper so both `lib/auth.ts` and tests can use it, or create a `createAuthWithGuestConfig` factory in the test setup
+- [ ] 3.2 Test: guest CAN call whitelisted endpoints (`set-active`, `get-full-organization`, `list`) — expect 200
+- [ ] 3.3 Test: guest CANNOT call non-whitelisted read endpoints (`list-members`, `list-invitations`, `get-active-member`) — expect 403
+- [ ] 3.4 Test: guest CANNOT call write endpoints (`invite-member`, `update-member-role`, `remove-member`) — expect 403
+- [ ] 3.5 Test: non-guest member CAN call the same endpoints — expect 200 (sanity check)
 
-## 4. Auth Hook — Auto-Membership on Registration
+## 4. Seed Script — Default Organization via Better Auth SDK
 
-- [ ] 4.1 Add `databaseHooks.user.create.after` to the Better Auth config in `lib/auth.ts`, gated behind `isAutoInviteEnabled()`
-- [ ] 4.2 In the hook, look up the demo org by `DEFAULT_ORG_SLUG`, then insert a `member` row with `role: "guest"` using Drizzle, with conflict handling so duplicates are ignored
-- [ ] 4.3 Wrap the logic in a try/catch — if the demo org doesn't exist (seed not run), log a warning and let registration proceed
+- [ ] 4.1 Update `lib/db/seed.ts` to import `auth` from `lib/auth` and call `auth.api.createOrganization` to create the demo org (`name: "Demo"`, `slug: "demo"`), gated behind `isAutoInviteEnabled()`
+- [ ] 4.2 Before creating, check if the org already exists (query by slug); skip creation if it does
+- [ ] 4.3 Add logging — print whether the org was created or already existed
+- [ ] 4.4 Run `bun run db:seed` and verify the org appears in the database; run it again to confirm idempotency
 
-## 5. Verification
+## 5. Auth Hook — Auto-Membership on Registration
 
-- [ ] 5.1 With `BETTER_AUTH_URL=http://localhost:3000` and the seed run, register a new user via GitHub OAuth and verify the `member` row is created with `role = "guest"` for the demo org
-- [ ] 5.2 Verify the guest user can read the organization (set active org) but cannot call member/invitation endpoints (listMembers, inviteMember, updateMemberRole, etc.)
-- [ ] 5.3 With `BETTER_AUTH_URL` set to a non-allowed host, register a new user and verify no automatic membership is created
+- [ ] 5.1 Add `databaseHooks.user.create.after` to the Better Auth config in `lib/auth.ts`, gated behind `isAutoInviteEnabled()`
+- [ ] 5.2 In the hook, look up the demo org by `DEFAULT_ORG_SLUG`, then insert a `member` row with `role: "guest"` using Drizzle, with conflict handling so duplicates are ignored
+- [ ] 5.3 Wrap the logic in a try/catch — if the demo org doesn't exist (seed not run), log a warning and let registration proceed
+
+## 6. Verification
+
+- [ ] 6.1 With `BETTER_AUTH_URL=http://localhost:3000` and the seed run, register a new user via GitHub OAuth and verify the `member` row is created with `role = "guest"` for the demo org
+- [ ] 6.2 Verify the guest user can read the organization (set active org) but cannot call member/invitation endpoints (listMembers, inviteMember, updateMemberRole, etc.)
+- [ ] 6.3 With `BETTER_AUTH_URL` set to a non-allowed host, register a new user and verify no automatic membership is created
