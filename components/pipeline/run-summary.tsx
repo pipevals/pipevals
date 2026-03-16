@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { computeDuration } from "@/lib/format";
+import { extractMetrics } from "@/lib/pipeline/extract-metrics";
 import { Button } from "@/components/ui/button";
 import {
   useRunViewerStore,
@@ -34,33 +35,6 @@ const STATUS_DISPLAY: Record<
       "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
   },
 };
-
-interface CapturedMetric {
-  name: string;
-  value: unknown;
-}
-
-function extractMetrics(run: {
-  graphSnapshot: { nodes: { id: string; type: string }[] };
-  stepResults: {
-    nodeId: string;
-    status: StepResultStatus;
-    output: Record<string, unknown> | null;
-  }[];
-}): CapturedMetric[] {
-  const metricNodeIds = new Set(
-    run.graphSnapshot.nodes
-      .filter((n) => n.type === "metric_capture")
-      .map((n) => n.id),
-  );
-
-  return run.stepResults
-    .filter((sr) => metricNodeIds.has(sr.nodeId) && sr.status === "completed")
-    .map((sr) => ({
-      name: (sr.output?.metric as string) ?? sr.nodeId,
-      value: sr.output?.value,
-    }));
-}
 
 function Stat({
   label,
