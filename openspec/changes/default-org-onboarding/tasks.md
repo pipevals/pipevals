@@ -26,9 +26,9 @@
 
 ## 5. Auth Hook — Auto-Membership on Registration
 
-- [ ] 5.1 Add `databaseHooks.user.create.after` to the Better Auth config in `lib/auth.ts`, gated behind `isAutoInviteEnabled()`
-- [ ] 5.2 In the hook, look up the demo org by `DEFAULT_ORG_SLUG`, then insert a `member` row with `role: "guest"` using Drizzle, with conflict handling so duplicates are ignored
-- [ ] 5.3 Wrap the logic in a try/catch — if the demo org doesn't exist (seed not run), log a warning and let registration proceed
+- [x] 5.1 Add `databaseHooks.user.create.after` to the Better Auth config in `lib/auth.ts`, gated behind `isAutoInviteEnabled()`
+- [x] 5.2 In the hook, look up the demo org by `DEFAULT_ORG_SLUG`, then insert a `member` row with `role: "guest"` using Drizzle, with conflict handling so duplicates are ignored
+- [x] 5.3 Wrap the logic in a try/catch — if the demo org doesn't exist (seed not run), log a warning and let registration proceed
 
 ## 6. Verification
 
