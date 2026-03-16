@@ -24,10 +24,10 @@
 
 ## 5. Error & Loading UX
 
-- [ ] 5.1 Create `app/error.tsx` — client component with error message and retry button, styled with Tailwind
-- [ ] 5.2 Create `app/not-found.tsx` — styled 404 page with link to home
-- [ ] 5.3 Create `app/pipelines/loading.tsx` — skeleton placeholder for the pipeline list page
-- [ ] 5.4 Create `app/pipelines/[id]/loading.tsx` — skeleton placeholder for the pipeline editor page
+- [x] 5.1 Create `app/error.tsx` — client component with error message and retry button, styled with Tailwind
+- [x] 5.2 Create `app/not-found.tsx` — styled 404 page with link to home
+- [x] 5.3 Create `app/pipelines/loading.tsx` — skeleton placeholder for the pipeline list page
+- [x] 5.4 Create `app/pipelines/[id]/loading.tsx` — skeleton placeholder for the pipeline editor page
 
 ## 6. Metadata
 
