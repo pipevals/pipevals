@@ -1,17 +1,52 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRunViewerStore } from "@/lib/stores/run-viewer";
+import useSWR from "swr";
+import {
+  useRunViewerStore,
+  snapshotToFlow,
+  type RunData,
+} from "@/lib/stores/run-viewer";
+
+const POLL_INTERVAL_MS = 2000;
+
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error("Failed to load run");
+    return res.json() as Promise<RunData>;
+  });
+
+function isTerminal(status: string | undefined): boolean {
+  return status === "completed" || status === "failed";
+}
 
 export function useRunLoader(pipelineId: string, runId: string) {
-  const loading = useRunViewerStore((s) => s.loading);
-  const error = useRunViewerStore((s) => s.error);
-  const run = useRunViewerStore((s) => s.run);
-  const load = useRunViewerStore((s) => s.load);
+  const setRun = useRunViewerStore((s) => s.setRun);
 
-  useEffect(() => {
-    load(pipelineId, runId);
-  }, [pipelineId, runId, load]);
+  const { data, error, isLoading } = useSWR<RunData>(
+    `/api/pipelines/${pipelineId}/runs/${runId}`,
+    fetcher,
+    {
+      refreshInterval: (latestData) =>
+        isTerminal(latestData?.status) ? 0 : POLL_INTERVAL_MS,
+      revalidateOnFocus: false,
+      onSuccess: (run) => {
+        const store = useRunViewerStore.getState();
+        const { nodes, edges } = snapshotToFlow(
+          run.graphSnapshot,
+          run.stepResults,
+        );
+        if (store.run?.id !== run.id) {
+          setRun(run);
+        } else {
+          useRunViewerStore.setState({ run, nodes, edges });
+        }
+      },
+    },
+  );
 
-  return { loading: loading || (!run && !error), error };
+  return {
+    loading: isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    isPolling: !!data && !isTerminal(data.status),
+  };
 }
