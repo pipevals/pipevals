@@ -33,8 +33,8 @@ export const pipelines = pgTable(
     slug: text("slug").notNull(),
     description: text("description"),
     triggerSchema: jsonb("trigger_schema")
-      .$type<Array<{ name: string; description?: string }>>()
-      .default([]),
+      .$type<Record<string, unknown>>()
+      .default({}),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),

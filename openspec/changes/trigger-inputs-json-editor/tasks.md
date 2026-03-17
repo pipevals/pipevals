@@ -1,14 +1,14 @@
 ## 1. Dependencies & Migration
 
-- [ ] 1.1 Install `@visual-json/react` and `@visual-json/core` via bun
-- [ ] 1.2 Edit `drizzle/0001_gifted_blue_shield.sql`: change `DEFAULT '[]'::jsonb` to `DEFAULT '{}'::jsonb`
-- [ ] 1.3 Update `lib/db/pipeline-schema.ts` default value for `triggerSchema` column to `{}` if hardcoded
+- [x] 1.1 Install `@visual-json/react` and `@visual-json/core` via bun
+- [x] 1.2 Edit `drizzle/0001_gifted_blue_shield.sql`: change `DEFAULT '[]'::jsonb` to `DEFAULT '{}'::jsonb`
+- [x] 1.3 Update `lib/db/pipeline-schema.ts` default value for `triggerSchema` column to `{}` if hardcoded
 
 ## 2. Types & Utilities
 
-- [ ] 2.1 Remove `TriggerSchemaField` type and its import from `lib/pipeline/types.ts`
-- [ ] 2.2 Add `inferSchema(value: unknown): unknown` pure utility to `lib/pipeline/utils/infer-schema.ts` — recursively replaces leaf values with zero-value placeholders by type
-- [ ] 2.3 Write unit tests for `inferSchema`: flat object, nested object, array elements, null input
+- [x] 2.1 Remove `TriggerSchemaField` type and its import from `lib/pipeline/types.ts`
+- [x] 2.2 Add `inferSchema(value: unknown): unknown` pure utility to `lib/pipeline/utils/infer-schema.ts` — recursively replaces leaf values with zero-value placeholders by type
+- [x] 2.3 Write unit tests for `inferSchema`: flat object, nested object, array elements, null input
 
 ## 3. Store
 

@@ -1,1 +1,1 @@
-ALTER TABLE "pipeline" ADD COLUMN "trigger_schema" jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE "pipeline" ADD COLUMN "trigger_schema" jsonb DEFAULT '{}'::jsonb;
