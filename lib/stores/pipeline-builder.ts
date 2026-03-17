@@ -125,6 +125,43 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         target: connection.target,
         targetHandle: connection.targetHandle ?? null,
       };
+
+      // When wiring from a trigger handle → step input, write trigger.{fieldName}
+      // into the target step's config field that matches the targetHandle name.
+      if (
+        connection.source === TRIGGER_NODE_ID &&
+        connection.sourceHandle &&
+        connection.targetHandle
+      ) {
+        const fieldName = connection.sourceHandle;
+        const targetHandle = connection.targetHandle;
+        set((state) => {
+          const targetNode = state.nodes.find((n) => n.id === connection.target);
+          if (!targetNode || !(targetHandle in (targetNode.data.config ?? {}))) {
+            return { edges: [...state.edges, edge], dirty: true };
+          }
+          return {
+            edges: [...state.edges, edge],
+            nodes: state.nodes.map((n) =>
+              n.id === connection.target
+                ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      config: {
+                        ...n.data.config,
+                        [targetHandle]: `trigger.${fieldName}`,
+                      },
+                    },
+                  }
+                : n,
+            ),
+            dirty: true,
+          };
+        });
+        return;
+      }
+
       set((state) => ({
         edges: [...state.edges, edge],
         dirty: true,

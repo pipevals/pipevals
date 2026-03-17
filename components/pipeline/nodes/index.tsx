@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { NodeProps } from "@xyflow/react";
 import { BaseNode } from "./base-node";
+import { TriggerNode } from "./trigger-node";
 import type { PipelineNodeData } from "@/lib/stores/pipeline-builder";
 
 type StepNodeProps = NodeProps & { data: PipelineNodeData };
@@ -83,4 +84,5 @@ export const nodeTypes = {
   condition: ConditionNode,
   transform: TransformNode,
   metric_capture: MetricCaptureNode,
+  trigger: TriggerNode,
 } as const;

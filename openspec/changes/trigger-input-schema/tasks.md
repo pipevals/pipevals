@@ -21,10 +21,10 @@
 
 ## 4. Trigger Node Component
 
-- [ ] 4.1 Create `components/pipeline/nodes/trigger-node.tsx` — a visually distinct node with no input handle and dynamic output handles derived from the trigger schema
-- [ ] 4.2 Register the `"trigger"` node type in the xyflow `nodeTypes` map
-- [ ] 4.3 Render a placeholder state on the trigger node when `triggerSchema` is empty
-- [ ] 4.4 Implement the edge-creation handler: when an edge is drawn from a trigger handle to a step's input handle, write `trigger.{fieldName}` into the corresponding step config field in the store
+- [x] 4.1 Create `components/pipeline/nodes/trigger-node.tsx` — a visually distinct node with no input handle and dynamic output handles derived from the trigger schema
+- [x] 4.2 Register the `"trigger"` node type in the xyflow `nodeTypes` map
+- [x] 4.3 Render a placeholder state on the trigger node when `triggerSchema` is empty
+- [x] 4.4 Implement the edge-creation handler: when an edge is drawn from a trigger handle to a step's input handle, write `trigger.{fieldName}` into the corresponding step config field in the store
 
 ## 5. Trigger Inputs Panel
 
