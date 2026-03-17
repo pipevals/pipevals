@@ -383,8 +383,10 @@ describe("useRunViewerStore", () => {
       const run: RunData = {
         id: "run-1",
         pipelineId: "p-1",
+        pipelineSlug: null,
         status: "completed",
         triggerPayload: null,
+        triggerSchema: {},
         graphSnapshot: makeSnapshot({
           nodes: [{ id: "a" }, { id: "b" }],
           edges: [{ sourceNodeId: "a", targetNodeId: "b" }],
@@ -411,8 +413,10 @@ describe("useRunViewerStore", () => {
       const run: RunData = {
         id: "run-1",
         pipelineId: "p-1",
+        pipelineSlug: null,
         status: "completed",
         triggerPayload: null,
+        triggerSchema: {},
         graphSnapshot: makeSnapshot({
           nodes: [{ id: "a" }],
           edges: [],
@@ -471,8 +475,10 @@ describe("useRunViewerStore", () => {
       const run: RunData = {
         id: "run-1",
         pipelineId: "p-1",
+        pipelineSlug: null,
         status: "completed",
         triggerPayload: null,
+        triggerSchema: {},
         graphSnapshot: makeSnapshot({ nodes: [], edges: [] }),
         startedAt: null,
         completedAt: null,
@@ -496,8 +502,10 @@ describe("useRunViewerStore", () => {
       const run: RunData = {
         id: "run-1",
         pipelineId: "p-1",
+        pipelineSlug: null,
         status: "completed",
         triggerPayload: null,
+        triggerSchema: {},
         graphSnapshot: makeSnapshot({ nodes: [], edges: [] }),
         startedAt: null,
         completedAt: null,

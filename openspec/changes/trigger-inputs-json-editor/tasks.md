@@ -31,13 +31,13 @@
 
 ## 6. Trigger Inputs Panel
 
-- [ ] 6.1 Rewrite `components/pipeline/trigger-inputs-panel.tsx`: replace `FieldRow` list and add-by-name input with `<JsonEditor value={triggerSchema} onChange={setTriggerSchema} />` from `@visual-json/react`
-- [ ] 6.2 Add "Import from JSON" collapsible section: textarea for raw JSON input, Import button, inline error display on parse failure
-- [ ] 6.3 Wire Import button to `inferSchema` + `setTriggerSchema`
-- [ ] 6.4 Apply CSS custom property overrides to `JsonEditor` to match the pipevals design system (use `--vj-bg`, `--vj-text`, `--vj-border`, `--vj-accent`, `--vj-font` tokens mapped to Tailwind/shadcn CSS vars)
-- [ ] 6.5 Wrap `JsonEditor` import in `dynamic()` with `ssr: false` to keep it out of the server bundle
+- [x] 6.1 Rewrite `components/pipeline/trigger-inputs-panel.tsx`: replace `FieldRow` list and add-by-name input with `<JsonEditor value={triggerSchema} onChange={setTriggerSchema} />` from `@visual-json/react`
+- [x] 6.2 Add "Import from JSON" collapsible section: textarea for raw JSON input, Import button, inline error display on parse failure
+- [x] 6.3 Wire Import button to `inferSchema` + `setTriggerSchema`
+- [x] 6.4 Apply CSS custom property overrides to `JsonEditor` to match the pipevals design system (use `--vj-bg`, `--vj-text`, `--vj-border`, `--vj-accent`, `--vj-font` tokens mapped to Tailwind/shadcn CSS vars)
+- [x] 6.5 Wrap `JsonEditor` import in `dynamic()` with `ssr: false` to keep it out of the server bundle
 
 ## 7. Run Viewer Result Panel
 
-- [ ] 7.1 Update `components/pipeline/result-panel.tsx` `TriggerPayloadPanel`: replace flat key-label iteration with a recursive JSON display that handles nested objects and arrays (can use `@visual-json/react` in `readOnly` mode or the existing `JsonBlock` component with full nesting)
-- [ ] 7.2 Remove the `schema.find(f => f.name === key)?.description` label logic (descriptions are dropped)
+- [x] 7.1 Update `components/pipeline/result-panel.tsx` `TriggerPayloadPanel`: replace flat key-label iteration with a recursive JSON display that handles nested objects and arrays (can use `@visual-json/react` in `readOnly` mode or the existing `JsonBlock` component with full nesting)
+- [x] 7.2 Remove the `schema.find(f => f.name === key)?.description` label logic (descriptions are dropped)

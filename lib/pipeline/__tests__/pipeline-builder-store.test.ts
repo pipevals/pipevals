@@ -19,54 +19,33 @@ const { usePipelineBuilderStore, TRIGGER_NODE_ID } = await import(
 
 function resetStore() {
   usePipelineBuilderStore.setState({
-    triggerSchema: [],
+    triggerSchema: {},
     nodes: [],
     edges: [],
     selectedNodeId: null,
     dirty: false,
+    saveError: null,
   });
 }
 
 describe("pipeline builder store — trigger schema", () => {
   beforeEach(resetStore);
 
-  test("addTriggerField appends a field", () => {
-    usePipelineBuilderStore.getState().addTriggerField({ name: "prompt" });
+  test("setTriggerSchema replaces the schema and marks dirty", () => {
+    usePipelineBuilderStore.getState().setTriggerSchema({ prompt: "", temperature: 0 });
     const { triggerSchema, dirty } = usePipelineBuilderStore.getState();
-    expect(triggerSchema).toEqual([{ name: "prompt" }]);
+    expect(triggerSchema).toEqual({ prompt: "", temperature: 0 });
     expect(dirty).toBe(true);
   });
 
-  test("addTriggerField appends multiple fields in order", () => {
-    const { addTriggerField } = usePipelineBuilderStore.getState();
-    addTriggerField({ name: "prompt" });
-    addTriggerField({ name: "model" });
-    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual([
-      { name: "prompt" },
-      { name: "model" },
-    ]);
-  });
-
-  test("removeTriggerField removes by name", () => {
-    usePipelineBuilderStore.setState({
-      triggerSchema: [{ name: "prompt" }, { name: "model" }],
+  test("setTriggerSchema replaces entirely on each call", () => {
+    const { setTriggerSchema } = usePipelineBuilderStore.getState();
+    setTriggerSchema({ prompt: "" });
+    setTriggerSchema({ model: "", temperature: 0 });
+    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual({
+      model: "",
+      temperature: 0,
     });
-    usePipelineBuilderStore.getState().removeTriggerField("prompt");
-    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual([
-      { name: "model" },
-    ]);
-  });
-
-  test("updateTriggerField updates description", () => {
-    usePipelineBuilderStore.setState({
-      triggerSchema: [{ name: "prompt" }],
-    });
-    usePipelineBuilderStore
-      .getState()
-      .updateTriggerField("prompt", { description: "The text to evaluate" });
-    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual([
-      { name: "prompt", description: "The text to evaluate" },
-    ]);
   });
 });
 

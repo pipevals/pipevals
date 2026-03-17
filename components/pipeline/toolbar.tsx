@@ -17,6 +17,7 @@ export function PipelineToolbar() {
   const pipelineSlug = usePipelineBuilderStore((s) => s.pipelineSlug);
   const dirty = usePipelineBuilderStore((s) => s.dirty);
   const saving = usePipelineBuilderStore((s) => s.saving);
+  const saveError = usePipelineBuilderStore((s) => s.saveError);
   const save = usePipelineBuilderStore((s) => s.save);
 
   return (
@@ -56,6 +57,8 @@ export function PipelineToolbar() {
         <div className="flex items-center gap-1.5 mr-2">
           {saving ? (
             <span className="text-xs text-muted-foreground">Saving…</span>
+          ) : saveError ? (
+            <span className="text-xs text-destructive" title={saveError}>Save failed</span>
           ) : !dirty ? (
             <>
               <span className="relative flex h-1.5 w-1.5">
@@ -77,6 +80,7 @@ export function PipelineToolbar() {
 
         <Button
           size="sm"
+          // Error is surfaced via saveError state — catch prevents unhandled rejection
           onClick={() => save().catch(() => {})}
           disabled={!dirty || saving}
           className="gap-1.5"

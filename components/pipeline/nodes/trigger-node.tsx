@@ -1,12 +1,23 @@
 "use client";
 
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { useEffect } from "react";
+import {
+  Handle,
+  Position,
+  useUpdateNodeInternals,
+  type NodeProps,
+} from "@xyflow/react";
 import { cn } from "@/lib/utils";
 import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
 
-export function TriggerNode({ selected }: NodeProps) {
+export function TriggerNode({ id, selected }: NodeProps) {
   const triggerSchema = usePipelineBuilderStore((s) => s.triggerSchema);
   const keys = Object.keys(triggerSchema);
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [id, keys.join(","), updateNodeInternals]);
 
   return (
     <div

@@ -8,13 +8,13 @@ import {
   BackgroundVariant,
   useReactFlow,
   type NodeMouseHandler,
-  type Connection,
   type IsValidConnection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, type DragEvent } from "react";
 import {
   usePipelineBuilderStore,
+  TRIGGER_NODE_ID,
   type PipelineNode,
 } from "@/lib/stores/pipeline-builder";
 import { wouldCreateCycle } from "@/lib/pipeline/graph-validation";
@@ -93,7 +93,12 @@ export function PipelineCanvas() {
         deleteKeyCode={["Backspace", "Delete"]}
         className="bg-background"
       >
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} className="!bg-muted/30" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={16}
+          size={1}
+          className="!bg-muted/30"
+        />
         <Controls className="!bg-background !border-border !shadow-sm [&>button]:!bg-background [&>button]:!border-border [&>button]:!fill-foreground hover:[&>button]:!bg-muted" />
         <MiniMap
           className="!bg-background !border-border !shadow-sm"

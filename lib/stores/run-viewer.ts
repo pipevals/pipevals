@@ -2,7 +2,6 @@ import type React from "react";
 import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
 import type { PipelineNodeData } from "./pipeline-builder";
-import type { TriggerSchemaField } from "@/lib/pipeline/types";
 
 export type RunNode = Node<PipelineNodeData>;
 export type RunEdge = Edge;
@@ -53,7 +52,7 @@ export interface RunData {
   pipelineSlug: string | null;
   status: RunStatus;
   triggerPayload: Record<string, unknown> | null;
-  triggerSchema: TriggerSchemaField[];
+  triggerSchema: Record<string, unknown>;
   graphSnapshot: GraphSnapshot;
   startedAt: string | null;
   completedAt: string | null;

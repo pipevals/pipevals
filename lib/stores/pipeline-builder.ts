@@ -37,6 +37,7 @@ export interface PipelineBuilderState {
   selectedNodeId: string | null;
   dirty: boolean;
   saving: boolean;
+  saveError: string | null;
   loading: boolean;
   triggerSchema: Record<string, unknown>;
 
@@ -92,6 +93,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     selectedNodeId: null,
     dirty: false,
     saving: false,
+    saveError: null,
     loading: false,
     triggerSchema: {},
 
@@ -103,6 +105,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       set((state) => ({
         nodes: applyNodeChanges(safeChanges, state.nodes),
         dirty: state.dirty || safeChanges.length > 0,
+        saveError: safeChanges.length > 0 ? null : state.saveError,
       }));
     },
 
@@ -110,6 +113,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       set((state) => ({
         edges: applyEdgeChanges(changes, state.edges),
         dirty: true,
+        saveError: null,
       }));
     },
 
@@ -134,7 +138,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         set((state) => {
           const targetNode = state.nodes.find((n) => n.id === connection.target);
           if (!targetNode || !(targetHandle in (targetNode.data.config ?? {}))) {
-            return { edges: [...state.edges, edge], dirty: true };
+            return { edges: [...state.edges, edge], dirty: true, saveError: null };
           }
           return {
             edges: [...state.edges, edge],
@@ -153,6 +157,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
                 : n,
             ),
             dirty: true,
+            saveError: null,
           };
         });
         return;
@@ -161,6 +166,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       set((state) => ({
         edges: [...state.edges, edge],
         dirty: true,
+        saveError: null,
       }));
     },
 
@@ -183,6 +189,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       set((state) => ({
         nodes: [...state.nodes, node],
         dirty: true,
+        saveError: null,
       }));
     },
 
@@ -194,6 +201,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
             : n,
         ),
         dirty: true,
+        saveError: null,
       }));
     },
 
@@ -205,6 +213,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
             : n,
         ),
         dirty: true,
+        saveError: null,
       }));
     },
 
@@ -216,6 +225,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         set({
           edges: edges.filter((e) => e.id !== selectedEdge.id),
           dirty: true,
+          saveError: null,
         });
         return;
       }
@@ -230,13 +240,14 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         ),
         selectedNodeId: null,
         dirty: true,
+        saveError: null,
       });
     },
 
     markClean: () => set({ dirty: false }),
 
     setTriggerSchema: (schema) => {
-      set({ triggerSchema: schema, dirty: true });
+      set({ triggerSchema: schema, dirty: true, saveError: null });
     },
 
     load: async (pipelineId) => {
@@ -277,14 +288,19 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       const { pipelineId, nodes, edges, triggerSchema } = get();
       if (!pipelineId) return;
 
-      set({ saving: true });
+      set({ saving: true, saveError: null });
       try {
         const res = await fetch(`/api/pipelines/${pipelineId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nodes, edges, triggerSchema }),
         });
-        if (!res.ok) throw new Error("Failed to save pipeline");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const message = data.error ?? "Failed to save pipeline";
+          set({ saveError: message });
+          throw new Error(message);
+        }
         set({ dirty: false });
       } finally {
         set({ saving: false });
