@@ -116,8 +116,6 @@ export function AppHeader({ user }: AppHeaderProps) {
       </Link>
 
       <div className="flex items-center gap-7">
-        <nav className="flex items-center gap-6"></nav>
-
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

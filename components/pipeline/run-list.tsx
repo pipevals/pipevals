@@ -79,7 +79,7 @@ const fetcher = (url: string) =>
 export function RunList({ pipelineId }: { pipelineId: string }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
 
-  const { data, error, isLoading } = useSWR(apiUrl, fetcher, {
+  const { data: runs, error, isLoading } = useSWR(apiUrl, fetcher, {
     refreshInterval: (latestData) => {
       if (!latestData) return 0;
       const hasActive = latestData.some(
@@ -89,8 +89,6 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
     },
     revalidateOnFocus: false,
   });
-
-  const runs = data;
 
   return (
     <div className="flex flex-col gap-8">

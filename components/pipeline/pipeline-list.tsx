@@ -134,9 +134,15 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
               className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {name && (
-              <p className="text-xs text-muted-foreground">
-                Slug: {slugify(name)}
-              </p>
+              /[a-z0-9]/i.test(name) ? (
+                <p className="text-xs text-muted-foreground">
+                  Slug: {slugify(name)}
+                </p>
+              ) : (
+                <p className="text-xs text-destructive">
+                  Name must include at least one letter or number
+                </p>
+              )
             )}
             {error && <p className="text-xs text-destructive">{error}</p>}
             <div className="flex gap-2">

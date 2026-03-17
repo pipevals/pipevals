@@ -10,4 +10,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withWorkflow(nextConfig); 
+export default withWorkflow(nextConfig);
