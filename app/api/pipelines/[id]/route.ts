@@ -52,6 +52,7 @@ const nodeSchema = z.object({
     "condition",
     "transform",
     "metric_capture",
+    "trigger",
   ]),
   position: z.object({ x: z.number(), y: z.number() }),
   data: z.object({
@@ -69,9 +70,15 @@ const edgeSchema = z.object({
   label: z.string().nullable().optional(),
 });
 
+const triggerSchemaFieldSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+});
+
 const updatePipelineSchema = z.object({
   name: z.string().trim().min(1).optional(),
   description: z.string().nullable().optional(),
+  triggerSchema: z.array(triggerSchemaFieldSchema).optional(),
   nodes: z.array(nodeSchema),
   edges: z.array(edgeSchema),
 });
@@ -89,7 +96,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     );
   }
 
-  const { name, description, nodes, edges } = parsed.data;
+  const { name, description, triggerSchema, nodes, edges } = parsed.data;
 
   const validationNodes = nodes.map((n) => ({
     id: n.id,
@@ -161,12 +168,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 
   await db.transaction(async (tx) => {
-    if (name !== undefined || description !== undefined) {
+    if (
+      name !== undefined ||
+      description !== undefined ||
+      triggerSchema !== undefined
+    ) {
       await tx
         .update(pipelines)
         .set({
           ...(name !== undefined ? { name } : {}),
           ...(description !== undefined ? { description } : {}),
+          ...(triggerSchema !== undefined ? { triggerSchema } : {}),
         })
         .where(eq(pipelines.id, id));
     }

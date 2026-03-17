@@ -7,7 +7,7 @@
 ## 2. API Layer
 
 - [x] 2.1 Update `GET /api/pipelines/:id` to include `triggerSchema` in the response (default `[]` for null)
-- [ ] 2.2 Update `PUT /api/pipelines/:id` Zod schema to accept optional `triggerSchema` array and persist it to the DB
+- [x] 2.2 Update `PUT /api/pipelines/:id` Zod schema to accept optional `triggerSchema` array and persist it to the DB
 - [ ] 2.3 Update graph snapshot logic to exclude nodes of type `"trigger"` and their edges from the snapshot used during execution
 - [ ] 2.4 Update DAG validation to skip trigger-type nodes and trigger edges
 
