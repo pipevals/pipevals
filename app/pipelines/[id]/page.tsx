@@ -27,7 +27,7 @@ export default async function PipelineEditorPage({ params }: Props) {
   if (!session) redirect("/sign-in");
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <AppHeader user={session.user} />
       <PipelineEditor pipelineId={id} />
     </div>

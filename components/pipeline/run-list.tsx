@@ -4,6 +4,14 @@ import Link from "next/link";
 import useSWR from "swr";
 import { cn } from "@/lib/utils";
 import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -11,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { computeDuration, formatDateTime } from "@/lib/format";
 import type { RunStatus } from "@/lib/stores/run-viewer";
 
@@ -53,7 +62,9 @@ function StatusDot({ status }: { status: RunStatus }) {
   const config = STATUS_CONFIG[status];
   return (
     <span className="flex items-center gap-1.5">
-      <span className={cn("inline-block h-1.5 w-1.5 rounded-full", config.dotClass)} />
+      <span
+        className={cn("inline-block h-1.5 w-1.5 rounded-full", config.dotClass)}
+      />
       <span className={cn("text-xs", config.textClass)}>{config.label}</span>
     </span>
   );
@@ -64,7 +75,6 @@ const fetcher = (url: string) =>
     if (!res.ok) throw new Error("Failed to load runs");
     return res.json() as Promise<RunSummary[]>;
   });
-
 
 export function RunList({ pipelineId }: { pipelineId: string }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
@@ -84,7 +94,6 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
 
   return (
     <div className="flex flex-col gap-8">
-
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <p className="text-xs text-muted-foreground">Loading runs…</p>
@@ -101,48 +110,87 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
 
       {!isLoading && !error && (
         <>
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">Run ID</TableHead>
-                <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider">Status</TableHead>
-                <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">Trigger</TableHead>
-                <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider text-right">Duration</TableHead>
-                <TableHead className="w-[16%] font-mono text-[11px] uppercase tracking-wider text-right">Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(!runs || runs.length === 0) ? (
+          {!runs || runs.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <svg
+                    aria-hidden
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                </EmptyMedia>
+                <EmptyTitle>No runs yet</EmptyTitle>
+                <EmptyDescription>
+                  Trigger a run to execute this pipeline
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={5} className="py-16 text-center">
-                    <p className="text-sm text-muted-foreground">No runs yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Trigger a run to execute this pipeline</p>
-                  </TableCell>
+                  <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">
+                    Run ID
+                  </TableHead>
+                  <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider">
+                    Status
+                  </TableHead>
+                  <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">
+                    Trigger
+                  </TableHead>
+                  <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider text-right">
+                    Duration
+                  </TableHead>
+                  <TableHead className="w-[16%] font-mono text-[11px] uppercase tracking-wider text-right">
+                    Created
+                  </TableHead>
                 </TableRow>
-              ) : runs.map((run) => (
-                <TableRow key={run.id} className="group relative cursor-pointer">
-                  <TableCell className="font-mono text-xs text-foreground group-hover:text-primary transition-colors truncate">
-                    <Link
-                      href={`/pipelines/${pipelineId}/runs/${run.id}`}
-                      className="absolute inset-0"
-                      aria-label={`View run ${run.id.slice(0, 12)}`}
-                    />
-                    {run.id.slice(0, 12)}
-                  </TableCell>
-                  <TableCell><StatusDot status={run.status} /></TableCell>
-                  <TableCell className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors">
-                    {(run.triggerPayload as Record<string, string> | null)?.source ?? "api"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                    {computeDuration(run.startedAt, run.completedAt, run.status === "running")}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                    {formatDateTime(run.createdAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {runs.map((run) => (
+                  <TableRow
+                    key={run.id}
+                    className="group relative cursor-pointer"
+                  >
+                    <TableCell className="font-mono text-xs text-foreground group-hover:text-primary transition-colors truncate">
+                      <Link
+                        href={`/pipelines/${pipelineId}/runs/${run.id}`}
+                        className="absolute inset-0"
+                        aria-label={`View run ${run.id.slice(0, 12)}`}
+                      />
+                      {run.id.slice(0, 12)}
+                    </TableCell>
+                    <TableCell>
+                      <StatusDot status={run.status} />
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors">
+                      {(run.triggerPayload as Record<string, string> | null)
+                        ?.source ?? "api"}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                      {computeDuration(
+                        run.startedAt,
+                        run.completedAt,
+                        run.status === "running",
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                      {formatDateTime(run.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </>
       )}
     </div>

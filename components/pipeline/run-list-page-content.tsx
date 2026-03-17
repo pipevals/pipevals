@@ -28,7 +28,13 @@ async function triggerRun(url: string) {
   return res.json();
 }
 
-export function RunListPageContent({ pipelineId }: { pipelineId: string }) {
+export function RunListPageContent({
+  pipelineId,
+  pipelineSlug,
+}: {
+  pipelineId: string;
+  pipelineSlug: string | null;
+}) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
   const [triggerError, setTriggerError] = useState<string | null>(null);
 
@@ -62,7 +68,7 @@ export function RunListPageContent({ pipelineId }: { pipelineId: string }) {
                     href={`/pipelines/${pipelineId}`}
                     className="truncate max-w-[200px]"
                   >
-                    {pipelineId.slice(0, 8)}
+                    {pipelineSlug ?? pipelineId.slice(0, 8)}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>

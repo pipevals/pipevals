@@ -98,7 +98,7 @@ export function RunSummary() {
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link href={`/pipelines/${run.pipelineId}/runs`}>
-                {run.pipelineId.slice(0, 8)}
+                {run.pipelineSlug ?? run.pipelineId.slice(0, 8)}
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>

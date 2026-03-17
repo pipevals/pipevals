@@ -21,7 +21,7 @@ export function PipelineEditor({ pipelineId }: { pipelineId: string }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-0 flex-1 items-center justify-center">
         <p className="text-xs text-muted-foreground">Loading pipeline…</p>
       </div>
     );
@@ -29,7 +29,7 @@ export function PipelineEditor({ pipelineId }: { pipelineId: string }) {
 
   return (
     <ReactFlowProvider>
-      <div className="flex h-screen flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <PipelineToolbar />
         <div className="flex min-h-0 flex-1">
           <NodePalette />

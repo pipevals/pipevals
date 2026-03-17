@@ -49,6 +49,7 @@ interface GraphSnapshot {
 export interface RunData {
   id: string;
   pipelineId: string;
+  pipelineSlug: string | null;
   status: RunStatus;
   triggerPayload: Record<string, unknown> | null;
   graphSnapshot: GraphSnapshot;

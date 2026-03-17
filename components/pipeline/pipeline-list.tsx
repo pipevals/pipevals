@@ -14,6 +14,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import type { PipelineSummary } from "@/lib/api/pipelines";
 import { slugify } from "@/lib/slugify";
 
@@ -195,18 +203,36 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
             className={`flex flex-col ${filtered.length > 0 ? "border-t border-border" : ""}`}
           >
             {filtered.length === 0 && (
-              <div className="flex flex-col items-center gap-2 py-16">
-                <p className="text-sm text-muted-foreground">
-                  {search
-                    ? "No pipelines match your search"
-                    : "No pipelines yet"}
-                </p>
-                {!search && (
-                  <p className="text-xs text-muted-foreground">
-                    Create one to get started
-                  </p>
-                )}
-              </div>
+              <Empty className="py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <svg
+                      aria-hidden
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+                      <path d="M2 10h20" />
+                    </svg>
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {search
+                      ? "No pipelines match your search"
+                      : "No pipelines yet"}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {search
+                      ? "Try a different search term"
+                      : "Create one to get started"}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
 
             {filtered.map((p) => (
@@ -232,14 +258,47 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
                       </span>
                       <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); copyCurl(p.id); }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          copyCurl(p.id);
+                        }}
                         className="text-muted-foreground hover:text-foreground transition-colors"
                         aria-label="Copy curl command"
                       >
                         {copiedId === p.id ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
                         ) : (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect
+                              width="14"
+                              height="14"
+                              x="8"
+                              y="8"
+                              rx="2"
+                              ry="2"
+                            />
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                          </svg>
                         )}
                       </button>
                     </span>

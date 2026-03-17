@@ -14,7 +14,7 @@ import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
 
 export function PipelineToolbar() {
   const pipelineId = usePipelineBuilderStore((s) => s.pipelineId);
-  const pipelineName = usePipelineBuilderStore((s) => s.pipelineName);
+  const pipelineSlug = usePipelineBuilderStore((s) => s.pipelineSlug);
   const dirty = usePipelineBuilderStore((s) => s.dirty);
   const saving = usePipelineBuilderStore((s) => s.saving);
   const save = usePipelineBuilderStore((s) => s.save);
@@ -37,7 +37,7 @@ export function PipelineToolbar() {
                     href={`/pipelines/${pipelineId}`}
                     className="max-w-[180px] truncate"
                   >
-                    {pipelineName ?? pipelineId.slice(0, 8)}
+                    {pipelineSlug ?? pipelineId.slice(0, 8)}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
