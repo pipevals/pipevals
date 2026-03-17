@@ -20,6 +20,9 @@ export const stepTypeEnum = [
   "metric_capture",
 ] as const;
 
+// Includes all step types plus the UI-only trigger node type.
+export const pipelineNodeTypeEnum = [...stepTypeEnum, "trigger"] as const;
+
 export const pipelines = pgTable(
   "pipeline",
   {
@@ -29,6 +32,9 @@ export const pipelines = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
+    triggerSchema: jsonb("trigger_schema")
+      .$type<Array<{ name: string; description?: string }>>()
+      .default([]),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
@@ -59,7 +65,7 @@ export const pipelineNodes = pgTable(
     pipelineId: text("pipeline_id")
       .notNull()
       .references(() => pipelines.id, { onDelete: "cascade" }),
-    type: text("type", { enum: stepTypeEnum }).notNull(),
+    type: text("type", { enum: pipelineNodeTypeEnum }).notNull(),
     label: text("label"),
     config: jsonb("config").$type<Record<string, unknown>>().default({}),
     positionX: real("position_x").notNull().default(0),
