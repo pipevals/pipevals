@@ -8,25 +8,10 @@ import type { TestHelpers } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
 import * as schema from "@/lib/db/schema";
 import { member } from "@/lib/db/schema";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { createAutoInviteHook, isAutoInviteEnabled, DEFAULT_ORG_SLUG } from "@/lib/auto-invite";
+import { runMigrations } from "@/lib/__tests__/run-migrations";
 
 type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
-
-async function runMigrations(pg: PGlite) {
-  const migrationSql = readFileSync(
-    join(process.cwd(), "drizzle/0000_fair_toxin.sql"),
-    "utf-8",
-  );
-  const statements = migrationSql
-    .split("--> statement-breakpoint")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  for (const stmt of statements) {
-    await pg.exec(stmt);
-  }
-}
 
 function createTestAuth(db: DrizzleDb) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

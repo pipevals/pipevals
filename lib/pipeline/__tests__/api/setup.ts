@@ -5,9 +5,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization, admin, bearer, testUtils } from "better-auth/plugins";
 import type { TestHelpers } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { guestRole, createGuestHooks } from "@/lib/auth-guest";
+import { runMigrations } from "@/lib/__tests__/run-migrations";
 
 type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -31,19 +30,6 @@ const _cache = new Map<
   { pg: PGlite; db: DrizzleDb; auth: TestAuth; test: TestHelpers }
 >();
 
-async function runMigrations(pg: PGlite) {
-  const migrationSql = readFileSync(
-    join(process.cwd(), "drizzle/0000_fair_toxin.sql"),
-    "utf-8",
-  );
-  const statements = migrationSql
-    .split("--> statement-breakpoint")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  for (const stmt of statements) {
-    await pg.exec(stmt);
-  }
-}
 
 export async function setupTestDb(): Promise<{
   pg: PGlite;

@@ -38,9 +38,11 @@ let ctx: TestContext;
 
 async function seedPipeline(opts: { nodes?: boolean } = {}) {
   const pipelineId = crypto.randomUUID();
+  const name = `pipeline-${pipelineId.slice(0, 8)}`;
   await testDb.insert(pipelines).values({
     id: pipelineId,
-    name: `pipeline-${pipelineId.slice(0, 8)}`,
+    name,
+    slug: name,
     organizationId: ctx.organizationId,
     createdBy: ctx.userId,
   });
@@ -92,6 +94,41 @@ describe("run endpoints (PGlite integration)", () => {
       const data = await res.json();
       expect(data.runId).toBeDefined();
       expect(mockWorkflowStart).toHaveBeenCalled();
+    });
+
+    test("graph snapshot excludes trigger node and its edges", async () => {
+      const pipelineId = await seedPipeline({ nodes: false });
+      const triggerNodeId = "trigger-source";
+      const stepNodeId = crypto.randomUUID();
+
+      await testDb.insert(pipelineNodes).values([
+        { id: triggerNodeId, pipelineId, type: "trigger", label: "Trigger", config: {} },
+        { id: stepNodeId, pipelineId, type: "ai_sdk", label: "Model", config: { model: "openai/gpt-4o", promptTemplate: "trigger.prompt" } },
+      ]);
+      await testDb.insert(pipelineEdges).values({
+        id: crypto.randomUUID(),
+        pipelineId,
+        sourceNodeId: triggerNodeId,
+        targetNodeId: stepNodeId,
+      });
+
+      const req = new Request("http://localhost/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload: { prompt: "hello" } }),
+      });
+
+      const res = await triggerRun(req, runsParams(pipelineId));
+      expect(res.status).toBe(202);
+
+      const { runId } = await res.json();
+      const runRes = await getRun(new Request("http://localhost"), runDetailParams(pipelineId, runId));
+      const run = await runRes.json();
+
+      const snapshotNodeIds = run.graphSnapshot.nodes.map((n: { id: string }) => n.id);
+      expect(snapshotNodeIds).not.toContain(triggerNodeId);
+      expect(snapshotNodeIds).toContain(stepNodeId);
+      expect(run.graphSnapshot.edges).toHaveLength(0);
     });
 
     test("400 on trigger empty pipeline", async () => {

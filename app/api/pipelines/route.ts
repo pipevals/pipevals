@@ -49,10 +49,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(pipeline, { status: 201 });
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err as { constraint_name?: string }).constraint_name === "pipeline_slug_org_uidx"
-    ) {
+    const cause = err instanceof Error ? (err.cause as Record<string, unknown> | undefined) : undefined;
+    const constraint =
+      (err as Record<string, unknown>).constraint_name ??
+      (err as Record<string, unknown>).constraint ??
+      cause?.constraint_name ??
+      cause?.constraint;
+    if (constraint === "pipeline_slug_org_uidx") {
       return NextResponse.json(
         { error: `A pipeline with this slug already exists in this organization` },
         { status: 409 },

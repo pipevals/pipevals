@@ -39,9 +39,9 @@
 
 ## 7. Tests
 
-- [ ] 7.1 Unit test: `GET /api/pipelines/:id` returns `triggerSchema` field (defaulting to `[]`)
-- [ ] 7.2 Unit test: `PUT /api/pipelines/:id` persists `triggerSchema`; omitting the field preserves existing schema
-- [ ] 7.3 Unit test: graph snapshot excludes trigger node and trigger edges
-- [ ] 7.4 Unit test: store `addTriggerField` / `removeTriggerField` update schema and trigger node handles
-- [ ] 7.5 Unit test: edge from trigger handle writes correct `trigger.{fieldName}` into target step config
-- [ ] 7.6 Unit test: trigger node cannot be deleted (delete action is a no-op)
+- [x] 7.1 Unit test: `GET /api/pipelines/:id` returns `triggerSchema` field (defaulting to `[]`)
+- [x] 7.2 Unit test: `PUT /api/pipelines/:id` persists `triggerSchema`; omitting the field preserves existing schema
+- [x] 7.3 Unit test: graph snapshot excludes trigger node and trigger edges
+- [x] 7.4 Unit test: store `addTriggerField` / `removeTriggerField` update schema and trigger node handles
+- [x] 7.5 Unit test: edge from trigger handle writes correct `trigger.{fieldName}` into target step config
+- [x] 7.6 Unit test: trigger node cannot be deleted (delete action is a no-op)

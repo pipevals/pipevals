@@ -48,9 +48,11 @@ function putJson(body: unknown) {
 
 async function seedPipeline(name?: string) {
   const id = crypto.randomUUID();
+  const resolvedName = name ?? `pipeline-${id.slice(0, 8)}`;
   await testDb.insert(pipelines).values({
     id,
-    name: name ?? `pipeline-${id.slice(0, 8)}`,
+    name: resolvedName,
+    slug: resolvedName.toLowerCase().replace(/\s+/g, "-"),
     organizationId: ctx.organizationId,
     createdBy: ctx.userId,
   });
@@ -113,6 +115,56 @@ describe("pipeline CRUD (PGlite integration)", () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("GET /api/pipelines/:id — triggerSchema", () => {
+    test("returns triggerSchema defaulting to []", async () => {
+      const pipelineId = await seedPipeline();
+
+      const res = await getPipeline(
+        new Request("http://localhost"),
+        makeParams(pipelineId),
+      );
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.triggerSchema).toEqual([]);
+    });
+  });
+
+  describe("PUT /api/pipelines/:id — triggerSchema", () => {
+    test("persists triggerSchema when provided", async () => {
+      const pipelineId = await seedPipeline();
+      const schema = [{ name: "prompt", description: "The prompt" }, { name: "model" }];
+
+      await updatePipeline(
+        putJson({ nodes: [], edges: [], triggerSchema: schema }),
+        makeParams(pipelineId),
+      );
+
+      const res = await getPipeline(new Request("http://localhost"), makeParams(pipelineId));
+      const data = await res.json();
+      expect(data.triggerSchema).toEqual(schema);
+    });
+
+    test("omitting triggerSchema preserves existing schema", async () => {
+      const pipelineId = await seedPipeline();
+      const schema = [{ name: "input" }];
+
+      await updatePipeline(
+        putJson({ nodes: [], edges: [], triggerSchema: schema }),
+        makeParams(pipelineId),
+      );
+
+      // PUT again without triggerSchema
+      await updatePipeline(
+        putJson({ name: "Renamed", nodes: [], edges: [] }),
+        makeParams(pipelineId),
+      );
+
+      const res = await getPipeline(new Request("http://localhost"), makeParams(pipelineId));
+      const data = await res.json();
+      expect(data.triggerSchema).toEqual(schema);
     });
   });
 

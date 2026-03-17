@@ -29,6 +29,7 @@ mock.module("@xyflow/react", () => ({
 
 import {
   usePipelineBuilderStore,
+  TRIGGER_NODE_ID,
   type PipelineNode,
   type PipelineEdge,
 } from "@/lib/stores/pipeline-builder";
@@ -273,7 +274,12 @@ describe("setNodes / setEdges", () => {
 
 describe("load", () => {
   test("fetches pipeline and populates state", async () => {
-    const mockNodes = [makeNode({ id: "n1" })];
+    const triggerNode = makeNode({
+      id: TRIGGER_NODE_ID,
+      type: "trigger" as any,
+      data: { label: "Trigger", config: {} },
+    });
+    const mockNodes = [triggerNode, makeNode({ id: "n1" })];
     const mockEdges = [makeEdge({ id: "e1", source: "n1", target: "n2" })];
 
     const fetchMock = mockFetch(() =>
@@ -355,7 +361,7 @@ describe("save", () => {
     const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/pipelines/pid-123");
     expect(opts.method).toBe("PUT");
-    expect(JSON.parse(opts.body as string)).toEqual({ nodes, edges });
+    expect(JSON.parse(opts.body as string)).toEqual({ nodes, edges, triggerSchema: [] });
   });
 
   test("throws on non-ok response and resets saving", async () => {
