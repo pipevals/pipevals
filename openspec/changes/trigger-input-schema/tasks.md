@@ -1,7 +1,7 @@
 ## 1. Database & Schema
 
 - [x] 1.1 Add `trigger_schema` nullable JSONB column to the `pipelines` table in `lib/db/pipeline-schema.ts`
-- [ ] 1.2 Write and run a Drizzle migration for the new column
+- [x] 1.2 Write and run a Drizzle migration for the new column
 - [ ] 1.3 Add `TriggerSchemaField` TypeScript type (`{ name: string; description?: string }`) to `lib/pipeline/types.ts`
 
 ## 2. API Layer
