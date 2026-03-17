@@ -13,7 +13,6 @@ import type {
   StepType,
   PipelineNodeType,
   NodeConfig,
-  TriggerSchemaField,
 } from "@/lib/pipeline/types";
 import { defaultConfigs } from "@/lib/pipeline/types";
 
@@ -39,7 +38,7 @@ export interface PipelineBuilderState {
   dirty: boolean;
   saving: boolean;
   loading: boolean;
-  triggerSchema: TriggerSchemaField[];
+  triggerSchema: Record<string, unknown>;
 
   // xyflow event handlers
   onNodesChange: OnNodesChange<PipelineNode>;
@@ -57,10 +56,7 @@ export interface PipelineBuilderState {
   markClean: () => void;
 
   // trigger schema actions
-  addTriggerField: (field: TriggerSchemaField) => void;
-  removeTriggerField: (name: string) => void;
-  updateTriggerField: (name: string, updates: Partial<TriggerSchemaField>) => void;
-  reorderTriggerFields: (fields: TriggerSchemaField[]) => void;
+  setTriggerSchema: (schema: Record<string, unknown>) => void;
 
   // persistence
   load: (pipelineId: string) => Promise<void>;
@@ -97,7 +93,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     dirty: false,
     saving: false,
     loading: false,
-    triggerSchema: [],
+    triggerSchema: {},
 
     onNodesChange: (changes) => {
       // Prevent trigger node from being removed via keyboard delete / xyflow remove changes
@@ -239,31 +235,8 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     markClean: () => set({ dirty: false }),
 
-    addTriggerField: (field) => {
-      set((state) => ({
-        triggerSchema: [...state.triggerSchema, field],
-        dirty: true,
-      }));
-    },
-
-    removeTriggerField: (name) => {
-      set((state) => ({
-        triggerSchema: state.triggerSchema.filter((f) => f.name !== name),
-        dirty: true,
-      }));
-    },
-
-    updateTriggerField: (name, updates) => {
-      set((state) => ({
-        triggerSchema: state.triggerSchema.map((f) =>
-          f.name === name ? { ...f, ...updates } : f,
-        ),
-        dirty: true,
-      }));
-    },
-
-    reorderTriggerFields: (fields) => {
-      set({ triggerSchema: fields, dirty: true });
+    setTriggerSchema: (schema) => {
+      set({ triggerSchema: schema, dirty: true });
     },
 
     load: async (pipelineId) => {
@@ -279,13 +252,19 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
           ? loadedNodes
           : [makeTriggerNode(), ...loadedNodes];
 
+        const raw = data.triggerSchema;
+        const triggerSchema: Record<string, unknown> =
+          typeof raw === "object" && raw !== null && !Array.isArray(raw)
+            ? (raw as Record<string, unknown>)
+            : {};
+
         set({
           pipelineId,
           pipelineName: data.name ?? null,
           pipelineSlug: data.slug ?? null,
           nodes,
           edges: data.edges as PipelineEdge[],
-          triggerSchema: (data.triggerSchema as TriggerSchemaField[]) ?? [],
+          triggerSchema,
           selectedNodeId: null,
           dirty: false,
         });

@@ -12,11 +12,11 @@
 
 ## 3. Store
 
-- [ ] 3.1 Replace `triggerSchema: TriggerSchemaField[]` with `triggerSchema: Record<string, unknown>` in `lib/stores/pipeline-builder.ts`
-- [ ] 3.2 Replace `addTriggerField`, `removeTriggerField`, `updateTriggerField`, `reorderTriggerFields` actions with a single `setTriggerSchema(schema: Record<string, unknown>)` action
-- [ ] 3.3 Update `load` to default null `triggerSchema` to `{}` when initialising store state
-- [ ] 3.4 Update `save` to include `triggerSchema` (already passes through; verify shape is correct)
-- [ ] 3.5 Update store unit tests to use `setTriggerSchema` and `Record<string, unknown>` shape
+- [x] 3.1 Replace `triggerSchema: TriggerSchemaField[]` with `triggerSchema: Record<string, unknown>` in `lib/stores/pipeline-builder.ts`
+- [x] 3.2 Replace `addTriggerField`, `removeTriggerField`, `updateTriggerField`, `reorderTriggerFields` actions with a single `setTriggerSchema(schema: Record<string, unknown>)` action
+- [x] 3.3 Update `load` to default null `triggerSchema` to `{}` when initialising store state
+- [x] 3.4 Update `save` to include `triggerSchema` (already passes through; verify shape is correct)
+- [x] 3.5 Update store unit tests to use `setTriggerSchema` and `Record<string, unknown>` shape
 
 ## 4. API Layer
 

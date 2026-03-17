@@ -35,6 +35,28 @@ import {
 } from "@/lib/stores/pipeline-builder";
 import { defaultConfigs } from "@/lib/pipeline/types";
 
+describe("triggerSchema", () => {
+  beforeEach(resetStore);
+
+  test("initial state is empty object", () => {
+    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual({});
+  });
+
+  test("setTriggerSchema updates schema and marks dirty", () => {
+    const schema = { prompt: "", temperature: 0 };
+    usePipelineBuilderStore.getState().setTriggerSchema(schema);
+    const s = usePipelineBuilderStore.getState();
+    expect(s.triggerSchema).toEqual(schema);
+    expect(s.dirty).toBe(true);
+  });
+
+  test("setTriggerSchema replaces schema entirely", () => {
+    usePipelineBuilderStore.getState().setTriggerSchema({ a: "" });
+    usePipelineBuilderStore.getState().setTriggerSchema({ b: 0 });
+    expect(usePipelineBuilderStore.getState().triggerSchema).toEqual({ b: 0 });
+  });
+});
+
 function resetStore() {
   usePipelineBuilderStore.setState(
     usePipelineBuilderStore.getInitialState(),
@@ -361,7 +383,7 @@ describe("save", () => {
     const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/pipelines/pid-123");
     expect(opts.method).toBe("PUT");
-    expect(JSON.parse(opts.body as string)).toEqual({ nodes, edges, triggerSchema: [] });
+    expect(JSON.parse(opts.body as string)).toEqual({ nodes, edges, triggerSchema: {} });
   });
 
   test("throws on non-ok response and resets saving", async () => {
