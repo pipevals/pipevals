@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
+import { usePipelineBuilderStore, TRIGGER_NODE_ID } from "@/lib/stores/pipeline-builder";
+import { TriggerInputsPanel } from "./trigger-inputs-panel";
 import type {
   ApiRequestConfig,
   AiSdkConfig,
@@ -367,12 +368,8 @@ export function ConfigPanel() {
     [node, updateNodeConfig],
   );
 
-  if (!node) {
-    return (
-      <aside className="flex w-72 shrink-0 items-center justify-center border-l border-border bg-background p-4">
-        <p className="text-xs text-muted-foreground">Select a node to configure</p>
-      </aside>
-    );
+  if (!node || node.id === TRIGGER_NODE_ID) {
+    return <TriggerInputsPanel />;
   }
 
   const config = node.data.config as Record<string, unknown>;

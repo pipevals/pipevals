@@ -28,9 +28,9 @@
 
 ## 5. Trigger Inputs Panel
 
-- [ ] 5.1 Create `components/pipeline/trigger-inputs-panel.tsx` with add/remove/edit controls for trigger schema fields
-- [ ] 5.2 Show the trigger inputs panel in the builder sidebar when no node is selected or when the trigger node is selected (replace/augment the current empty-selection state)
-- [ ] 5.3 Wire panel actions to the store's `addTriggerField`, `removeTriggerField`, `updateTriggerField` actions
+- [x] 5.1 Create `components/pipeline/trigger-inputs-panel.tsx` with add/remove/edit controls for trigger schema fields
+- [x] 5.2 Show the trigger inputs panel in the builder sidebar when no node is selected or when the trigger node is selected (replace/augment the current empty-selection state)
+- [x] 5.3 Wire panel actions to the store's `addTriggerField`, `removeTriggerField`, `updateTriggerField` actions
 
 ## 6. Trigger Payload Run Viewer
 

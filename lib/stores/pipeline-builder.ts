@@ -26,7 +26,7 @@ export interface PipelineNodeData {
 export type PipelineNode = Node<PipelineNodeData, PipelineNodeType>;
 export type PipelineEdge = Edge;
 
-const TRIGGER_NODE_ID = "trigger-source";
+export const TRIGGER_NODE_ID = "trigger-source";
 const TRIGGER_NODE_DEFAULT_POSITION = { x: 50, y: 50 };
 
 export interface PipelineBuilderState {
