@@ -43,7 +43,24 @@ export async function POST(request: Request, { params }: RouteParams) {
     );
   }
 
-  const triggerPayload = parsed.data?.payload ?? {};
+  const triggerPayload =
+    parsed.data?.payload ??
+    (Object.keys(body).length > 0 ? (body as Record<string, unknown>) : {});
+
+  const snapshotEdges = edges
+    .filter(
+      (e) =>
+        !triggerNodeIds.has(e.sourceNodeId) &&
+        !triggerNodeIds.has(e.targetNodeId),
+    )
+    .map((e) => ({
+      id: e.id,
+      sourceNodeId: e.sourceNodeId,
+      sourceHandle: e.sourceHandle,
+      targetNodeId: e.targetNodeId,
+      targetHandle: e.targetHandle,
+      label: e.label,
+    }));
 
   const graphSnapshot = {
     nodes: executableNodes.map((n) => ({
@@ -54,20 +71,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       positionX: n.positionX,
       positionY: n.positionY,
     })),
-    edges: edges
-      .filter(
-        (e) =>
-          !triggerNodeIds.has(e.sourceNodeId) &&
-          !triggerNodeIds.has(e.targetNodeId),
-      )
-      .map((e) => ({
-        id: e.id,
-        sourceNodeId: e.sourceNodeId,
-        sourceHandle: e.sourceHandle,
-        targetNodeId: e.targetNodeId,
-        targetHandle: e.targetHandle,
-        label: e.label,
-      })),
+    edges: snapshotEdges,
   };
 
   const [run] = await db
