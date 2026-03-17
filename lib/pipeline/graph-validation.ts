@@ -67,16 +67,27 @@ export function validateGraph(
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
-  if (nodes.length > MAX_NODES) {
+  // Trigger nodes are UI-only and excluded from execution — skip them entirely.
+  const triggerNodeIds = new Set(
+    nodes.filter((n) => n.type === "trigger").map((n) => n.id),
+  );
+  const executableNodes = nodes.filter((n) => n.type !== "trigger");
+  const executableEdges = edges.filter(
+    (e) =>
+      !triggerNodeIds.has(e.sourceNodeId) &&
+      !triggerNodeIds.has(e.targetNodeId),
+  );
+
+  if (executableNodes.length > MAX_NODES) {
     errors.push({
       code: "MAX_NODES_EXCEEDED",
-      message: `Pipeline exceeds the ${MAX_NODES}-node limit (has ${nodes.length})`,
+      message: `Pipeline exceeds the ${MAX_NODES}-node limit (has ${executableNodes.length})`,
     });
   }
 
-  const g = buildGraph(nodes, edges);
+  const g = buildGraph(executableNodes, executableEdges);
 
-  for (const edge of edges) {
+  for (const edge of executableEdges) {
     if (!g.hasNode(edge.sourceNodeId)) {
       errors.push({
         code: "INVALID_EDGE_SOURCE",
@@ -102,9 +113,9 @@ export function validateGraph(
 
   const sourceNodeIds = new Set(g.sources());
 
-  for (const node of nodes) {
+  for (const node of executableNodes) {
     if (node.type === "condition") {
-      const outEdges = edges.filter((e) => e.sourceNodeId === node.id);
+      const outEdges = executableEdges.filter((e) => e.sourceNodeId === node.id);
       const handles = new Set(
         outEdges.map((e) => e.sourceHandle).filter(Boolean),
       );
