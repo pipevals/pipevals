@@ -27,5 +27,5 @@
 
 ## 6. UI — Slug Preview
 
-- [ ] 6.1 In `components/pipeline/pipeline-list.tsx`: import `slugify` from `lib/utils/slugify`
-- [ ] 6.2 Add a read-only slug preview element below the name input that renders `Slug: {slugify(name)}` when `name` is non-empty, using muted/secondary text styling
+- [x] 6.1 In `components/pipeline/pipeline-list.tsx`: import `slugify` from `lib/slugify`
+- [x] 6.2 Add a read-only slug preview element below the name input that renders `Slug: {slugify(name)}` when `name` is non-empty, using muted/secondary text styling

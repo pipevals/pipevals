@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { PipelineSummary } from "@/lib/api/pipelines";
+import { slugify } from "@/lib/slugify";
 
 interface PipelineListProps {
   initialPipelines: PipelineSummary[];
@@ -124,6 +125,11 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
               placeholder="Pipeline name"
               className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             />
+            {name && (
+              <p className="text-xs text-muted-foreground">
+                Slug: {slugify(name)}
+              </p>
+            )}
             {error && <p className="text-xs text-destructive">{error}</p>}
             <div className="flex gap-2">
               <Button size="sm" onClick={onCreate}>
@@ -185,7 +191,9 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
 
         {/* Pipeline list */}
         {!error && (
-          <div className="flex flex-col border-t border-border">
+          <div
+            className={`flex flex-col ${filtered.length > 0 ? "border-t border-border" : ""}`}
+          >
             {filtered.length === 0 && (
               <div className="flex flex-col items-center gap-2 py-16">
                 <p className="text-sm text-muted-foreground">
