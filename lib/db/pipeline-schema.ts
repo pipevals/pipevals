@@ -27,6 +27,7 @@ export const pipelines = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: text("name").notNull(),
+    slug: text("slug").notNull(),
     description: text("description"),
     organizationId: text("organization_id")
       .notNull()
@@ -41,8 +42,8 @@ export const pipelines = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("pipeline_name_org_uidx").on(
-      table.name,
+    uniqueIndex("pipeline_slug_org_uidx").on(
+      table.slug,
       table.organizationId,
     ),
     index("pipeline_org_idx").on(table.organizationId),

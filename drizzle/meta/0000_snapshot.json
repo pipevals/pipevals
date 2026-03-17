@@ -1051,6 +1051,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "description": {
           "name": "description",
           "type": "text",
@@ -1085,11 +1091,11 @@
         }
       },
       "indexes": {
-        "pipeline_name_org_uidx": {
-          "name": "pipeline_name_org_uidx",
+        "pipeline_slug_org_uidx": {
+          "name": "pipeline_slug_org_uidx",
           "columns": [
             {
-              "expression": "name",
+              "expression": "slug",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

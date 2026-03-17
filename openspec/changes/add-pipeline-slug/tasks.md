@@ -1,13 +1,13 @@
 ## 1. Database Schema
 
-- [ ] 1.1 Add `slug` column (`text().notNull()`) to the `pipelines` table in `lib/db/pipeline-schema.ts`
-- [ ] 1.2 Replace `uniqueIndex("pipeline_name_org_uidx").on(table.name, table.organizationId)` with `uniqueIndex("pipeline_slug_org_uidx").on(table.slug, table.organizationId)` in `lib/db/pipeline-schema.ts`
+- [x] 1.1 Add `slug` column (`text().notNull()`) to the `pipelines` table in `lib/db/pipeline-schema.ts`
+- [x] 1.2 Replace `uniqueIndex("pipeline_name_org_uidx").on(table.name, table.organizationId)` with `uniqueIndex("pipeline_slug_org_uidx").on(table.slug, table.organizationId)` in `lib/db/pipeline-schema.ts`
 
 ## 2. Migration Merge
 
-- [ ] 2.1 Edit `drizzle/0000_fair_toxin.sql`: add `"slug" text NOT NULL` to the `pipeline` CREATE TABLE block
-- [ ] 2.2 Edit `drizzle/0000_fair_toxin.sql`: replace `CREATE UNIQUE INDEX "pipeline_name_org_uidx" ON "pipeline" USING btree ("name","organization_id")` with `CREATE UNIQUE INDEX "pipeline_slug_org_uidx" ON "pipeline" USING btree ("slug","organization_id")`
-- [ ] 2.3 Update `drizzle/meta/0000_snapshot.json`: add `slug` column entry to the pipeline table and replace the `pipeline_name_org_uidx` unique index with `pipeline_slug_org_uidx`
+- [x] 2.1 Edit `drizzle/0000_fair_toxin.sql`: add `"slug" text NOT NULL` to the `pipeline` CREATE TABLE block
+- [x] 2.2 Edit `drizzle/0000_fair_toxin.sql`: replace `CREATE UNIQUE INDEX "pipeline_name_org_uidx" ON "pipeline" USING btree ("name","organization_id")` with `CREATE UNIQUE INDEX "pipeline_slug_org_uidx" ON "pipeline" USING btree ("slug","organization_id")`
+- [x] 2.3 Update `drizzle/meta/0000_snapshot.json`: add `slug` column entry to the pipeline table and replace the `pipeline_name_org_uidx` unique index with `pipeline_slug_org_uidx`
 
 ## 3. Slug Utility
 

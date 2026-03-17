@@ -116,6 +116,7 @@ CREATE TABLE "pipeline_run" (
 CREATE TABLE "pipeline" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
+	"slug" text NOT NULL,
 	"description" text,
 	"organization_id" text NOT NULL,
 	"created_by" text NOT NULL,
@@ -164,7 +165,7 @@ CREATE INDEX "pipeline_edge_target_idx" ON "pipeline_edge" USING btree ("target_
 CREATE INDEX "pipeline_node_pipeline_idx" ON "pipeline_node" USING btree ("pipeline_id");--> statement-breakpoint
 CREATE INDEX "pipeline_run_pipeline_idx" ON "pipeline_run" USING btree ("pipeline_id");--> statement-breakpoint
 CREATE INDEX "pipeline_run_status_idx" ON "pipeline_run" USING btree ("status");--> statement-breakpoint
-CREATE UNIQUE INDEX "pipeline_name_org_uidx" ON "pipeline" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "pipeline_slug_org_uidx" ON "pipeline" USING btree ("slug","organization_id");--> statement-breakpoint
 CREATE INDEX "pipeline_org_idx" ON "pipeline" USING btree ("organization_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "step_result_run_node_uidx" ON "step_result" USING btree ("run_id","node_id");--> statement-breakpoint
 CREATE INDEX "step_result_run_idx" ON "step_result" USING btree ("run_id");
