@@ -15,6 +15,7 @@ import type {
   NodeConfig,
 } from "@/lib/pipeline/types";
 import { defaultConfigs } from "@/lib/pipeline/types";
+import { autoWireInputs } from "@/lib/pipeline/auto-wire";
 
 export interface PipelineNodeData {
   label: string | null;
@@ -163,11 +164,39 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         return;
       }
 
-      set((state) => ({
-        edges: [...state.edges, edge],
-        dirty: true,
-        saveError: null,
-      }));
+      set((state) => {
+        const sourceNode = state.nodes.find((n) => n.id === connection.source);
+        const targetNode = state.nodes.find((n) => n.id === connection.target);
+
+        if (!sourceNode || !targetNode) {
+          return { edges: [...state.edges, edge], dirty: true, saveError: null };
+        }
+
+        const patch = autoWireInputs(
+          sourceNode.id,
+          sourceNode.type ?? "",
+          sourceNode.data.label,
+          sourceNode.data.config,
+          targetNode.type ?? "",
+          targetNode.data.config,
+          state.triggerSchema,
+        );
+
+        if (!patch) {
+          return { edges: [...state.edges, edge], dirty: true, saveError: null };
+        }
+
+        return {
+          edges: [...state.edges, edge],
+          nodes: state.nodes.map((n) =>
+            n.id === targetNode.id
+              ? { ...n, data: { ...n.data, config: patch.config } }
+              : n,
+          ),
+          dirty: true,
+          saveError: null,
+        };
+      });
     },
 
     setNodes: (nodes) => set({ nodes }),

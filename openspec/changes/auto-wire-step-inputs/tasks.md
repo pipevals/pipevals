@@ -9,10 +9,10 @@
 
 ## 2. Store Integration
 
-- [ ] 2.1 In `lib/stores/pipeline-builder.ts`, import `autoWireInputs` from the new module
-- [ ] 2.2 Inside `onConnect`, after calling `addEdge`, look up source and target nodes from current state
-- [ ] 2.3 Call `autoWireInputs` with the resolved nodes and current `triggerSchema`
-- [ ] 2.4 If a patch is returned, call `updateNodeConfig` for the target node with the merged config
+- [x] 2.1 In `lib/stores/pipeline-builder.ts`, import `autoWireInputs` from the new module
+- [x] 2.2 Inside `onConnect`, after calling `addEdge`, look up source and target nodes from current state
+- [x] 2.3 Call `autoWireInputs` with the resolved nodes and current `triggerSchema`
+- [x] 2.4 If a patch is returned, call `updateNodeConfig` for the target node with the merged config
 
 ## 3. Tests
 
