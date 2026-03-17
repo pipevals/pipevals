@@ -1,11 +1,11 @@
 ## 1. Auto-Wire Logic
 
-- [ ] 1.1 Create `lib/pipeline/auto-wire.ts` with `PRIMARY_OUTPUT` lookup table mapping each `StepType` (and `"trigger"`) to its primary output key string
-- [ ] 1.2 Add `PRIMARY_INPUT_FIELD` lookup table mapping each `StepType` to the config field name that should be auto-populated (null for sandbox and condition)
-- [ ] 1.3 Implement `autoWireInputs(sourceNode, targetNode, triggerSchema)` — returns a partial config patch or null if nothing to wire
-- [ ] 1.4 Handle trigger node source: use `trigger.<firstSchemaKey>` when `triggerSchema` has keys, else bare `trigger`
-- [ ] 1.5 Handle transform target as special case: add a new mapping entry `{ "": "steps.<label>.<output>" }` to `mapping` object
-- [ ] 1.6 Ensure all string fields only populate when currently `""` or `undefined`
+- [x] 1.1 Create `lib/pipeline/auto-wire.ts` with `PRIMARY_OUTPUT` lookup table mapping each `StepType` (and `"trigger"`) to its primary output key string
+- [x] 1.2 Add `PRIMARY_INPUT_FIELD` lookup table mapping each `StepType` to the config field name that should be auto-populated (null for sandbox and condition)
+- [x] 1.3 Implement `autoWireInputs(sourceNode, targetNode, triggerSchema)` — returns a partial config patch or null if nothing to wire
+- [x] 1.4 Handle trigger node source: use `trigger.<firstSchemaKey>` when `triggerSchema` has keys, else bare `trigger`
+- [x] 1.5 Handle transform target as special case: add a new mapping entry `{ "": "steps.<label>.<output>" }` to `mapping` object
+- [x] 1.6 Ensure all string fields only populate when currently `""` or `undefined`
 
 ## 2. Store Integration
 
