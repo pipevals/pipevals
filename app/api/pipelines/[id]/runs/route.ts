@@ -22,7 +22,12 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const { nodes, edges } = result.pipeline;
 
-  if (nodes.length === 0) {
+  const executableNodes = nodes.filter((n) => n.type !== "trigger");
+  const triggerNodeIds = new Set(
+    nodes.filter((n) => n.type === "trigger").map((n) => n.id),
+  );
+
+  if (executableNodes.length === 0) {
     return NextResponse.json(
       { error: "Pipeline has no nodes to execute" },
       { status: 400 },
@@ -41,7 +46,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   const triggerPayload = parsed.data?.payload ?? {};
 
   const graphSnapshot = {
-    nodes: nodes.map((n) => ({
+    nodes: executableNodes.map((n) => ({
       id: n.id,
       type: n.type,
       label: n.label,
@@ -49,14 +54,20 @@ export async function POST(request: Request, { params }: RouteParams) {
       positionX: n.positionX,
       positionY: n.positionY,
     })),
-    edges: edges.map((e) => ({
-      id: e.id,
-      sourceNodeId: e.sourceNodeId,
-      sourceHandle: e.sourceHandle,
-      targetNodeId: e.targetNodeId,
-      targetHandle: e.targetHandle,
-      label: e.label,
-    })),
+    edges: edges
+      .filter(
+        (e) =>
+          !triggerNodeIds.has(e.sourceNodeId) &&
+          !triggerNodeIds.has(e.targetNodeId),
+      )
+      .map((e) => ({
+        id: e.id,
+        sourceNodeId: e.sourceNodeId,
+        sourceHandle: e.sourceHandle,
+        targetNodeId: e.targetNodeId,
+        targetHandle: e.targetHandle,
+        label: e.label,
+      })),
   };
 
   const [run] = await db
