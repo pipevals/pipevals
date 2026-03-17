@@ -1,6 +1,15 @@
-import type { stepTypeEnum } from "@/lib/db/pipeline-schema";
+import type {
+  stepTypeEnum,
+  pipelineNodeTypeEnum,
+} from "@/lib/db/pipeline-schema";
 
 export type StepType = (typeof stepTypeEnum)[number];
+export type PipelineNodeType = (typeof pipelineNodeTypeEnum)[number];
+
+export interface TriggerSchemaField {
+  name: string;
+  description?: string;
+}
 
 export interface ApiRequestConfig {
   type: "api_request";
