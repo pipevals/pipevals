@@ -121,6 +121,17 @@ The system MUST display a read-only slug preview below the name input in the cre
 - **WHEN** the pipeline name input is empty
 - **THEN** no slug preview is shown
 
+### Requirement: Trigger node wiring in builder
+The pipeline builder canvas SHALL prevent users from connecting edges that originate from a step node to the trigger node's input (the trigger node has no input handle). The trigger node MUST only have output handles. When a user successfully wires a trigger handle to a step input, the config panel for the target step MUST reflect the updated value (`trigger.{fieldName}`) immediately.
+
+#### Scenario: Trigger node has no input handle
+- **WHEN** a user attempts to draw an edge from a step node's output to the trigger node
+- **THEN** the connection is rejected (no input handle is available on the trigger node)
+
+#### Scenario: Config panel updates after wiring
+- **WHEN** a user wires the trigger "prompt" handle to an AI SDK node's prompt template input
+- **THEN** opening the AI SDK node's config panel shows `"trigger.prompt"` in the prompt template field
+
 ### Requirement: Trigger inputs panel
 The system SHALL render a Trigger Inputs panel in the pipeline builder sidebar when no step node is selected or when the trigger node is selected. The panel MUST display a `@visual-json/react` `JsonEditor` bound to the pipeline's `triggerSchema` (`Record<string, unknown>`). Changes in the editor MUST immediately update `triggerSchema` in the store (marking the pipeline dirty). The panel MUST also display a collapsible "Import from JSON" section for pasting a sample payload. The previous flat field-list UI (add-by-name inputs, `FieldRow` component, description field) SHALL be removed.
 
