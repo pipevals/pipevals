@@ -37,7 +37,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   return NextResponse.json({
     ...pipeline,
-    triggerSchema: pipeline.triggerSchema ?? [],
+    triggerSchema: pipeline.triggerSchema ?? {},
     nodes,
     edges,
   });
@@ -70,15 +70,10 @@ const edgeSchema = z.object({
   label: z.string().nullable().optional(),
 });
 
-const triggerSchemaFieldSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-});
-
 const updatePipelineSchema = z.object({
   name: z.string().trim().min(1).optional(),
   description: z.string().nullable().optional(),
-  triggerSchema: z.array(triggerSchemaFieldSchema).optional(),
+  triggerSchema: z.record(z.string(), z.unknown()).optional(),
   nodes: z.array(nodeSchema),
   edges: z.array(edgeSchema),
 });

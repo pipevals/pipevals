@@ -20,9 +20,9 @@
 
 ## 4. API Layer
 
-- [ ] 4.1 Update `GET /api/pipelines/:id` in `app/api/pipelines/[id]/route.ts`: default null `trigger_schema` to `{}` in the response
-- [ ] 4.2 Update `PUT /api/pipelines/:id` Zod schema: change `triggerSchema` field from `TriggerSchemaField[]` to `z.record(z.string(), z.unknown())` (optional); add `.refine` to reject arrays
-- [ ] 4.3 Update API unit tests: GET returns `triggerSchema: {}` for null DB values; PUT rejects array `triggerSchema`
+- [x] 4.1 Update `GET /api/pipelines/:id` in `app/api/pipelines/[id]/route.ts`: default null `trigger_schema` to `{}` in the response
+- [x] 4.2 Update `PUT /api/pipelines/:id` Zod schema: change `triggerSchema` field from `TriggerSchemaField[]` to `z.record(z.string(), z.unknown())` (optional); add `.refine` to reject arrays
+- [x] 4.3 Update API unit tests: GET returns `triggerSchema: {}` for null DB values; PUT rejects array `triggerSchema`
 
 ## 5. Trigger Node
 

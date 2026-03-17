@@ -119,7 +119,7 @@ describe("pipeline CRUD (PGlite integration)", () => {
   });
 
   describe("GET /api/pipelines/:id — triggerSchema", () => {
-    test("returns triggerSchema defaulting to []", async () => {
+    test("returns triggerSchema defaulting to {}", async () => {
       const pipelineId = await seedPipeline();
 
       const res = await getPipeline(
@@ -128,14 +128,14 @@ describe("pipeline CRUD (PGlite integration)", () => {
       );
       expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.triggerSchema).toEqual([]);
+      expect(data.triggerSchema).toEqual({});
     });
   });
 
   describe("PUT /api/pipelines/:id — triggerSchema", () => {
-    test("persists triggerSchema when provided", async () => {
+    test("persists triggerSchema object when provided", async () => {
       const pipelineId = await seedPipeline();
-      const schema = [{ name: "prompt", description: "The prompt" }, { name: "model" }];
+      const schema = { prompt: "", temperature: 0 };
 
       await updatePipeline(
         putJson({ nodes: [], edges: [], triggerSchema: schema }),
@@ -147,9 +147,19 @@ describe("pipeline CRUD (PGlite integration)", () => {
       expect(data.triggerSchema).toEqual(schema);
     });
 
+    test("rejects array triggerSchema", async () => {
+      const pipelineId = await seedPipeline();
+
+      const res = await updatePipeline(
+        putJson({ nodes: [], edges: [], triggerSchema: [{ name: "prompt" }] }),
+        makeParams(pipelineId),
+      );
+      expect(res.status).toBe(400);
+    });
+
     test("omitting triggerSchema preserves existing schema", async () => {
       const pipelineId = await seedPipeline();
-      const schema = [{ name: "input" }];
+      const schema = { input: "" };
 
       await updatePipeline(
         putJson({ nodes: [], edges: [], triggerSchema: schema }),
