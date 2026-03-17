@@ -85,7 +85,7 @@ describe("run endpoints (PGlite integration)", () => {
       const req = new Request("http://localhost/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload: { prompt: "explain quantum computing" } }),
+        body: JSON.stringify({ prompt: "explain quantum computing" }),
       });
 
       const res = await triggerRun(req, runsParams(pipelineId));
@@ -115,7 +115,7 @@ describe("run endpoints (PGlite integration)", () => {
       const req = new Request("http://localhost/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload: { prompt: "hello" } }),
+        body: JSON.stringify({ prompt: "hello" }),
       });
 
       const res = await triggerRun(req, runsParams(pipelineId));
@@ -167,7 +167,7 @@ describe("run endpoints (PGlite integration)", () => {
         const req = new Request("http://localhost/runs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ payload: { i } }),
+          body: JSON.stringify({ i }),
         });
         await triggerRun(req, runsParams(pipelineId));
       }
@@ -195,7 +195,7 @@ describe("run endpoints (PGlite integration)", () => {
       const triggerReq = new Request("http://localhost/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload: { question: "test" } }),
+        body: JSON.stringify({ question: "test" }),
       });
       const triggerRes = await triggerRun(triggerReq, runsParams(pipelineId));
       const { runId } = await triggerRes.json();

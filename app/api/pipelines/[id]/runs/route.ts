@@ -9,11 +9,7 @@ import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-const triggerSchema = z
-  .object({
-    payload: z.record(z.string(), z.unknown()).optional(),
-  })
-  .optional();
+const triggerSchema = z.record(z.string(), z.unknown()).optional();
 
 export async function POST(request: Request, { params }: RouteParams) {
   const { id } = await params;
@@ -43,9 +39,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     );
   }
 
-  const triggerPayload =
-    parsed.data?.payload ??
-    (Object.keys(body).length > 0 ? (body as Record<string, unknown>) : {});
+  const triggerPayload = parsed.data ?? {};
 
   const snapshotEdges = edges
     .filter(

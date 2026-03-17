@@ -1,6 +1,6 @@
 ## Why
 
-The pipeline run API already accepts a `triggerPayload` field and stores it in the database, but the UI trigger button sends a hardcoded `{ payload: { source: "ui" } }` — there is no way for a user to provide runtime input when manually triggering a pipeline run from the UI.
+The pipeline run API already accepts a `triggerPayload` field and stores it in the database, but the UI trigger button sends a hardcoded `{ "source": "ui" }` — there is no way for a user to provide runtime input when manually triggering a pipeline run from the UI.
 
 ## What Changes
 
@@ -17,7 +17,7 @@ The pipeline run API already accepts a `triggerPayload` field and stores it in t
 
 ### Modified Capabilities
 
-- `pipeline-api`: The UI now sends the full user-supplied payload object (merged with `{ payload: { source: "ui" } }`) to the existing `POST /api/pipelines/[id]/runs` endpoint.
+- `pipeline-api`: The UI now sends the full user-supplied payload object (merged with `{ "source": "ui" }`) as the request body to `POST /api/pipelines/[id]/runs`.
 
 ## Impact
 

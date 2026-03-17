@@ -1,13 +1,13 @@
 ## Context
 
-The pipeline run API (`POST /api/pipelines/:id/runs`) already accepts an optional `payload` field and stores it as `trigger_payload` (JSONB) in the database. Pipeline steps can reference this payload via template expressions (e.g., `{{ trigger.prompt }}`). However, the UI "Trigger" button in `run-list-page-content.tsx` always sends `{ payload: { source: "ui" } }` — users have no way to supply runtime values when triggering a run manually.
+The pipeline run API (`POST /api/pipelines/:id/runs`) already accepts an optional `payload` field and stores it as `trigger_payload` (JSONB) in the database. Pipeline steps can reference this payload via template expressions (e.g., `{{ trigger.prompt }}`). However, the UI "Trigger" button in `run-list-page-content.tsx` always sends `{ "source": "ui" }` — users have no way to supply runtime values when triggering a run manually.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
 - Add a UI dialog that lets users enter a JSON payload before triggering a run.
-- Merge the user-supplied payload with `{ payload: { source: "ui" } }` before sending to the API.
+- Merge the user-supplied payload with `{ "source": "ui" }` before sending to the API.
 - Validate JSON syntax in the dialog before enabling the submit button.
 - Keep the fast "Trigger" button as the primary CTA (no payload, immediate fire).
 
@@ -27,7 +27,7 @@ _Alternative considered_: An inline expandable panel below the trigger button. R
 
 ### 2. Two trigger buttons
 
-Keep the existing "Trigger" button (sends `{ payload: { source: "ui" } }` immediately) and add a secondary "Trigger with payload…" button that opens the dialog. This preserves the fast-trigger flow for users who don't need custom payloads.
+Keep the existing "Trigger" button (sends `{ "source": "ui" }` immediately) and add a secondary "Trigger with payload…" button that opens the dialog. This preserves the fast-trigger flow for users who don't need custom payloads.
 
 _Alternative considered_: Replace the single button with a split-button (primary action + chevron dropdown). More compact but adds complexity and is unfamiliar in the current design language.
 
@@ -51,4 +51,4 @@ No migration required. All backend infrastructure is already in place. The chang
 ## Open Questions
 
 - Should the textarea have a minimum height or auto-grow? (Lean toward fixed height with scroll for simplicity.)
-- Should `{ payload: { source: "ui" } }` be visible in the pre-filled payload or merged silently? (Lean toward silent merge to keep the UX clean.)
+- Should `{ "source": "ui" }` be visible in the pre-filled payload or merged silently? (Lean toward silent merge to keep the UX clean.)

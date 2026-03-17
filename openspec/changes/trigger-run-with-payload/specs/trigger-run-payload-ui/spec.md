@@ -2,7 +2,7 @@
 
 ### Requirement: Trigger with payload dialog
 
-The run list page SHALL provide a secondary "Trigger with payload…" button that opens a dialog containing a JSON textarea. The dialog MUST pre-fill the textarea with `{}`. The submit button MUST be disabled when the textarea content is not valid JSON. On submit, the system MUST merge the parsed payload with `{ payload: { source: "ui" } }` and call `POST /api/pipelines/:id/runs` with the combined payload. The dialog MUST close and the run list MUST refresh after a successful trigger.
+The run list page SHALL provide a secondary "Trigger with payload…" button that opens a dialog containing a JSON textarea. The dialog MUST pre-fill the textarea with `{}`. The submit button MUST be disabled when the textarea content is not valid JSON. On submit, the system MUST merge the parsed payload with `{ "source": "ui" }` and call `POST /api/pipelines/:id/runs` with the combined object as the request body. The dialog MUST close and the run list MUST refresh after a successful trigger.
 
 #### Scenario: Open dialog
 
@@ -12,12 +12,12 @@ The run list page SHALL provide a secondary "Trigger with payload…" button tha
 #### Scenario: Submit valid payload
 
 - **WHEN** the user enters valid JSON (e.g., `{ "prompt": "hello" }`) and clicks "Trigger"
-- **THEN** the system calls the API with `{ "payload": { "prompt": "hello", "source": "ui" } }`, closes the dialog, and refreshes the run list
+- **THEN** the system calls the API with body `{ "prompt": "hello", "source": "ui" }`, closes the dialog, and refreshes the run list
 
 #### Scenario: Submit empty object
 
 - **WHEN** the user leaves the textarea as `{}` and clicks "Trigger"
-- **THEN** the system calls the API with `{ "payload": { "source": "ui" } }` and the run is created successfully
+- **THEN** the system calls the API with body `{ "source": "ui" }` and the run is created successfully
 
 #### Scenario: Invalid JSON disables submit
 
@@ -36,9 +36,9 @@ The run list page SHALL provide a secondary "Trigger with payload…" button tha
 
 ### Requirement: Preserve fast-trigger button
 
-The run list page SHALL retain the existing "Trigger" button that immediately fires a run with `{ payload: { source: "ui" } }` as the payload, with no dialog. Both buttons MUST be visible simultaneously.
+The run list page SHALL retain the existing "Trigger" button that immediately fires a run with `{ "source": "ui" }` as the request body, with no dialog. Both buttons MUST be visible simultaneously.
 
 #### Scenario: Fast trigger still works
 
 - **WHEN** the user clicks the original "Trigger" button
-- **THEN** the run is triggered immediately with `{ payload: { source: "ui" } }`, without opening any dialog
+- **THEN** the run is triggered immediately with body `{ "source": "ui" }`, without opening any dialog
