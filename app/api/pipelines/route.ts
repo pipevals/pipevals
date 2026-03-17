@@ -5,6 +5,7 @@ import { pipelines } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
 import { getPipelinesForOrg } from "@/lib/api/pipelines";
 import { eq, and } from "drizzle-orm";
+import { slugify } from "@/lib/slugify";
 
 export async function GET() {
   const authResult = await requireAuth();
@@ -32,30 +33,29 @@ export async function POST(request: Request) {
     );
   }
   const { name, description } = parsed.data;
+  const baseSlug = slugify(name);
 
-  const existing = await db.query.pipelines.findFirst({
-    where: and(
-      eq(pipelines.name, name.trim()),
-      eq(pipelines.organizationId, organizationId),
-    ),
-  });
+  try {
+    const [pipeline] = await db
+      .insert(pipelines)
+      .values({
+        name: name.trim(),
+        slug: baseSlug,
+        description: description ?? null,
+        organizationId,
+        createdBy: userId,
+      })
+      .returning();
 
-  if (existing) {
-    return NextResponse.json(
-      { error: `Pipeline "${name}" already exists in this organization` },
-      { status: 409 },
-    );
+    return NextResponse.json(pipeline, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("pipeline_slug_org_uidx")) {
+      return NextResponse.json(
+        { error: `A pipeline with this slug already exists in this organization` },
+        { status: 409 },
+      );
+    }
+    throw err;
   }
-
-  const [pipeline] = await db
-    .insert(pipelines)
-    .values({
-      name: name.trim(),
-      description: description ?? null,
-      organizationId,
-      createdBy: userId,
-    })
-    .returning();
-
-  return NextResponse.json(pipeline, { status: 201 });
 }

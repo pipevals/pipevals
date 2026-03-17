@@ -11,19 +11,19 @@
 
 ## 3. Slug Utility
 
-- [ ] 3.1 Create `lib/utils/slugify.ts` with a `slugify(name: string): string` function that lowercases, replaces non-alphanumeric runs with hyphens, strips leading/trailing hyphens, and falls back to a UUID segment for empty results
+- [x] 3.1 Create `lib/slugify.ts` with a `slugify(name: string): string` function that lowercases, replaces non-alphanumeric runs with hyphens, strips leading/trailing hyphens, and falls back to a UUID segment for empty results
 
 ## 4. API — Create Pipeline
 
-- [ ] 4.1 In `app/api/pipelines/route.ts` POST handler: after trimming the name, call `slugify(name)` to produce `baseSlug`
-- [ ] 4.2 Query the org's existing slugs to find collisions (`LIKE '{baseSlug}' OR LIKE '{baseSlug}-%'`), then compute the next available slug (e.g., `"eval"` → `"eval-2"` → `"eval-3"`)
-- [ ] 4.3 Remove the existing duplicate-name check (the unique index on slug replaces this concern)
-- [ ] 4.4 Include `slug` in the insert payload and in the 201 response body
+- [x] 4.1 In `app/api/pipelines/route.ts` POST handler: after trimming the name, call `slugify(name)` to produce `baseSlug`
+- [x] 4.2 Let DB unique constraint handle slug collisions — catch `pipeline_slug_org_uidx` violation and return 409
+- [x] 4.3 Remove the existing duplicate-name check (the unique index on slug replaces this concern)
+- [x] 4.4 Include `slug` in the insert payload and in the 201 response body
 
 ## 5. API — Get & List Pipeline Responses
 
-- [ ] 5.1 In `app/api/pipelines/route.ts` GET handler: ensure `slug` is selected and included in the list response
-- [ ] 5.2 In `app/api/pipelines/[id]/route.ts` GET handler: ensure `slug` is selected and included in the single-pipeline response
+- [x] 5.1 In `app/api/pipelines/route.ts` GET handler: ensure `slug` is selected and included in the list response
+- [x] 5.2 In `app/api/pipelines/[id]/route.ts` GET handler: ensure `slug` is selected and included in the single-pipeline response
 
 ## 6. UI — Slug Preview
 
