@@ -9,7 +9,12 @@ import {
   type OnConnect,
   type Connection,
 } from "@xyflow/react";
-import type { StepType, NodeConfig } from "@/lib/pipeline/types";
+import type {
+  StepType,
+  PipelineNodeType,
+  NodeConfig,
+  TriggerSchemaField,
+} from "@/lib/pipeline/types";
 import { defaultConfigs } from "@/lib/pipeline/types";
 
 export interface PipelineNodeData {
@@ -18,8 +23,11 @@ export interface PipelineNodeData {
   [key: string]: unknown;
 }
 
-export type PipelineNode = Node<PipelineNodeData, StepType>;
+export type PipelineNode = Node<PipelineNodeData, PipelineNodeType>;
 export type PipelineEdge = Edge;
+
+const TRIGGER_NODE_ID = "trigger-source";
+const TRIGGER_NODE_DEFAULT_POSITION = { x: 50, y: 50 };
 
 export interface PipelineBuilderState {
   pipelineId: string | null;
@@ -31,6 +39,7 @@ export interface PipelineBuilderState {
   dirty: boolean;
   saving: boolean;
   loading: boolean;
+  triggerSchema: TriggerSchemaField[];
 
   // xyflow event handlers
   onNodesChange: OnNodesChange<PipelineNode>;
@@ -47,6 +56,12 @@ export interface PipelineBuilderState {
   deleteSelected: () => void;
   markClean: () => void;
 
+  // trigger schema actions
+  addTriggerField: (field: TriggerSchemaField) => void;
+  removeTriggerField: (name: string) => void;
+  updateTriggerField: (name: string, updates: Partial<TriggerSchemaField>) => void;
+  reorderTriggerFields: (fields: TriggerSchemaField[]) => void;
+
   // persistence
   load: (pipelineId: string) => Promise<void>;
   save: () => Promise<void>;
@@ -61,6 +76,16 @@ const STEP_LABELS: Record<StepType, string> = {
   metric_capture: "Metric Capture",
 };
 
+function makeTriggerNode(position = TRIGGER_NODE_DEFAULT_POSITION): PipelineNode {
+  return {
+    id: TRIGGER_NODE_ID,
+    type: "trigger",
+    position,
+    data: { label: "Trigger", config: {} },
+    deletable: false,
+  };
+}
+
 export const usePipelineBuilderStore = create<PipelineBuilderState>(
   (set, get) => ({
     pipelineId: null,
@@ -72,11 +97,16 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     dirty: false,
     saving: false,
     loading: false,
+    triggerSchema: [],
 
     onNodesChange: (changes) => {
+      // Prevent trigger node from being removed via keyboard delete / xyflow remove changes
+      const safeChanges = changes.filter(
+        (c) => !(c.type === "remove" && c.id === TRIGGER_NODE_ID),
+      );
       set((state) => ({
-        nodes: applyNodeChanges(changes, state.nodes),
-        dirty: true,
+        nodes: applyNodeChanges(safeChanges, state.nodes),
+        dirty: state.dirty || safeChanges.length > 0,
       }));
     },
 
@@ -157,7 +187,8 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         return;
       }
 
-      if (!selectedNodeId) return;
+      // Prevent trigger node deletion
+      if (!selectedNodeId || selectedNodeId === TRIGGER_NODE_ID) return;
 
       set({
         nodes: nodes.filter((n) => n.id !== selectedNodeId),
@@ -171,18 +202,53 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     markClean: () => set({ dirty: false }),
 
+    addTriggerField: (field) => {
+      set((state) => ({
+        triggerSchema: [...state.triggerSchema, field],
+        dirty: true,
+      }));
+    },
+
+    removeTriggerField: (name) => {
+      set((state) => ({
+        triggerSchema: state.triggerSchema.filter((f) => f.name !== name),
+        dirty: true,
+      }));
+    },
+
+    updateTriggerField: (name, updates) => {
+      set((state) => ({
+        triggerSchema: state.triggerSchema.map((f) =>
+          f.name === name ? { ...f, ...updates } : f,
+        ),
+        dirty: true,
+      }));
+    },
+
+    reorderTriggerFields: (fields) => {
+      set({ triggerSchema: fields, dirty: true });
+    },
+
     load: async (pipelineId) => {
       set({ loading: true });
       try {
         const res = await fetch(`/api/pipelines/${pipelineId}`);
         if (!res.ok) throw new Error("Failed to load pipeline");
         const data = await res.json();
+
+        const loadedNodes = data.nodes as PipelineNode[];
+        const hasTriggerNode = loadedNodes.some((n) => n.type === "trigger");
+        const nodes = hasTriggerNode
+          ? loadedNodes
+          : [makeTriggerNode(), ...loadedNodes];
+
         set({
           pipelineId,
           pipelineName: data.name ?? null,
           pipelineSlug: data.slug ?? null,
-          nodes: data.nodes as PipelineNode[],
+          nodes,
           edges: data.edges as PipelineEdge[],
+          triggerSchema: (data.triggerSchema as TriggerSchemaField[]) ?? [],
           selectedNodeId: null,
           dirty: false,
         });
@@ -192,7 +258,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     },
 
     save: async () => {
-      const { pipelineId, nodes, edges } = get();
+      const { pipelineId, nodes, edges, triggerSchema } = get();
       if (!pipelineId) return;
 
       set({ saving: true });
@@ -200,7 +266,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         const res = await fetch(`/api/pipelines/${pipelineId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nodes, edges }),
+          body: JSON.stringify({ nodes, edges, triggerSchema }),
         });
         if (!res.ok) throw new Error("Failed to save pipeline");
         set({ dirty: false });

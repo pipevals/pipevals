@@ -13,11 +13,11 @@
 
 ## 3. Pipeline Builder Store
 
-- [ ] 3.1 Add `triggerSchema: TriggerSchemaField[]` to the pipeline builder Zustand store state in `lib/stores/pipeline-builder.ts`
-- [ ] 3.2 Add store actions: `addTriggerField`, `removeTriggerField`, `updateTriggerField`, `reorderTriggerFields`
-- [ ] 3.3 On pipeline load, initialise `triggerSchema` from the API response; auto-create a trigger node if none exists in the loaded nodes
-- [ ] 3.4 On save, include `triggerSchema` in the PUT request body alongside nodes and edges
-- [ ] 3.5 Suppress delete for nodes with type `"trigger"` in the xyflow `onNodesDelete` handler
+- [x] 3.1 Add `triggerSchema: TriggerSchemaField[]` to the pipeline builder Zustand store state in `lib/stores/pipeline-builder.ts`
+- [x] 3.2 Add store actions: `addTriggerField`, `removeTriggerField`, `updateTriggerField`, `reorderTriggerFields`
+- [x] 3.3 On pipeline load, initialise `triggerSchema` from the API response; auto-create a trigger node if none exists in the loaded nodes
+- [x] 3.4 On save, include `triggerSchema` in the PUT request body alongside nodes and edges
+- [x] 3.5 Suppress delete for nodes with type `"trigger"` in the xyflow `onNodesDelete` handler
 
 ## 4. Trigger Node Component
 
