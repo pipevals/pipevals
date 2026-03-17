@@ -73,3 +73,18 @@ The system SHALL allow users to select and delete nodes and edges from the canva
 #### Scenario: Delete an edge
 - **WHEN** a user selects an edge and presses delete
 - **THEN** the edge is removed from the canvas
+
+### Requirement: Slug preview in create pipeline form
+The system MUST display a read-only slug preview below the name input in the create pipeline inline form. The preview MUST update in real-time as the user types the pipeline name, showing the slugified value that will be assigned. The preview MUST use muted/secondary text styling to distinguish it from the editable name field.
+
+#### Scenario: Slug preview updates as user types
+- **WHEN** a user types `"My Evaluation"` into the pipeline name input
+- **THEN** a read-only preview shows `"Slug: my-evaluation"` below the input field
+
+#### Scenario: Slug preview for special characters
+- **WHEN** a user types `"GPT-4o Test!!"` into the pipeline name input
+- **THEN** the preview shows `"Slug: gpt-4o-test"`
+
+#### Scenario: Empty name shows no slug preview
+- **WHEN** the pipeline name input is empty
+- **THEN** no slug preview is shown
