@@ -18,6 +18,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     ),
     with: {
       stepResults: true,
+      pipeline: { columns: { triggerSchema: true } },
     },
   });
 
@@ -25,5 +26,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }
 
-  return NextResponse.json(run);
+  const { pipeline, ...runData } = run;
+
+  return NextResponse.json({
+    ...runData,
+    triggerSchema: pipeline?.triggerSchema ?? [],
+  });
 }

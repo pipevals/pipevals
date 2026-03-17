@@ -34,8 +34,8 @@
 
 ## 6. Trigger Payload Run Viewer
 
-- [ ] 6.1 Add a "Trigger" panel to the run viewer that displays the received `triggerPayload` as a labeled key-value list, using `triggerSchema` field names as labels where available and falling back to raw keys
-- [ ] 6.2 Show the trigger panel above the step list so it is visible without selecting a node
+- [x] 6.1 Add a "Trigger" panel to the run viewer that displays the received `triggerPayload` as a labeled key-value list, using `triggerSchema` field names as labels where available and falling back to raw keys
+- [x] 6.2 Show the trigger panel above the step list so it is visible without selecting a node
 
 ## 7. Tests
 

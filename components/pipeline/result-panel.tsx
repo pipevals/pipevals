@@ -1,8 +1,61 @@
 "use client";
 
-import { useRunViewerStore } from "@/lib/stores/run-viewer";
+import { useRunViewerStore, type RunData } from "@/lib/stores/run-viewer";
 import { formatDuration, formatTimestamp } from "@/lib/format";
 import { StatusBadge } from "./nodes/status-badge";
+
+function TriggerPayloadPanel({ run }: { run: RunData | null }) {
+  const payload = run?.triggerPayload;
+  const schema = run?.triggerSchema ?? [];
+
+  // Build labeled entries: prefer schema order, fall back to raw keys
+  const schemaNames = new Set(schema.map((f) => f.name));
+  const payloadKeys = payload ? Object.keys(payload) : [];
+  const orderedKeys = [
+    ...schema.map((f) => f.name).filter((n) => payloadKeys.includes(n)),
+    ...payloadKeys.filter((k) => !schemaNames.has(k)),
+  ];
+
+  return (
+    <aside className="flex w-80 shrink-0 flex-col border-l border-border bg-background">
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Trigger
+        </h2>
+      </div>
+
+      <div className="flex flex-col gap-3 overflow-y-auto p-4">
+        {!payload || orderedKeys.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            {payload ? "Empty payload" : "No trigger payload recorded"}
+          </p>
+        ) : (
+          orderedKeys.map((key) => {
+            const label =
+              schema.find((f) => f.name === key)?.description ?? key;
+            const value = payload[key];
+            return (
+              <div key={key} className="flex flex-col gap-0.5">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {label}
+                </span>
+                <pre className="max-h-24 overflow-auto rounded-md border border-border bg-muted/50 p-2 text-[11px] leading-relaxed text-foreground">
+                  {typeof value === "string"
+                    ? value
+                    : JSON.stringify(value, null, 2)}
+                </pre>
+              </div>
+            );
+          })
+        )}
+
+        <p className="border-t border-border pt-3 text-[11px] text-muted-foreground">
+          Click a node to inspect its inputs and outputs.
+        </p>
+      </div>
+    </aside>
+  );
+}
 
 function JsonBlock({ data }: { data: unknown }) {
   if (data == null) {
@@ -41,13 +94,7 @@ export function ResultPanel() {
   const nodes = useRunViewerStore((s) => s.nodes);
 
   if (!selectedNodeId || !run) {
-    return (
-      <aside className="flex w-80 shrink-0 items-center justify-center border-l border-border bg-background p-4">
-        <p className="text-xs text-muted-foreground">
-          Click a node to inspect results
-        </p>
-      </aside>
-    );
+    return <TriggerPayloadPanel run={run} />;
   }
 
   const node = nodes.find((n) => n.id === selectedNodeId);
