@@ -29,7 +29,7 @@ export function RunViewer({
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <p className="text-xs text-muted-foreground">Loading run…</p>
       </div>
     );
@@ -37,7 +37,7 @@ export function RunViewer({
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <p className="text-sm text-destructive">{error}</p>
       </div>
     );
@@ -45,7 +45,7 @@ export function RunViewer({
 
   return (
     <ReactFlowProvider>
-      <div className="flex h-screen flex-col">
+      <div className="flex flex-1 flex-col">
         <RunSummary />
         <div className="flex min-h-0 flex-1">
           <div className="min-w-0 flex-1">

@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { AppHeader } from "@/components/app-header";
 import { RunViewer } from "@/components/pipeline/run-viewer";
 
 export const metadata: Metadata = {
@@ -11,5 +15,15 @@ export default async function RunDetailPage({
   params: Promise<{ id: string; runId: string }>;
 }) {
   const { id, runId } = await params;
-  return <RunViewer pipelineId={id} runId={runId} />;
+
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) redirect("/sign-in");
+
+  return (
+    <div className="flex h-screen flex-col">
+      <AppHeader user={session.user} />
+      <RunViewer pipelineId={id} runId={runId} />
+    </div>
+  );
 }

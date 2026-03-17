@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@xyflow/react"],
   },
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+  },
 };
 
 export default withWorkflow(nextConfig); 

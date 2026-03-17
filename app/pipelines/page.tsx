@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { member } from "@/lib/db/schema";
 import { getPipelinesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
+import { AppHeader } from "@/components/app-header";
 import { isAutoInviteEnabled } from "@/lib/auto-invite";
 
 export const metadata: Metadata = {
@@ -31,21 +32,14 @@ export default async function PipelinesPage() {
       body: { organizationId },
     });
   }
-  
+
   if (!organizationId) redirect("/sign-in");
 
   const pipelines = await getPipelinesForOrg(organizationId);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-10">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Pipelines</h1>
-          <p className="text-xs text-muted-foreground">
-            Build and manage evaluation pipelines
-          </p>
-        </div>
-      </div>
+    <div className="flex min-h-screen flex-col">
+      <AppHeader user={session.user} />
       <PipelineList initialPipelines={pipelines} />
     </div>
   );

@@ -23,6 +23,7 @@ export type PipelineEdge = Edge;
 
 export interface PipelineBuilderState {
   pipelineId: string | null;
+  pipelineName: string | null;
   nodes: PipelineNode[];
   edges: PipelineEdge[];
   selectedNodeId: string | null;
@@ -62,6 +63,7 @@ const STEP_LABELS: Record<StepType, string> = {
 export const usePipelineBuilderStore = create<PipelineBuilderState>(
   (set, get) => ({
     pipelineId: null,
+    pipelineName: null,
     nodes: [],
     edges: [],
     selectedNodeId: null,
@@ -175,6 +177,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         const data = await res.json();
         set({
           pipelineId,
+          pipelineName: data.name ?? null,
           nodes: data.nodes as PipelineNode[],
           edges: data.edges as PipelineEdge[],
           selectedNodeId: null,
