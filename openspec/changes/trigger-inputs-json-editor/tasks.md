@@ -26,8 +26,8 @@
 
 ## 5. Trigger Node
 
-- [ ] 5.1 Update `components/pipeline/nodes/trigger-node.tsx`: derive output handles from `Object.keys(triggerSchema)` (top-level keys of the JSON object) instead of `triggerSchema.map(f => f.name)`
-- [ ] 5.2 Update empty-state message: show when `Object.keys(triggerSchema).length === 0`
+- [x] 5.1 Update `components/pipeline/nodes/trigger-node.tsx`: derive output handles from `Object.keys(triggerSchema)` (top-level keys of the JSON object) instead of `triggerSchema.map(f => f.name)`
+- [x] 5.2 Update empty-state message: show when `Object.keys(triggerSchema).length === 0`
 
 ## 6. Trigger Inputs Panel
 

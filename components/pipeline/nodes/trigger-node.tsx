@@ -6,6 +6,7 @@ import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
 
 export function TriggerNode({ selected }: NodeProps) {
   const triggerSchema = usePipelineBuilderStore((s) => s.triggerSchema);
+  const keys = Object.keys(triggerSchema);
 
   return (
     <div
@@ -27,7 +28,7 @@ export function TriggerNode({ selected }: NodeProps) {
       </div>
 
       {/* Output handles or placeholder */}
-      {triggerSchema.length === 0 ? (
+      {keys.length === 0 ? (
         <div className="border-t border-green-200 dark:border-green-800 px-3 py-2">
           <p className="text-[10px] text-muted-foreground leading-tight">
             No inputs defined —
@@ -43,19 +44,18 @@ export function TriggerNode({ selected }: NodeProps) {
         </div>
       ) : (
         <div className="flex justify-around border-t border-green-200 dark:border-green-800 px-1 py-1">
-          {triggerSchema.map((field) => (
+          {keys.map((key) => (
             <div
-              key={field.name}
+              key={key}
               className="relative flex flex-col items-center"
-              title={field.description}
             >
               <span className="text-[10px] text-muted-foreground">
-                {field.name}
+                {key}
               </span>
               <Handle
                 type="source"
                 position={Position.Bottom}
-                id={field.name}
+                id={key}
                 className="!relative !left-0 !top-0 !h-2.5 !w-2.5 !translate-x-0 !translate-y-0 !rounded-full !border-2 !border-background !bg-green-500"
               />
             </div>
