@@ -1,5 +1,4 @@
 import type { StepType } from "./types";
-import { TRIGGER_NODE_ID } from "@/lib/stores/pipeline-builder";
 
 // The primary output key each step type produces
 const PRIMARY_OUTPUT: Record<StepType | "trigger", string | null> = {
@@ -37,10 +36,9 @@ export interface AutoWirePatch {
  * - Trigger source uses `trigger.<firstSchemaKey>` or bare `trigger`
  */
 export function autoWireInputs(
-  sourceId: string,
   sourceType: string,
   sourceLabel: string | null | undefined,
-  sourceConfig: Record<string, unknown>,
+  sourceId: string,
   targetType: string,
   targetConfig: Record<string, unknown>,
   triggerSchema: Record<string, unknown>,
@@ -48,7 +46,7 @@ export function autoWireInputs(
   // Determine the dot-path prefix for the source
   let dotPath: string;
 
-  if (sourceId === TRIGGER_NODE_ID || sourceType === "trigger") {
+  if (sourceType === "trigger") {
     const firstKey = Object.keys(triggerSchema)[0];
     dotPath = firstKey ? `trigger.${firstKey}` : "trigger";
   } else {

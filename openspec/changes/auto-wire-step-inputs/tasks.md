@@ -16,7 +16,7 @@
 
 ## 3. Tests
 
-- [ ] 3.1 Write unit tests for `autoWireInputs` covering: ai_sdk → ai_sdk, ai_sdk → metric_capture, api_request → condition, ai_sdk → transform, trigger → ai_sdk
-- [ ] 3.2 Test non-overwrite behavior: existing non-empty field is preserved
-- [ ] 3.3 Test skip cases: sandbox source returns null, condition source returns null
-- [ ] 3.4 Test trigger source with empty schema (no firstKey) returns bare `trigger` prefix
+- [x] 3.1 Write unit tests for `autoWireInputs` covering: ai_sdk → ai_sdk, ai_sdk → metric_capture, api_request → condition, ai_sdk → transform, trigger → ai_sdk
+- [x] 3.2 Test non-overwrite behavior: existing non-empty field is preserved
+- [x] 3.3 Test skip cases: sandbox source returns null, condition source returns null
+- [x] 3.4 Test trigger source with empty schema (no firstKey) returns bare `trigger` prefix

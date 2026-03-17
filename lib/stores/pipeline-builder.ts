@@ -173,10 +173,9 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         }
 
         const patch = autoWireInputs(
-          sourceNode.id,
           sourceNode.type ?? "",
           sourceNode.data.label,
-          sourceNode.data.config,
+          sourceNode.id,
           targetNode.type ?? "",
           targetNode.data.config,
           state.triggerSchema,
