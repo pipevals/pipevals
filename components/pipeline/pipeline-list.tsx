@@ -38,12 +38,20 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const copyCurl = useCallback((id: string) => {
-    const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '{}'`;
-    navigator.clipboard.writeText(cmd);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  }, []);
+  const copyCurl = useCallback(
+    (id: string) => {
+      const pipeline = pipelines.find((p) => p.id === id);
+      const schema = pipeline?.triggerSchema;
+      const hasSchema =
+        schema && typeof schema === "object" && Object.keys(schema).length > 0;
+      const body = hasSchema ? JSON.stringify(schema) : "{}";
+      const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${body}'`;
+      navigator.clipboard.writeText(cmd);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    },
+    [pipelines],
+  );
 
   const filtered = useMemo(
     () =>
