@@ -30,8 +30,8 @@
 
 ## 7. Score Distribution Chart
 
-- [ ] 7.1 Build vertical bar chart component for histogram — bucket values of a selected metric, display frequency per bucket
-- [ ] 7.2 Add metric selector dropdown above the histogram to choose which metric to visualize
+- [x] 7.1 Build vertical bar chart component for histogram — bucket values of a selected metric, display frequency per bucket
+- [x] 7.2 Add metric selector dropdown above the histogram to choose which metric to visualize
 
 ## 8. Step Duration Chart
 
