@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +20,74 @@ function GitHubIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+const devAuthEnabled = process.env.NEXT_PUBLIC_DEV_AUTH === "true";
+
+function DevSignInForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState("demo@pipe.evals");
+  const [password, setPassword] = useState("pipevals-dev");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await signIn.email({
+        email,
+        password,
+        callbackURL: "/pipelines",
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Sign in failed");
+      } else {
+        router.push("/pipelines");
+      }
+    } catch {
+      setError("Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="email" className="text-xs font-medium text-foreground">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="password"
+          className="text-xs font-medium text-foreground"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+      </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <Button type="submit" size="sm" disabled={loading}>
+        {loading ? "Signing in..." : "Sign in"}
+      </Button>
+    </form>
+  );
+}
+
 export default function SignInPage() {
   return (
     <div className="flex min-h-svh items-center justify-center px-4">
@@ -28,7 +98,7 @@ export default function SignInPage() {
             Continue with your GitHub account
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <Button
             variant="outline"
             size="lg"
@@ -40,6 +110,21 @@ export default function SignInPage() {
             <GitHubIcon />
             Sign in with GitHub
           </Button>
+          {devAuthEnabled && (
+            <>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    dev only
+                  </span>
+                </div>
+              </div>
+              <DevSignInForm />
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

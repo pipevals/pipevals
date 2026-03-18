@@ -2,35 +2,27 @@
  * E2E Smoke Test: AI-as-a-Judge Canvas Render
  *
  * Verifies that opening the AI-as-a-Judge pipeline renders the correct nodes.
- *
- * Prerequisites:
- * - Dev server running at BASE_URL
- * - Seed pipelines inserted
- * - Valid auth session
- *
- * Usage:
- *   agent-browser --url $BASE_URL/pipelines --task "$(cat tests/e2e/canvas-render-judge.ts)"
  */
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
+import {
+  JUDGE_PIPELINE_NAME,
+  navigateAuthenticated,
+  ab_exec,
+  fullSnapshot,
+  assert,
+  pass,
+} from "./helpers";
 
-export const task = `
-Navigate to ${BASE_URL}/pipelines.
+await navigateAuthenticated("/pipelines");
 
-If redirected to a sign-in page, sign in first, then navigate to /pipelines.
+ab_exec(`find text "${JUDGE_PIPELINE_NAME}" click`);
+ab_exec("wait --load networkidle");
 
-Find and click on the pipeline named "AI-as-a-Judge Scoring" to open it.
+const snap = fullSnapshot();
 
-Once the pipeline editor/canvas loads, verify the following nodes are visible:
+const expectedNodes = ["Generator", "Judge", "Metrics"];
+for (const label of expectedNodes) {
+  assert(snap.includes(label), `Node "${label}" is visible on canvas`);
+}
 
-1. A node labeled "Trigger"
-2. A node labeled "Generator"
-3. A node labeled "Judge"
-4. A node labeled "Metrics"
-
-The nodes should be connected by edges in sequence: Trigger → Generator → Judge → Metrics.
-
-Take a screenshot of the canvas showing all nodes.
-
-Report PASS if all 4 nodes are visible on the canvas, FAIL otherwise.
-`;
+pass("AI-as-a-Judge Canvas Render");

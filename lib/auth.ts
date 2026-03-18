@@ -22,11 +22,16 @@ if (!secret || secret.length < 32) {
   );
 }
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const auth = betterAuth({
   secret,
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  emailAndPassword: {
+    enabled: !isProduction,
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,

@@ -1,38 +1,42 @@
 /**
  * E2E Smoke Test: Pipeline Run Trigger
  *
- * Verifies that a pipeline run can be triggered from the UI and appears in the run list.
+ * Verifies that a pipeline run can be triggered and appears in the run list.
+ * Uses the AI-as-a-Judge pipeline — it has the simplest trigger schema
+ * (single "prompt" field).
  *
- * Prerequisites:
- * - Dev server running at BASE_URL
- * - Seed pipelines inserted
- * - Valid auth session
- * - AI Gateway API keys configured (for actual execution, or just verify pending state)
- *
- * Usage:
- *   agent-browser --url $BASE_URL/pipelines --task "$(cat tests/e2e/run-trigger.ts)"
+ * Note: The run may fail if AI Gateway API keys are not configured —
+ * this test only checks that the run is created, not that it completes.
  */
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
+import {
+  JUDGE_PIPELINE_NAME,
+  navigateAuthenticated,
+  ab_exec,
+  snapshot,
+  assert,
+  pass,
+} from "./helpers";
 
-export const task = `
-Navigate to ${BASE_URL}/pipelines.
+// Navigate to the pipeline list, then into the Judge pipeline's runs page
+await navigateAuthenticated("/pipelines");
+ab_exec(`find text "${JUDGE_PIPELINE_NAME}" click`);
+ab_exec("wait --load networkidle");
+ab_exec('find text "Test Run" click');
+ab_exec("wait --load networkidle");
 
-If redirected to a sign-in page, sign in first, then navigate to /pipelines.
+// Trigger a run
+ab_exec('find text "Trigger Run" click');
+ab_exec("wait 2000");
 
-Find and click on the pipeline named "AI-as-a-Judge Scoring" to open it.
+// Check for run status in the table
+const snap = snapshot();
+const hasRunStatus =
+  snap.includes("Pending") ||
+  snap.includes("Running") ||
+  snap.includes("Completed") ||
+  snap.includes("Failed");
 
-Once the pipeline editor loads:
+assert(hasRunStatus, "A run appeared with a status indicator");
 
-1. Look for a trigger input area or a "Run" button
-2. If there is a prompt input field, enter: "Explain what makes a good API design"
-3. Click the Run button to trigger a pipeline run
-4. After triggering, navigate to the runs list for this pipeline (there may be a "Runs" tab or link)
-5. Verify that a new run appears in the list with status "pending" or "running"
-
-Take a screenshot showing the run in the list.
-
-Report PASS if a run was created and appears in the list, FAIL otherwise.
-Note: The run may fail if API keys are not configured — that's OK. We're only checking
-that the run was created and shows up, not that it completed successfully.
-`;
+pass("Pipeline Run Trigger");

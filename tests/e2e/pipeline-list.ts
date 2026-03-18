@@ -1,31 +1,24 @@
 /**
  * E2E Smoke Test: Pipeline List
  *
- * Verifies that seed pipelines appear in the pipeline list after sign-in.
- *
- * Prerequisites:
- * - Dev server running at BASE_URL
- * - Seed pipelines inserted (bun run scripts/seed-pipelines.ts --org <slug>)
- * - Valid auth session (sign in via GitHub OAuth first)
- *
- * Usage:
- *   agent-browser --url $BASE_URL/pipelines --task "$(cat tests/e2e/pipeline-list.ts)"
+ * Verifies that seed pipelines appear in the pipeline list.
  */
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
+import {
+  JUDGE_PIPELINE_NAME,
+  AB_PIPELINE_NAME,
+  navigateAuthenticated,
+  snapshot,
+  assert,
+  pass,
+} from "./helpers";
 
-export const task = `
-Navigate to ${BASE_URL}/pipelines.
+await navigateAuthenticated("/pipelines");
 
-If redirected to a sign-in page, sign in first, then navigate to /pipelines.
+const snap = snapshot();
 
-Once on the pipelines page, verify the following:
+assert(snap.includes("New Pipeline"), "Pipeline list page loaded (New Pipeline button visible)");
+assert(snap.includes(JUDGE_PIPELINE_NAME), `"${JUDGE_PIPELINE_NAME}" appears in the list`);
+assert(snap.includes(AB_PIPELINE_NAME), `"${AB_PIPELINE_NAME}" appears in the list`);
 
-1. The page title or heading says "Pipelines"
-2. A pipeline named "AI-as-a-Judge Scoring" appears in the list
-3. A pipeline named "Model A/B Comparison" appears in the list
-
-Take a screenshot of the pipeline list showing both seed pipelines.
-
-Report PASS if both pipelines are visible, FAIL otherwise.
-`;
+pass("Pipeline List");
