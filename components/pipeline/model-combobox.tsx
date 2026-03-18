@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { GatewayModel } from "@/lib/pipeline/types";
 import {
   Command,
@@ -36,13 +36,16 @@ export function ModelCombobox({
   models,
   value,
   onValueChange,
+  fallback,
 }: {
   models: GatewayModel[];
   value: string;
   onValueChange: (value: string) => void;
+  fallback?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Graceful degradation: no models → plain text input
   if (models.length === 0) {
@@ -65,6 +68,7 @@ export function ModelCombobox({
   const grouped = groupByProvider(models);
 
   return (
+    <div className="flex flex-col gap-1">
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
@@ -89,8 +93,20 @@ export function ModelCombobox({
             placeholder="Search models…"
             value={search}
             onValueChange={setSearch}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                search.includes("/") &&
+                listRef.current?.querySelector("[cmdk-empty]")
+              ) {
+                e.preventDefault();
+                onValueChange(search);
+                setSearch("");
+                setOpen(false);
+              }
+            }}
           />
-          <CommandList>
+          <CommandList ref={listRef}>
             <CommandEmpty>
               {search.includes("/") ? (
                 <button
@@ -130,5 +146,11 @@ export function ModelCombobox({
         </Command>
       </PopoverContent>
     </Popover>
+    {fallback && (
+      <span className="text-[10px] text-muted-foreground">
+        Add AI_GATEWAY_API_KEY for account-specific availability.
+      </span>
+    )}
+    </div>
   );
 }

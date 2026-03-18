@@ -86,4 +86,18 @@ describe("ModelCombobox", () => {
 
     expect(onValueChange).toHaveBeenCalled();
   });
+
+  test("shows fallback hint when fallback is true", () => {
+    const onValueChange = mock(() => {});
+    render(
+      <ModelCombobox
+        models={models}
+        value=""
+        onValueChange={onValueChange}
+        fallback={true}
+      />,
+    );
+
+    expect(screen.getByText(/add AI_GATEWAY_API_KEY/i)).toBeInTheDocument();
+  });
 });

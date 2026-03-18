@@ -180,15 +180,33 @@ function ApiRequestFields({
   );
 }
 
-function useModels() {
-  const [models, setModels] = useState<GatewayModel[]>([]);
+let modelsCache: Promise<{ models: GatewayModel[]; fallback?: boolean }> | null = null;
+
+function fetchModels(): Promise<{ models: GatewayModel[]; fallback?: boolean }> {
+  if (!modelsCache) {
+    modelsCache = fetch("/api/models")
+      .then((r) => {
+        if (!r.ok) throw new Error(r.statusText);
+        return r.json();
+      })
+      .then((d) => ({
+        models: (d.models ?? []) as GatewayModel[],
+        fallback: d.fallback === true,
+      }))
+      .catch(() => ({ models: [] }));
+  }
+  return modelsCache;
+}
+
+function useModels(): { models: GatewayModel[]; fallback?: boolean } {
+  const [state, setState] = useState<{
+    models: GatewayModel[];
+    fallback?: boolean;
+  }>({ models: [] });
   useEffect(() => {
-    fetch("/api/models")
-      .then((r) => r.json())
-      .then((d) => setModels(d.models ?? []))
-      .catch(() => setModels([]));
+    fetchModels().then(setState);
   }, []);
-  return models;
+  return state;
 }
 
 function AiSdkFields({
@@ -198,7 +216,7 @@ function AiSdkFields({
   config: AiSdkConfig;
   onUpdate: (c: Partial<AiSdkConfig>) => void;
 }) {
-  const models = useModels();
+  const { models, fallback } = useModels();
 
   return (
     <>
@@ -207,6 +225,7 @@ function AiSdkFields({
           models={models}
           value={config.model}
           onValueChange={(v) => onUpdate({ model: v })}
+          fallback={fallback}
         />
       </Field>
       <Field label="Prompt Template">
