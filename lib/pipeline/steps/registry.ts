@@ -5,71 +5,37 @@ import { sandboxHandler } from "./sandbox";
 import { conditionHandler } from "./condition";
 import { transformHandler } from "./transform";
 import { metricCaptureHandler } from "./metric-capture";
+import { portRegistry } from "./ports";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stepRegistry: Record<StepType, StepDefinition<any>> = {
   ai_sdk: {
     handler: aiSdkHandler,
-    ports: {
-      inputs: [{ configField: "promptTemplate", mode: "scalar" }],
-      outputs: [{ key: "text" }],
-    },
+    ports: portRegistry.ai_sdk,
   },
 
   api_request: {
     handler: apiRequestHandler,
-    ports: {
-      inputs: [{ configField: "bodyTemplate", mode: "additive" }],
-      outputs: [{ key: "body" }],
-    },
+    ports: portRegistry.api_request,
   },
 
   sandbox: {
     handler: sandboxHandler,
-    ports: {
-      inputs: [
-        {
-          configField: "code",
-          mode: "template",
-          generate: (dotPath, config) => {
-            const brackets = dotPath
-              .split(".")
-              .map((seg) => `["${seg}"]`)
-              .join("");
-            const isPython = config.runtime === "python";
-            return isPython
-              ? `return input${brackets}`
-              : `return input${brackets};`;
-          },
-        },
-      ],
-      outputs: [],
-    },
+    ports: portRegistry.sandbox,
   },
 
   condition: {
     handler: conditionHandler,
-    ports: {
-      inputs: [
-        { configField: "expression", mode: "scalar", valueSuffix: " != null" },
-      ],
-      outputs: [],
-    },
+    ports: portRegistry.condition,
   },
 
   transform: {
     handler: transformHandler,
-    ports: {
-      inputs: [{ configField: "mapping", mode: "additive" }],
-      outputs: [],
-    },
+    ports: portRegistry.transform,
   },
 
   metric_capture: {
     handler: metricCaptureHandler,
-    ports: {
-      inputs: [{ configField: "metrics", mode: "additive" }],
-      outputs: [],
-    },
+    ports: portRegistry.metric_capture,
   },
 };

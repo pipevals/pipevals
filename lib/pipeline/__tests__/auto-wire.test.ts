@@ -1,7 +1,7 @@
 import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import { autoWireInputs } from "../auto-wire";
-import { stepRegistry } from "../steps/registry";
-import type { StepDefinition, StepType } from "../types";
+import { portRegistry, type PortDefinition } from "../steps/ports";
+import type { StepType } from "../types";
 
 const EMPTY_TRIGGER_SCHEMA = {};
 const TRIGGER_SCHEMA = { prompt: "string", context: "string" };
@@ -332,6 +332,18 @@ describe("autoWireInputs", () => {
     expect(result).toBeNull();
   });
 
+  test("transform source returns null", () => {
+    const result = autoWireInputs(
+      "transform",
+      "reshape",
+      "node-8",
+      "ai_sdk",
+      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
+  });
+
   // --- label fallback ---
 
   test("uses sourceId as fallback when label is empty", () => {
@@ -354,21 +366,14 @@ describe("port-driven extensibility", () => {
 
   beforeAll(() => {
     // Register a hypothetical new step type with ports — no auto-wire.ts changes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (stepRegistry as Record<string, StepDefinition<any>>)[FAKE_TYPE] = {
-      handler: async (config: Record<string, unknown>) => ({
-        result: config.url,
-      }),
-      ports: {
-        inputs: [{ configField: "url", mode: "scalar" }],
-        outputs: [{ key: "result" }],
-      },
+    (portRegistry as Record<string, PortDefinition>)[FAKE_TYPE] = {
+      inputs: [{ configField: "url", mode: "scalar" }],
+      outputs: [{ key: "result" }],
     };
   });
 
   afterAll(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (stepRegistry as Record<string, StepDefinition<any>>)[FAKE_TYPE];
+    delete (portRegistry as Record<string, PortDefinition>)[FAKE_TYPE];
   });
 
   test("new step type auto-wires as source using declared output port", () => {

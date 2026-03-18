@@ -1,5 +1,5 @@
 import type { StepType, InputPort } from "./types";
-import { stepRegistry } from "./steps/registry";
+import { portRegistry } from "./steps/ports";
 
 export interface AutoWirePatch {
   config: Record<string, unknown>;
@@ -29,10 +29,10 @@ export function autoWireInputs(
   if (dotPath === null) return null;
 
   // 2. Look up target's first input port
-  const targetDef = stepRegistry[targetType as StepType];
-  if (!targetDef) return null;
+  const targetPorts = portRegistry[targetType as StepType];
+  if (!targetPorts) return null;
 
-  const inputPort = targetDef.ports.inputs[0];
+  const inputPort = targetPorts.inputs[0];
   if (!inputPort) return null;
 
   // 3. Apply port mode
@@ -50,10 +50,10 @@ function resolveSourceDotPath(
     return firstKey ? `trigger.${firstKey}` : "trigger";
   }
 
-  const sourceDef = stepRegistry[sourceType as StepType];
-  if (!sourceDef) return null;
+  const sourcePorts = portRegistry[sourceType as StepType];
+  if (!sourcePorts) return null;
 
-  const primaryOutput = sourceDef.ports.outputs[0];
+  const primaryOutput = sourcePorts.outputs[0];
   if (!primaryOutput) return null;
 
   const label = sourceLabel?.trim() || sourceId;
@@ -100,6 +100,11 @@ function applyPort(
       return {
         config: { ...targetConfig, [port.configField]: generated },
       };
+    }
+
+    default: {
+      const _exhaustive: never = port;
+      return _exhaustive;
     }
   }
 }
