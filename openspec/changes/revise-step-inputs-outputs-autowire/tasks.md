@@ -8,8 +8,8 @@
 
 ## 2. Auto-Wire Logic Updates
 
-- [ ] 2.1 Change `PRIMARY_INPUT_FIELD.api_request` from `"url"` to `"__body__"` in `lib/pipeline/auto-wire.ts`
-- [ ] 2.2 Add `__body__` special-case handler in `autoWireInputs` that additively merges `{"": dotPath}` into `bodyTemplate` (mirrors `__mapping__` logic)
+- [x] 2.1 Change `PRIMARY_INPUT_FIELD.api_request` from `"url"` to `"__body__"` in `lib/pipeline/auto-wire.ts`
+- [x] 2.2 Add `__body__` special-case handler in `autoWireInputs` that additively merges `{"": dotPath}` into `bodyTemplate` (mirrors `__mapping__` logic)
 - [ ] 2.3 Change `PRIMARY_INPUT_FIELD.sandbox` from `null` to `"code"` in `lib/pipeline/auto-wire.ts`
 - [ ] 2.4 Add `code` special-case handler in `autoWireInputs` that, when `targetConfig.code === ""`, sets `code` to a runtime-aware bracket-notation starter template derived from the dotPath segments; check `targetConfig.runtime` to emit `return` (node) or plain expression (python)
 - [ ] 2.5 Change condition auto-wire in `autoWireInputs` so the value inserted into `expression` is `${dotPath} != null` instead of the bare dotPath

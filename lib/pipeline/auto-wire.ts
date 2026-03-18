@@ -13,7 +13,7 @@ const PRIMARY_OUTPUT: Record<StepType | "trigger", string | null> = {
 
 // The config field to auto-populate on the target node (null = skip)
 const PRIMARY_INPUT_FIELD: Record<StepType, string | null> = {
-  api_request: "url",
+  api_request: "__body__",
   ai_sdk: "promptTemplate",
   sandbox: null,
   condition: "expression",
@@ -74,6 +74,23 @@ export function autoWireInputs(
       config: {
         ...targetConfig,
         mapping: { ...existingMapping, "": dotPath },
+      },
+    };
+  }
+
+  // Special case: api_request target adds an entry to bodyTemplate
+  if (inputField === "__body__") {
+    const existingBody =
+      typeof targetConfig.bodyTemplate === "object" &&
+      targetConfig.bodyTemplate !== null &&
+      !Array.isArray(targetConfig.bodyTemplate)
+        ? (targetConfig.bodyTemplate as Record<string, unknown>)
+        : {};
+
+    return {
+      config: {
+        ...targetConfig,
+        bodyTemplate: { ...existingBody, "": dotPath },
       },
     };
   }
