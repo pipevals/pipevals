@@ -20,5 +20,5 @@
 
 ## 5. Testing
 
-- [ ] 5.1 Add unit test for `/api/models` route (mock gateway response, verify shape; mock failure, verify empty array)
-- [ ] 5.2 Add unit test for `ModelCombobox` (renders grouped models, filters on search, accepts custom value)
+- [x] 5.1 Add unit test for `/api/models` route (mock gateway response, verify shape; mock failure, verify empty array)
+- [x] 5.2 Add unit test for `ModelCombobox` (renders grouped models, filters on search, accepts custom value)
