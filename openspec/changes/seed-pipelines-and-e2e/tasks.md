@@ -1,7 +1,7 @@
 ## 1. Seed Script Foundation
 
-- [ ] 1.1 Create `scripts/seed-pipelines.ts` with CLI arg parsing (`--org`, `--user` flags) and DB connection setup using the app's Drizzle config
-- [ ] 1.2 Add idempotency logic: query for existing pipelines by slug+org before inserting, log skip/create outcomes
+- [x] 1.1 Create `scripts/seed-pipelines.ts` with CLI arg parsing (`--org`, `--user` flags) and DB connection setup using the app's Drizzle config
+- [x] 1.2 Add idempotency logic: query for existing pipelines by slug+org before inserting, log skip/create outcomes
 
 ## 2. AI-as-a-Judge Pipeline Definition
 
@@ -20,8 +20,8 @@
 
 ## 4. Seed Script Insertion Logic
 
-- [ ] 4.1 Implement per-pipeline transaction: insert pipeline row, then batch-insert nodes, then batch-insert edges
-- [ ] 4.2 Resolve `--user` default: if not provided, query the first member of the org
+- [x] 4.1 Implement per-pipeline transaction: insert pipeline row, then batch-insert nodes, then batch-insert edges
+- [x] 4.2 Resolve `--user` default: if not provided, query the first member of the org
 - [ ] 4.3 Validate seed graphs against `validateGraph` at script startup (fail fast if definitions are invalid)
 
 ## 5. Unit Tests for Seed Definitions
