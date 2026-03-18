@@ -9,9 +9,9 @@
 
 ## 3. Model selector combobox
 
-- [ ] 3.1 Create a `ModelCombobox` component using `Command` + `Popover` that accepts `models`, `value`, and `onValueChange` props, groups items by provider, and supports type-to-filter
-- [ ] 3.2 Add free-text fallback — if the combobox input doesn't match any model, allow submitting the raw string as a custom value
-- [ ] 3.3 Add graceful degradation — when models array is empty, render a plain text input with an inline note
+- [x] 3.1 Create a `ModelCombobox` component using `Command` + `Popover` that accepts `models`, `value`, and `onValueChange` props, groups items by provider, and supports type-to-filter
+- [x] 3.2 Add free-text fallback — if the combobox input doesn't match any model, allow submitting the raw string as a custom value
+- [x] 3.3 Add graceful degradation — when models array is empty, render a plain text input with an inline note
 
 ## 4. Config panel integration
 
