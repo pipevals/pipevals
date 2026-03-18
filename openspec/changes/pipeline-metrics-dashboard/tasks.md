@@ -39,4 +39,4 @@
 
 ## 9. Recent Runs Table
 
-- [ ] 9.1 Build mini-table showing last 10 runs with columns: Run ID, Status, inline metric values, Duration — with "View all" link to `/pipelines/:id/runs`
+- [x] 9.1 Build mini-table showing last 10 runs with columns: Run ID, Status, inline metric values, Duration — with "View all" link to `/pipelines/:id/runs`

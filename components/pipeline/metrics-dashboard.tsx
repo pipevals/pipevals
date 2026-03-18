@@ -14,6 +14,7 @@ import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
 import { MetricTrendsChart } from "./charts/metric-trends-chart";
 import { ScoreDistributionChart } from "./charts/score-distribution-chart";
 import { StepDurationChart } from "./charts/step-duration-chart";
+import { RecentRunsTable } from "./charts/recent-runs-table";
 
 export interface MetricRunEntry {
   id: string;
@@ -145,12 +146,14 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
         <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
         <StepDurationChart runs={agg.runs} />
       </div>
-      <RecentRunsPlaceholder />
+      <RecentRunsTable
+        runs={agg.runs}
+        metricNames={agg.metricNames}
+        pipelineId={pipelineId}
+      />
     </div>
   );
 }
-
-// Temporary placeholders — replaced by real chart components in subsequent tasks
 
 function MetricsStatCards({ agg }: { agg: MetricsAggregate }) {
   return (
@@ -196,14 +199,3 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-function RecentRunsPlaceholder() {
-  return <ChartPlaceholder label="Recent Runs" />;
-}
-
-function ChartPlaceholder({ label }: { label: string }) {
-  return (
-    <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border">
-      <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
-  );
-}
