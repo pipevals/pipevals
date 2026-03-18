@@ -10,8 +10,8 @@
 
 ## 3. Pipeline Sub-Navigation
 
-- [ ] 3.1 Create a `PipelineSubNav` component with links to Editor (`/pipelines/:id`), Metrics (`/pipelines/:id/metrics`), and Runs (`/pipelines/:id/runs`), using active state based on current path
-- [ ] 3.2 Add `PipelineSubNav` to the pipeline editor page, runs list page, and run detail page
+- [x] 3.1 Create a `PipelineSubNav` component with links to Editor (`/pipelines/:id`), Metrics (`/pipelines/:id/metrics`), and Runs (`/pipelines/:id/runs`), using active state based on current path
+- [x] 3.2 Add `PipelineSubNav` to the pipeline editor page, runs list page, and run detail page
 
 ## 4. Metrics Page — Layout & Data Fetching
 

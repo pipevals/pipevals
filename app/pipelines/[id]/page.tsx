@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { pipelines } from "@/lib/db/pipeline-schema";
 import { AppHeader } from "@/components/app-header";
+import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
 import { PipelineEditor } from "@/components/pipeline/pipeline-editor";
 
 type Props = { params: Promise<{ id: string }> };
@@ -29,6 +30,7 @@ export default async function PipelineEditorPage({ params }: Props) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <AppHeader user={session.user} />
+      <PipelineSubNav pipelineId={id} />
       <PipelineEditor pipelineId={id} />
     </div>
   );
