@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
+import { MetricTrendsChart } from "./charts/metric-trends-chart";
 
 export interface MetricRunEntry {
   id: string;
@@ -135,7 +136,9 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
   return (
     <div className="flex flex-col gap-8">
       <MetricsStatCards agg={agg} />
-      {agg.metricNames.length > 0 && <MetricsTrendPlaceholder />}
+      {agg.metricNames.length > 0 && (
+        <MetricTrendsChart runs={agg.runs} metricNames={agg.metricNames} />
+      )}
       <div className="grid grid-cols-2 gap-8">
         <DistributionPlaceholder />
         <StepDurationPlaceholder />
@@ -189,10 +192,6 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function formatMs(ms: number): string {
   if (ms < 1000) return `${Math.round(ms)}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
-}
-
-function MetricsTrendPlaceholder() {
-  return <ChartPlaceholder label="Metric Trends" />;
 }
 
 function DistributionPlaceholder() {

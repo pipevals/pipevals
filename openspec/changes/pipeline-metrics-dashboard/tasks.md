@@ -24,9 +24,9 @@
 
 ## 6. Metric Trends Chart
 
-- [ ] 6.1 Build area chart component using `ChartContainer` + Recharts `AreaChart` — one `<Area>` per numeric metric, with `ChartTooltip` and `ChartLegend`
-- [ ] 6.2 Add x-axis `ToggleGroup` (By run / By time) that switches the x-axis key between run index and `createdAt` timestamp
-- [ ] 6.3 Handle non-numeric metric values gracefully (skip data points without crashing the chart)
+- [x] 6.1 Build area chart component using `ChartContainer` + Recharts `AreaChart` — one `<Area>` per numeric metric, with `ChartTooltip` and `ChartLegend`
+- [x] 6.2 Add x-axis `ToggleGroup` (By run / By time) that switches the x-axis key between run index and `createdAt` timestamp
+- [x] 6.3 Handle non-numeric metric values gracefully (skip data points without crashing the chart)
 
 ## 7. Score Distribution Chart
 
