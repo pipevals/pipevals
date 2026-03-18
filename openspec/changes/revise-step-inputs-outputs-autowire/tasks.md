@@ -24,5 +24,5 @@
 
 ## 4. Config Panel UI
 
-- [ ] 4.1 Update the metric_capture config panel component to render a key/value editor for `metrics` (same pattern as transform's mapping editor) instead of `metricName` + `extractPath` fields
-- [ ] 4.2 Update the api_request config panel to ensure `bodyTemplate` renders as an editable key/value list (consistent with the additive auto-wire behavior)
+- [x] 4.1 Update the metric_capture config panel component to render a key/value editor for `metrics` (same pattern as transform's mapping editor) instead of `metricName` + `extractPath` fields
+- [x] 4.2 Update the api_request config panel to ensure `bodyTemplate` renders as an editable key/value list (consistent with the additive auto-wire behavior)

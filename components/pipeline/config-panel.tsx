@@ -126,15 +126,46 @@ function ApiRequestFields({
           placeholder="https://api.example.com or trigger.url"
         />
       </Field>
-      <Field label="Body Template (JSON)">
-        <Textarea
-          value={config.bodyTemplate ? JSON.stringify(config.bodyTemplate, null, 2) : ""}
-          onChange={(v) => {
-            try { onUpdate({ bodyTemplate: JSON.parse(v) }); } catch {}
-          }}
-          placeholder='{ "text": "steps.llm.response" }'
-          rows={4}
-        />
+      <Field label="Body Template (key → dot-path)">
+        <div className="flex flex-col gap-1">
+          {Object.entries(config.bodyTemplate ?? {}).map(([key, val], i) => (
+            <div key={i} className="flex gap-1">
+              <Input
+                value={key}
+                onChange={(v) => {
+                  const next = { ...config.bodyTemplate };
+                  delete next[key];
+                  next[v] = val;
+                  onUpdate({ bodyTemplate: next });
+                }}
+                placeholder="field_name"
+              />
+              <Input
+                value={String(val ?? "")}
+                onChange={(v) =>
+                  onUpdate({ bodyTemplate: { ...config.bodyTemplate, [key]: v } })
+                }
+                placeholder="steps.node.field"
+              />
+              <button
+                onClick={() => {
+                  const next = { ...config.bodyTemplate };
+                  delete next[key];
+                  onUpdate({ bodyTemplate: next });
+                }}
+                className="shrink-0 rounded-md px-1.5 text-xs text-destructive hover:bg-destructive/10"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => onUpdate({ bodyTemplate: { ...config.bodyTemplate, "": "" } })}
+            className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+          >
+            + Add field
+          </button>
+        </div>
       </Field>
     </>
   );
@@ -332,23 +363,48 @@ function MetricCaptureFields({
   config: MetricCaptureConfig;
   onUpdate: (c: Partial<MetricCaptureConfig>) => void;
 }) {
+  const entries = Object.entries(config.metrics);
+
   return (
-    <>
-      <Field label="Metric Name">
-        <Input
-          value={config.metricName}
-          onChange={(v) => onUpdate({ metricName: v })}
-          placeholder="accuracy"
-        />
-      </Field>
-      <Field label="Extract Path">
-        <Input
-          value={config.extractPath}
-          onChange={(v) => onUpdate({ extractPath: v })}
-          placeholder="steps.eval.score"
-        />
-      </Field>
-    </>
+    <Field label="Metrics (name → dot-path)">
+      <div className="flex flex-col gap-1">
+        {entries.map(([key, path], i) => (
+          <div key={i} className="flex gap-1">
+            <Input
+              value={key}
+              onChange={(v) => {
+                const next = { ...config.metrics };
+                delete next[key];
+                next[v] = path;
+                onUpdate({ metrics: next });
+              }}
+              placeholder="accuracy"
+            />
+            <Input
+              value={path}
+              onChange={(v) => onUpdate({ metrics: { ...config.metrics, [key]: v } })}
+              placeholder="steps.eval.score"
+            />
+            <button
+              onClick={() => {
+                const next = { ...config.metrics };
+                delete next[key];
+                onUpdate({ metrics: next });
+              }}
+              className="shrink-0 rounded-md px-1.5 text-xs text-destructive hover:bg-destructive/10"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={() => onUpdate({ metrics: { ...config.metrics, "": "" } })}
+          className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+        >
+          + Add metric
+        </button>
+      </div>
+    </Field>
   );
 }
 
