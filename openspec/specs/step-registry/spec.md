@@ -81,12 +81,17 @@ The system SHALL provide a `transform` step type that reshapes data between step
 
 ### Requirement: Metric capture step
 
-The system SHALL provide a `metric_capture` step type that records evaluation metrics. Config MUST include metric_name and extract_path (dot-path to the value to record). The handler MUST resolve the extract_path from input and return `{ "metric": "<name>", "value": <resolved-value> }`. This is typically a terminal node in the graph.
+The system SHALL provide a `metric_capture` step type that records one or more evaluation metrics in a single step. Config MUST include a `metrics` object mapping metric names (keys) to dot-path expressions (values). The handler MUST resolve each path from input and return `{ "metrics": { "<name>": <resolved-value>, ... } }`. This is typically a terminal node in the graph.
 
-#### Scenario: Capture accuracy metric
+#### Scenario: Capture single metric
 
-- **WHEN** a metric_capture step has metric_name "accuracy" and extract_path "steps.scorer.score"
-- **THEN** the handler returns `{ "metric": "accuracy", "value": 0.85 }`
+- **WHEN** a metric_capture step has config `{ "metrics": { "accuracy": "steps.scorer.score" } }` and `steps.scorer.score` is 0.85
+- **THEN** the handler returns `{ "metrics": { "accuracy": 0.85 } }`
+
+#### Scenario: Capture multiple metrics
+
+- **WHEN** a metric_capture step has config `{ "metrics": { "accuracy": "steps.scorer.score", "latency": "steps.llm.latencyMs" } }`
+- **THEN** the handler returns `{ "metrics": { "accuracy": 0.85, "latency": 1200 } }`
 
 ### Requirement: Step registry extensibility
 
