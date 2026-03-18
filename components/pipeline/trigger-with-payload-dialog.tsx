@@ -12,21 +12,52 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+function storageKey(id: string) {
+  return `pipevals:trigger-payload:${id}`;
+}
+
+function readStored(pipelineId: string | undefined): string | null {
+  if (!pipelineId) return null;
+  try {
+    return localStorage.getItem(storageKey(pipelineId));
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(pipelineId: string | undefined, json: string) {
+  if (!pipelineId) return;
+  try {
+    localStorage.setItem(storageKey(pipelineId), json);
+  } catch {
+    // quota exceeded or unavailable — ignore
+  }
+}
+
 export function TriggerWithPayloadDialog({
   onTrigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  defaultPayload,
+  pipelineId,
 }: {
   onTrigger: (payload: Record<string, unknown>) => Promise<void>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  defaultPayload?: Record<string, unknown>;
+  pipelineId?: string;
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
 
   const isControlled = controlledOpen !== undefined && controlledOnOpenChange;
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen;
-  const [json, setJson] = useState("{}");
+  const [json, setJson] = useState(() => {
+    const defaultJson = defaultPayload
+      ? JSON.stringify(defaultPayload, null, 2)
+      : "{}";
+    return readStored(pipelineId) ?? defaultJson;
+  });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,8 +84,8 @@ export function TriggerWithPayloadDialog({
     setSubmitting(true);
     try {
       await onTrigger(parsed);
+      writeStored(pipelineId, json);
       setOpen(false);
-      setJson("{}");
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to trigger run");

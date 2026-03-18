@@ -25,6 +25,33 @@ import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
+/**
+ * Generate a sample payload object from a JSON-Schema-style triggerSchema.
+ * Returns null if the schema has no required properties.
+ */
+function sampleFromSchema(
+  schema: Record<string, unknown>,
+): Record<string, unknown> | null {
+  const required = schema.required as string[] | undefined;
+  if (!required || required.length === 0) return null;
+
+  const properties = (schema.properties ?? {}) as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const sample: Record<string, unknown> = {};
+  for (const key of required) {
+    const prop = properties[key];
+    const type = prop?.type as string | undefined;
+    if (type === "number" || type === "integer") sample[key] = 0;
+    else if (type === "boolean") sample[key] = false;
+    else if (type === "array") sample[key] = [];
+    else if (type === "object") sample[key] = {};
+    else sample[key] = "";
+  }
+  return sample;
+}
+
 async function triggerRun(
   url: string,
   { arg }: { arg?: Record<string, unknown> } = {},
@@ -44,13 +71,17 @@ async function triggerRun(
 export function RunListPageContent({
   pipelineId,
   pipelineSlug,
+  triggerSchema = {},
 }: {
   pipelineId: string;
   pipelineSlug: string | null;
+  triggerSchema?: Record<string, unknown>;
 }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
   const [triggerError, setTriggerError] = useState<string | null>(null);
   const [payloadDialogOpen, setPayloadDialogOpen] = useState(false);
+  const samplePayload = sampleFromSchema(triggerSchema);
+  const hasRequiredFields = samplePayload !== null;
 
   const { trigger, isMutating } = useSWRMutation(apiUrl, triggerRun, {
     onSuccess: () => {
@@ -101,11 +132,17 @@ export function RunListPageContent({
               open={payloadDialogOpen}
               onOpenChange={setPayloadDialogOpen}
               onTrigger={(payload) => trigger(payload)}
+              defaultPayload={samplePayload ?? undefined}
+              pipelineId={pipelineId}
             />
             <div className="flex rounded-md overflow-hidden">
               <Button
                 size="sm"
-                onClick={() => trigger()}
+                onClick={() =>
+                  hasRequiredFields
+                    ? setPayloadDialogOpen(true)
+                    : trigger()
+                }
                 disabled={isMutating}
                 className="rounded-none border-0 ring-0"
               >
@@ -124,7 +161,11 @@ export function RunListPageContent({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => trigger()}
+                    onClick={() =>
+                      hasRequiredFields
+                        ? setPayloadDialogOpen(true)
+                        : trigger()
+                    }
                     disabled={isMutating}
                   >
                     Trigger Run

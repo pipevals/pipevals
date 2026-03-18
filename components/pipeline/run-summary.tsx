@@ -43,18 +43,34 @@ const STATUS_DISPLAY: Record<
   },
 };
 
+const MAX_METRIC_DISPLAY_LENGTH = 24;
+
+function formatMetricValue(value: unknown): string {
+  if (value == null) return "—";
+  if (typeof value === "number")
+    return Number.isInteger(value) ? String(value) : value.toFixed(4);
+  const str = String(value);
+  if (str.length <= MAX_METRIC_DISPLAY_LENGTH) return str;
+  return `${str.slice(0, MAX_METRIC_DISPLAY_LENGTH - 1)}…`;
+}
+
 function Stat({
   label,
   value,
+  title,
   className,
 }: {
   label: string;
   value: string | number;
+  title?: string;
   className?: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className={cn("text-sm font-semibold tabular-nums", className)}>
+      <span
+        className={cn("text-sm font-semibold tabular-nums truncate max-w-[120px]", className)}
+        title={title}
+      >
         {value}
       </span>
       <span className="text-[10px] text-muted-foreground">{label}</span>
@@ -166,20 +182,22 @@ export function RunSummary() {
         <>
           <div className="h-6 w-px bg-border" />
           <div className="flex items-center gap-4">
-            {metrics.map((m) => (
-              <Stat
-                key={m.name}
-                label={m.name}
-                value={
-                  typeof m.value === "number"
-                    ? Number.isInteger(m.value)
-                      ? m.value
-                      : m.value.toFixed(4)
-                    : String(m.value ?? "—")
-                }
-                className="text-foreground"
-              />
-            ))}
+            {metrics.map((m) => {
+              const display = formatMetricValue(m.value);
+              const full =
+                m.value != null && typeof m.value === "string" && m.value.length > MAX_METRIC_DISPLAY_LENGTH
+                  ? m.value
+                  : undefined;
+              return (
+                <Stat
+                  key={m.name}
+                  label={m.name}
+                  value={display}
+                  title={full}
+                  className="text-foreground"
+                />
+              );
+            })}
           </div>
         </>
       )}

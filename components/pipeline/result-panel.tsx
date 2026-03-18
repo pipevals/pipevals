@@ -1,8 +1,20 @@
 "use client";
 
+import { useCallback, useRef, useState } from "react";
 import { useRunViewerStore, type RunData } from "@/lib/stores/run-viewer";
 import { formatDuration, formatTimestamp } from "@/lib/format";
 import { StatusBadge } from "./nodes/status-badge";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  CheckmarkCircle01Icon,
+  Copy01Icon,
+} from "@hugeicons/core-free-icons";
 
 function TriggerPayloadPanel({ run }: { run: RunData | null }) {
   const payload = run?.triggerPayload;
@@ -56,16 +68,53 @@ function JsonBlock({ data }: { data: unknown }) {
 
 function Section({
   label,
+  copyValue,
   children,
 }: {
   label: string;
+  copyValue?: string;
   children: React.ReactNode;
 }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const handleCopy = useCallback(() => {
+    if (copyValue == null) return;
+    navigator.clipboard.writeText(copyValue);
+    setCopied(true);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 2000);
+  }, [copyValue]);
+
   return (
     <div className="flex flex-col gap-1.5">
-      <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </h3>
+        {copyValue != null && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={handleCopy}
+                aria-label={`Copy ${label}`}
+              >
+                {copied ? (
+                  <HugeiconsIcon
+                    icon={CheckmarkCircle01Icon}
+                    size={12}
+                  />
+                ) : (
+                  <HugeiconsIcon icon={Copy01Icon} size={12} />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Copy {label}</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
       {children}
     </div>
   );
@@ -135,12 +184,18 @@ export function ResultPanel() {
           </div>
         </Section>
 
-        <Section label="Input">
+        <Section
+          label="Input"
+          copyValue={JSON.stringify(stepResult?.input ?? null, null, 2)}
+        >
           <JsonBlock data={stepResult?.input ?? null} />
         </Section>
 
         {status === "failed" && stepResult?.error != null && (
-          <Section label="Error">
+          <Section
+            label="Error"
+            copyValue={JSON.stringify(stepResult.error, null, 2)}
+          >
             <div className="rounded-md border border-red-500/30 bg-red-500/5 p-2">
               <pre className="max-h-32 overflow-auto text-[11px] leading-relaxed text-red-600 dark:text-red-400">
                 {JSON.stringify(stepResult.error, null, 2)}
@@ -149,7 +204,10 @@ export function ResultPanel() {
           </Section>
         )}
 
-        <Section label="Output">
+        <Section
+          label="Output"
+          copyValue={JSON.stringify(stepResult?.output ?? null, null, 2)}
+        >
           <JsonBlock data={stepResult?.output ?? null} />
         </Section>
       </div>

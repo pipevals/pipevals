@@ -103,6 +103,7 @@ const aiAsAJudge: SeedPipelineDefinition = {
             reasoning: { type: "string" },
           },
           required: ["relevance", "coherence", "score", "reasoning"],
+          additionalProperties: false,
         },
       },
       positionX: 600,
@@ -208,7 +209,7 @@ const modelAbComparison: SeedPipelineDefinition = {
       label: "Model B",
       config: {
         type: "ai_sdk",
-        model: "anthropic/claude-sonnet-4-5-20250514",
+        model: "anthropic/claude-sonnet-4-5",
         promptTemplate: "trigger.prompt",
         temperature: 0.7,
       },
@@ -247,6 +248,7 @@ const modelAbComparison: SeedPipelineDefinition = {
             reasoning: { type: "string" },
           },
           required: ["score_a", "score_b", "winner", "reasoning"],
+          additionalProperties: false,
         },
       },
       positionX: 900,
@@ -327,9 +329,15 @@ export async function seedPipelines(
 ) {
   for (const def of seedPipelineDefinitions) {
     // Idempotency: skip if slug already exists in this org
-    const existing = await db.select({ id: pipelines.id })
+    const existing = await db
+      .select({ id: pipelines.id })
       .from(pipelines)
-      .where(and(eq(pipelines.slug, def.slug), eq(pipelines.organizationId, organizationId)))
+      .where(
+        and(
+          eq(pipelines.slug, def.slug),
+          eq(pipelines.organizationId, organizationId),
+        ),
+      )
       .limit(1);
 
     if (existing.length > 0) {

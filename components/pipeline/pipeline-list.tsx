@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -13,6 +13,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -43,6 +48,7 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const copyCurl = useCallback(
     (id: string) => {
@@ -55,7 +61,8 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
       const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
       navigator.clipboard.writeText(cmd);
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
+      clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
     },
     [pipelines],
   );
@@ -259,33 +266,33 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
                       {p.description}
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5">
-                      <span className="font-mono text-[11px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-sm bg-background">
-                        POST /api/pipelines/{p.id}/runs
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          copyCurl(p.id);
-                        }}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                        aria-label="Copy curl command"
-                      >
-                        {copiedId === p.id ? (
-                          <HugeiconsIcon
-                            icon={CheckmarkCircle01Icon}
-                            size={12}
-                          />
-                        ) : (
-                          <HugeiconsIcon icon={Copy01Icon} size={12} />
-                        )}
-                      </button>
+                    <span className="font-mono text-[11px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-sm bg-background">
+                      POST /api/pipelines/{p.id}/runs
                     </span>
                   )}
                 </Link>
 
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyCurl(p.id)}
+                        aria-label="Copy curl command"
+                      >
+                        {copiedId === p.id ? (
+                          <HugeiconsIcon
+                            icon={CheckmarkCircle01Icon}
+                            size={14}
+                          />
+                        ) : (
+                          <HugeiconsIcon icon={Copy01Icon} size={14} />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy cURL command</TooltipContent>
+                  </Tooltip>
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/pipelines/${p.id}/runs`}>Runs</Link>
                   </Button>

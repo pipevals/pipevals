@@ -22,6 +22,7 @@ export default async function RunListPage({
       <RunListPageContent
         pipelineId={id}
         pipelineSlug={pipeline.slug}
+        triggerSchema={pipeline.triggerSchema ?? {}}
       />
     </div>
   );

@@ -87,19 +87,19 @@ export type EdgeState = "traversed" | "active" | "inactive" | "pending";
 
 export const EDGE_STYLES: Record<EdgeState, { style: React.CSSProperties; animated: boolean }> = {
   traversed: {
-    style: { stroke: "hsl(var(--primary))", strokeWidth: 2, opacity: 1 },
+    style: { stroke: "var(--primary)", strokeWidth: 2, opacity: 1 },
     animated: false,
   },
   active: {
-    style: { stroke: "hsl(var(--primary))", strokeWidth: 2, opacity: 1 },
+    style: { stroke: "var(--primary)", strokeWidth: 2, opacity: 1 },
     animated: true,
   },
   inactive: {
-    style: { stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, opacity: 0.25, strokeDasharray: "5 5" },
+    style: { stroke: "var(--muted-foreground)", strokeWidth: 1, opacity: 0.25, strokeDasharray: "5 5" },
     animated: false,
   },
   pending: {
-    style: { stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, opacity: 0.5 },
+    style: { stroke: "var(--muted-foreground)", strokeWidth: 1, opacity: 0.5 },
     animated: false,
   },
 };

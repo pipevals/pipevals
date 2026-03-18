@@ -21,6 +21,7 @@ mock.module("ai", () => ({
   generateText: mockGenerateText,
   generateObject: mockGenerateObject,
   gateway: mockGateway,
+  jsonSchema: (s: unknown) => s,
 }));
 
 const { aiSdkHandler } = await import("../../steps/ai-sdk");

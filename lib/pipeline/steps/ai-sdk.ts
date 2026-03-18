@@ -1,11 +1,8 @@
-import { generateText, generateObject, gateway, type FlexibleSchema } from "ai";
+import { generateText, generateObject, gateway, jsonSchema } from "ai";
 import type { AiSdkConfig, StepHandler } from "../types";
 import { resolveTemplate } from "../dot-path";
 
-export const aiSdkHandler: StepHandler<AiSdkConfig> = async (
-  config,
-  input,
-) => {
+export const aiSdkHandler: StepHandler<AiSdkConfig> = async (config, input) => {
   const context = { steps: input.steps, trigger: input.trigger };
   const prompt = String(resolveTemplate(config.promptTemplate, context));
   const model = gateway(config.model);
@@ -20,7 +17,7 @@ export const aiSdkHandler: StepHandler<AiSdkConfig> = async (
     const result = await generateObject({
       model,
       prompt,
-      schema: resolvedSchema as FlexibleSchema<unknown>,
+      schema: jsonSchema(resolvedSchema),
       temperature: config.temperature,
       maxOutputTokens: config.maxTokens,
     });
