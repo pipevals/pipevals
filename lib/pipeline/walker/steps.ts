@@ -57,7 +57,7 @@ export async function executeNode(
   let stepError: unknown;
 
   try {
-    const handler = stepRegistry[nodeType];
+    const { handler } = stepRegistry[nodeType];
     output = await handler(nodeConfig, input);
   } catch (error) {
     stepError = error;

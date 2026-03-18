@@ -15,13 +15,13 @@
 
 ## 3. Generic auto-wire
 
-- [ ] 3.1 Rewrite `autoWireInputs` in `lib/pipeline/auto-wire.ts` to read port declarations from the registry instead of hardcoded tables — remove `PRIMARY_OUTPUT`, `PRIMARY_INPUT_FIELD`, and all per-type `if` branches
-- [ ] 3.2 Implement the three port modes: `scalar` (set if empty), `additive` (merge entry), `template` (call generate if empty)
-- [ ] 3.3 Handle trigger source via `triggerSchema` first-key lookup (replacing the existing `sourceType === "trigger"` branch)
+- [x] 3.1 Rewrite `autoWireInputs` in `lib/pipeline/auto-wire.ts` to read port declarations from the registry instead of hardcoded tables — remove `PRIMARY_OUTPUT`, `PRIMARY_INPUT_FIELD`, and all per-type `if` branches
+- [x] 3.2 Implement the three port modes: `scalar` (set if empty), `additive` (merge entry), `template` (call generate if empty)
+- [x] 3.3 Handle trigger source via `triggerSchema` first-key lookup (replacing the existing `sourceType === "trigger"` branch)
 
 ## 4. Walker update
 
-- [ ] 4.1 Update `executeNode` in `lib/pipeline/walker/steps.ts` to access `registry[nodeType].handler` instead of `registry[nodeType]` directly
+- [x] 4.1 Update `executeNode` in `lib/pipeline/walker/steps.ts` to access `registry[nodeType].handler` instead of `registry[nodeType]` directly
 
 ## 5. Tests
 
