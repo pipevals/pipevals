@@ -5,7 +5,7 @@
 
 ## 2. Model list API
 
-- [ ] 2.1 Create `GET /api/models` route that calls `gateway.getAvailableModels()`, maps entries to `{ id, name, provider }`, and returns `{ models }` (empty array on failure)
+- [x] 2.1 Create `GET /api/models` route that calls `gateway.getAvailableModels()`, maps entries to `{ id, name, provider }`, and returns `{ models }` (empty array on failure)
 
 ## 3. Model selector combobox
 
