@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePipelineBuilderStore, TRIGGER_NODE_ID } from "@/lib/stores/pipeline-builder";
 import { TriggerInputsPanel } from "./trigger-inputs-panel";
+import { ModelCombobox } from "./model-combobox";
+import type { GatewayModel } from "@/lib/pipeline/types";
 import type {
   ApiRequestConfig,
   AiSdkConfig,
@@ -178,6 +180,17 @@ function ApiRequestFields({
   );
 }
 
+function useModels() {
+  const [models, setModels] = useState<GatewayModel[]>([]);
+  useEffect(() => {
+    fetch("/api/models")
+      .then((r) => r.json())
+      .then((d) => setModels(d.models ?? []))
+      .catch(() => setModels([]));
+  }, []);
+  return models;
+}
+
 function AiSdkFields({
   config,
   onUpdate,
@@ -185,13 +198,15 @@ function AiSdkFields({
   config: AiSdkConfig;
   onUpdate: (c: Partial<AiSdkConfig>) => void;
 }) {
+  const models = useModels();
+
   return (
     <>
       <Field label="Model">
-        <Input
+        <ModelCombobox
+          models={models}
           value={config.model}
-          onChange={(v) => onUpdate({ model: v })}
-          placeholder="openai/gpt-4o"
+          onValueChange={(v) => onUpdate({ model: v })}
         />
       </Field>
       <Field label="Prompt Template">

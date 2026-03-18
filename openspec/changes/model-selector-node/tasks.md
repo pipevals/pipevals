@@ -15,8 +15,8 @@
 
 ## 4. Config panel integration
 
-- [ ] 4.1 Replace the model text `<input>` in `AiSdkFields` (`config-panel.tsx`) with the `ModelCombobox`, fetching models from `/api/models` on mount
-- [ ] 4.2 Verify the selected model persists correctly through save/load cycle (node config JSONB round-trip)
+- [x] 4.1 Replace the model text `<input>` in `AiSdkFields` (`config-panel.tsx`) with the `ModelCombobox`, fetching models from `/api/models` on mount
+- [x] 4.2 Verify the selected model persists correctly through save/load cycle (node config JSONB round-trip)
 
 ## 5. Testing
 
