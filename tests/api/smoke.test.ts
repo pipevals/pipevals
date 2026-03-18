@@ -126,11 +126,7 @@ describe("API smoke tests (PGlite)", () => {
       );
       const data = await res.json();
 
-      expect(data.triggerSchema).toEqual({
-        type: "object",
-        properties: { prompt: { type: "string" } },
-        required: ["prompt"],
-      });
+      expect(data.triggerSchema).toEqual({ prompt: "" });
     });
 
     test("Judge node has responseFormat with score and reasoning", async () => {
@@ -160,6 +156,34 @@ describe("API smoke tests (PGlite)", () => {
 
       const data = await res.json();
       expect(data.runId).toBeDefined();
+    });
+
+    test("POST /runs rejects payload with wrong type", async () => {
+      const req = new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: 123 }),
+      });
+
+      const res = await triggerRun(req, runsParams(pipelineId));
+      expect(res.status).toBe(400);
+
+      const data = await res.json();
+      expect(data.error).toBeDefined();
+    });
+
+    test("POST /runs rejects payload missing required field", async () => {
+      const req = new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const res = await triggerRun(req, runsParams(pipelineId));
+      expect(res.status).toBe(400);
+
+      const data = await res.json();
+      expect(data.error).toBeDefined();
     });
 
     test("GET /runs returns the triggered run", async () => {

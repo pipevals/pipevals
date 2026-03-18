@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
+import { buildTriggerValidator } from "@/lib/pipeline/utils/build-trigger-validator";
 
 type RouteParams = { params: Promise<{ id: string }> };
-
-const triggerSchema = z.record(z.string(), z.unknown()).optional();
 
 export async function POST(request: Request, { params }: RouteParams) {
   const { id } = await params;
@@ -31,7 +29,9 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const parsed = triggerSchema.safeParse(body);
+  const pipelineTriggerSchema = (result.pipeline.triggerSchema ?? {}) as Record<string, unknown>;
+  const validator = buildTriggerValidator(pipelineTriggerSchema);
+  const parsed = validator.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0].message },
@@ -39,7 +39,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     );
   }
 
-  const triggerPayload = parsed.data ?? {};
+  const triggerPayload = parsed.data;
 
   const snapshotEdges = edges
     .filter(

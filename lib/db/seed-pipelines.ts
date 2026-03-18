@@ -57,11 +57,7 @@ const aiAsAJudge: SeedPipelineDefinition = {
   description:
     "Generates a response to a prompt, then uses a second LLM call to score it on relevance and coherence (1-5). Demonstrates the most common AI evaluation pattern.",
   triggerSchema: {
-    type: "object",
-    properties: {
-      prompt: { type: "string" },
-    },
-    required: ["prompt"],
+    prompt: "",
   },
   nodes: [
     {
@@ -175,11 +171,7 @@ const modelAbComparison: SeedPipelineDefinition = {
   description:
     "Sends the same prompt to two different models in parallel, then uses a judge to compare and score both responses. Demonstrates pairwise model evaluation.",
   triggerSchema: {
-    type: "object",
-    properties: {
-      prompt: { type: "string" },
-    },
-    required: ["prompt"],
+    prompt: "",
   },
   nodes: [
     {

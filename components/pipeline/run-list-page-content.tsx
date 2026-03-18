@@ -27,30 +27,14 @@ import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
 /**
- * Generate a sample payload object from a JSON-Schema-style triggerSchema.
- * Returns null if the schema has no required properties.
+ * Return the triggerSchema as a sample payload if it has fields, else null.
  */
 function sampleFromSchema(
   schema: Record<string, unknown>,
 ): Record<string, unknown> | null {
-  const required = schema.required as string[] | undefined;
-  if (!required || required.length === 0) return null;
-
-  const properties = (schema.properties ?? {}) as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const sample: Record<string, unknown> = {};
-  for (const key of required) {
-    const prop = properties[key];
-    const type = prop?.type as string | undefined;
-    if (type === "number" || type === "integer") sample[key] = 0;
-    else if (type === "boolean") sample[key] = false;
-    else if (type === "array") sample[key] = [];
-    else if (type === "object") sample[key] = {};
-    else sample[key] = "";
-  }
-  return sample;
+  const keys = Object.keys(schema);
+  if (keys.length === 0) return null;
+  return schema;
 }
 
 async function triggerRun(
@@ -140,9 +124,7 @@ export function RunListPageContent({
               <Button
                 size="sm"
                 onClick={() =>
-                  hasRequiredFields
-                    ? setPayloadDialogOpen(true)
-                    : trigger()
+                  hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
                 }
                 disabled={isMutating}
                 className="rounded-none border-0 ring-0"
@@ -163,9 +145,7 @@ export function RunListPageContent({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() =>
-                      hasRequiredFields
-                        ? setPayloadDialogOpen(true)
-                        : trigger()
+                      hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
                     }
                     disabled={isMutating}
                   >
