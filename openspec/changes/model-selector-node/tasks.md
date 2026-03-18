@@ -1,7 +1,7 @@
 ## 1. Dependencies & UI primitives
 
-- [ ] 1.1 Add shadcn `Command` and `Popover` components (`npx shadcn@latest add command popover`)
-- [ ] 1.2 Define `GatewayModel` type (`{ id: string; name: string; provider: string }`) in a shared types file
+- [x] 1.1 Add shadcn `Command` and `Popover` components (`npx shadcn@latest add command popover`)
+- [x] 1.2 Define `GatewayModel` type (`{ id: string; name: string; provider: string }`) in a shared types file
 
 ## 2. Model list API
 

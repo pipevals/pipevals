@@ -6,6 +6,16 @@ import type {
 export type StepType = (typeof stepTypeEnum)[number];
 export type PipelineNodeType = (typeof pipelineNodeTypeEnum)[number];
 
+/** A model available through the AI Gateway. */
+export interface GatewayModel {
+  /** Full model identifier, e.g. "openai/gpt-4o" */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Provider prefix extracted from the id, e.g. "openai" */
+  provider: string;
+}
+
 export interface ApiRequestConfig {
   type: "api_request";
   url: string;
