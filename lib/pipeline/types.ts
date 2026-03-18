@@ -44,8 +44,7 @@ export interface TransformConfig {
 
 export interface MetricCaptureConfig {
   type: "metric_capture";
-  metricName: string;
-  extractPath: string;
+  metrics: Record<string, string>;
 }
 
 export type NodeConfig =
@@ -103,7 +102,6 @@ export const defaultConfigs: Record<StepType, NodeConfig> = {
   },
   metric_capture: {
     type: "metric_capture",
-    metricName: "",
-    extractPath: "",
+    metrics: {},
   },
 };

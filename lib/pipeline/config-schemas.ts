@@ -37,8 +37,7 @@ export const transformConfigSchema = z.object({
 
 export const metricCaptureConfigSchema = z.object({
   type: z.literal("metric_capture"),
-  metricName: z.string().min(1),
-  extractPath: z.string().min(1),
+  metrics: z.record(z.string(), z.string()),
 });
 
 export const nodeConfigSchema = z.discriminatedUnion("type", [
