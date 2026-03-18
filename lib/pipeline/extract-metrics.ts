@@ -21,8 +21,9 @@ export function extractMetrics(run: {
 
   return run.stepResults
     .filter((sr) => metricNodeIds.has(sr.nodeId) && sr.status === "completed")
-    .map((sr) => ({
-      name: (sr.output?.metric as string) ?? sr.nodeId,
-      value: sr.output?.value,
-    }));
+    .flatMap((sr) =>
+      Object.entries(
+        (sr.output?.metrics as Record<string, unknown>) ?? {},
+      ).map(([name, value]) => ({ name, value })),
+    );
 }

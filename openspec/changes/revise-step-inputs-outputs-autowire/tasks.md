@@ -3,9 +3,8 @@
 - [x] 1.1 Update `MetricCaptureConfig` type in `lib/pipeline/types.ts` to `{ type: "metric_capture"; metrics: Record<string, string> }`
 - [x] 1.2 Update `metricCaptureConfigSchema` in `lib/pipeline/config-schemas.ts` to use `metrics: z.record(z.string(), z.string())`
 - [x] 1.3 Update `defaultConfigs.metric_capture` in `lib/pipeline/types.ts` to `{ type: "metric_capture", metrics: {} }`
-- [ ] 1.4 Rewrite `metricCaptureHandler` in `lib/pipeline/steps/metric-capture.ts` to iterate `config.metrics` entries and return `{ metrics: { [name]: value } }`; include fallback for legacy `{ metricName, extractPath }` shape
-- [ ] 1.5 Update `extractMetrics` in `lib/pipeline/extract-metrics.ts` to iterate `Object.entries(sr.output?.metrics ?? {})` instead of reading single `sr.output.metric` / `sr.output.value`
-- [ ] 1.6 Write a migration script (e.g. `lib/pipeline/migrations/metric-capture-config.ts`) that updates all `pipeline_nodes` rows with `type = 'metric_capture'` to the new config shape
+- [x] 1.4 Rewrite `metricCaptureHandler` in `lib/pipeline/steps/metric-capture.ts` to iterate `config.metrics` entries and return `{ metrics: { [name]: value } }`; include fallback for legacy `{ metricName, extractPath }` shape
+- [x] 1.5 Update `extractMetrics` in `lib/pipeline/extract-metrics.ts` to iterate `Object.entries(sr.output?.metrics ?? {})` instead of reading single `sr.output.metric` / `sr.output.value`
 
 ## 2. Auto-Wire Logic Updates
 

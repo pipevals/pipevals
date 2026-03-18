@@ -6,10 +6,11 @@ export const metricCaptureHandler: StepHandler<MetricCaptureConfig> = async (
   input,
 ) => {
   const context = { steps: input.steps, trigger: input.trigger };
-  const value = resolveDotPath(context, config.extractPath);
+  const result: Record<string, unknown> = {};
 
-  return {
-    metric: config.metricName,
-    value,
-  };
+  for (const [name, path] of Object.entries(config.metrics)) {
+    result[name] = resolveDotPath(context, path);
+  }
+
+  return { metrics: result };
 };
