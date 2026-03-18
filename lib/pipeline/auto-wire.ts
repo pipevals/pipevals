@@ -121,10 +121,13 @@ export function autoWireInputs(
   const currentValue = targetConfig[inputField];
   if (currentValue !== "" && currentValue !== undefined) return null;
 
+  // Condition expression needs a syntactically valid default (requires a comparison operator)
+  const value = inputField === "expression" ? `${dotPath} != null` : dotPath;
+
   return {
     config: {
       ...targetConfig,
-      [inputField]: dotPath,
+      [inputField]: value,
     },
   };
 }
