@@ -20,7 +20,36 @@ function makeRun(opts: {
 }
 
 describe("extractMetrics", () => {
-  test("extracts metrics from completed metric_capture nodes", () => {
+  test("extracts a single metric from a metric_capture node", () => {
+    const run = makeRun({
+      nodes: [{ id: "m1", type: "metric_capture" }],
+      stepResults: [
+        { nodeId: "m1", status: "completed", output: { metrics: { accuracy: 0.85 } } },
+      ],
+    });
+
+    expect(extractMetrics(run)).toEqual([{ name: "accuracy", value: 0.85 }]);
+  });
+
+  test("extracts multiple metrics from a single metric_capture node", () => {
+    const run = makeRun({
+      nodes: [{ id: "m1", type: "metric_capture" }],
+      stepResults: [
+        {
+          nodeId: "m1",
+          status: "completed",
+          output: { metrics: { accuracy: 0.85, latency: 1200 } },
+        },
+      ],
+    });
+
+    expect(extractMetrics(run)).toEqual([
+      { name: "accuracy", value: 0.85 },
+      { name: "latency", value: 1200 },
+    ]);
+  });
+
+  test("extracts metrics across multiple metric_capture nodes", () => {
     const run = makeRun({
       nodes: [
         { id: "n1", type: "transform" },
@@ -29,8 +58,8 @@ describe("extractMetrics", () => {
       ],
       stepResults: [
         { nodeId: "n1", status: "completed", output: { text: "hello" } },
-        { nodeId: "m1", status: "completed", output: { metric: "accuracy", value: 0.85 } },
-        { nodeId: "m2", status: "completed", output: { metric: "latency", value: 1200 } },
+        { nodeId: "m1", status: "completed", output: { metrics: { accuracy: 0.85 } } },
+        { nodeId: "m2", status: "completed", output: { metrics: { latency: 1200 } } },
       ],
     });
 
@@ -55,9 +84,7 @@ describe("extractMetrics", () => {
   test("ignores non-completed metric_capture nodes", () => {
     const run = makeRun({
       nodes: [{ id: "m1", type: "metric_capture" }],
-      stepResults: [
-        { nodeId: "m1", status: "failed", output: null },
-      ],
+      stepResults: [{ nodeId: "m1", status: "failed", output: null }],
     });
 
     expect(extractMetrics(run)).toEqual([]);
@@ -78,28 +105,24 @@ describe("extractMetrics", () => {
     expect(extractMetrics(run)).toEqual([]);
   });
 
-  test("falls back to nodeId when output.metric is missing", () => {
+  test("returns empty array when metrics map is empty", () => {
     const run = makeRun({
       nodes: [{ id: "m1", type: "metric_capture" }],
       stepResults: [
-        { nodeId: "m1", status: "completed", output: { value: 42 } },
+        { nodeId: "m1", status: "completed", output: { metrics: {} } },
       ],
     });
 
-    const metrics = extractMetrics(run);
-    expect(metrics).toEqual([{ name: "m1", value: 42 }]);
+    expect(extractMetrics(run)).toEqual([]);
   });
 
-  test("returns undefined value when output.value is missing", () => {
+  test("returns empty array when output is null", () => {
     const run = makeRun({
       nodes: [{ id: "m1", type: "metric_capture" }],
-      stepResults: [
-        { nodeId: "m1", status: "completed", output: { metric: "score" } },
-      ],
+      stepResults: [{ nodeId: "m1", status: "completed", output: null }],
     });
 
-    const metrics = extractMetrics(run);
-    expect(metrics).toEqual([{ name: "score", value: undefined }]);
+    expect(extractMetrics(run)).toEqual([]);
   });
 
   test("ignores completed non-metric nodes", () => {
@@ -112,7 +135,7 @@ describe("extractMetrics", () => {
       stepResults: [
         { nodeId: "n1", status: "completed", output: { result: "ok" } },
         { nodeId: "n2", status: "completed", output: { text: "hello" } },
-        { nodeId: "m1", status: "completed", output: { metric: "accuracy", value: 0.9 } },
+        { nodeId: "m1", status: "completed", output: { metrics: { accuracy: 0.9 } } },
       ],
     });
 
@@ -128,17 +151,5 @@ describe("extractMetrics", () => {
     });
 
     expect(extractMetrics(run)).toEqual([]);
-  });
-
-  test("handles null output on completed metric_capture", () => {
-    const run = makeRun({
-      nodes: [{ id: "m1", type: "metric_capture" }],
-      stepResults: [
-        { nodeId: "m1", status: "completed", output: null },
-      ],
-    });
-
-    const metrics = extractMetrics(run);
-    expect(metrics).toEqual([{ name: "m1", value: undefined }]);
   });
 });

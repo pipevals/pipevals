@@ -20,7 +20,7 @@
 
 - [x] 3.1 Update `lib/pipeline/__tests__/auto-wire.test.ts`: add scenarios for api_request body additive entry, sandbox code template (node and python runtimes), condition default expression, metric_capture metrics additive entry
 - [x] 3.2 Update `lib/pipeline/__tests__/steps/metric-capture.test.ts`: replace old `metricName` / `extractPath` tests with new `metrics` map tests; add legacy fallback scenario
-- [ ] 3.3 Update `lib/pipeline/__tests__/extract-metrics.test.ts` for new handler output shape
+- [x] 3.3 Update `lib/pipeline/__tests__/extract-metrics.test.ts` for new handler output shape
 
 ## 4. Config Panel UI
 
