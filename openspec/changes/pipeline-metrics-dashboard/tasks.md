@@ -5,8 +5,8 @@
 
 ## 2. Metrics API Endpoint
 
-- [ ] 2.1 Create `GET /api/pipelines/:id/runs/metrics` route handler — query `pipelineRuns` joined with `stepResults`, filter completed runs, extract metric_capture outputs from graphSnapshot + step results, compute run `durationMs`, return `{ runs: [...] }` ordered by `createdAt` ascending
-- [ ] 2.2 Write tests for the metrics endpoint: pipeline with completed runs, pipeline with no runs, multiple metric_capture nodes merged, step durations included, unauthenticated returns 401
+- [x] 2.1 Create `GET /api/pipelines/:id/runs/metrics` route handler — query `pipelineRuns` joined with `stepResults`, filter completed runs, extract metric_capture outputs from graphSnapshot + step results, compute run `durationMs`, return `{ runs: [...] }` ordered by `createdAt` ascending
+- [x] 2.2 Write tests for the metrics endpoint: pipeline with completed runs, pipeline with no runs, multiple metric_capture nodes merged, step durations included, unauthenticated returns 401
 
 ## 3. Pipeline Sub-Navigation
 
