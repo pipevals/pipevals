@@ -97,6 +97,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+/** Rename a key in a record while preserving insertion order (prevents row reordering in map editors). */
+function renameKey<V>(record: Record<string, V>, oldKey: string, newKey: string): Record<string, V> {
+  const next: Record<string, V> = {};
+  for (const [k, v] of Object.entries(record)) {
+    next[k === oldKey ? newKey : k] = v;
+  }
+  return next;
+}
+
 function ApiRequestFields({
   config,
   onUpdate,
@@ -132,12 +141,7 @@ function ApiRequestFields({
             <div key={i} className="flex gap-1">
               <Input
                 value={key}
-                onChange={(v) => {
-                  const next = { ...config.bodyTemplate };
-                  delete next[key];
-                  next[v] = val;
-                  onUpdate({ bodyTemplate: next });
-                }}
+                onChange={(v) => onUpdate({ bodyTemplate: renameKey(config.bodyTemplate ?? {}, key, v) })}
                 placeholder="field_name"
               />
               <Input
@@ -148,6 +152,7 @@ function ApiRequestFields({
                 placeholder="steps.node.field"
               />
               <button
+                type="button"
                 onClick={() => {
                   const next = { ...config.bodyTemplate };
                   delete next[key];
@@ -160,8 +165,10 @@ function ApiRequestFields({
             </div>
           ))}
           <button
+            type="button"
             onClick={() => onUpdate({ bodyTemplate: { ...config.bodyTemplate, "": "" } })}
-            className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+            disabled={"" in (config.bodyTemplate ?? {})}
+            className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
           >
             + Add field
           </button>
@@ -293,6 +300,7 @@ function ConditionFields({
             </div>
           ))}
           <button
+            type="button"
             onClick={() => onUpdate({ handles: [...config.handles, `branch_${config.handles.length}`] })}
             className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
           >
@@ -320,12 +328,7 @@ function TransformFields({
           <div key={i} className="flex gap-1">
             <Input
               value={key}
-              onChange={(v) => {
-                const next = { ...config.mapping };
-                delete next[key];
-                next[v] = path;
-                onUpdate({ mapping: next });
-              }}
+              onChange={(v) => onUpdate({ mapping: renameKey(config.mapping, key, v) })}
               placeholder="output_key"
             />
             <Input
@@ -347,7 +350,8 @@ function TransformFields({
         ))}
         <button
           onClick={() => onUpdate({ mapping: { ...config.mapping, "": "" } })}
-          className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+          disabled={"" in config.mapping}
+          className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
         >
           + Add mapping
         </button>
@@ -372,12 +376,7 @@ function MetricCaptureFields({
           <div key={i} className="flex gap-1">
             <Input
               value={key}
-              onChange={(v) => {
-                const next = { ...config.metrics };
-                delete next[key];
-                next[v] = path;
-                onUpdate({ metrics: next });
-              }}
+              onChange={(v) => onUpdate({ metrics: renameKey(config.metrics, key, v) })}
               placeholder="accuracy"
             />
             <Input
@@ -399,7 +398,8 @@ function MetricCaptureFields({
         ))}
         <button
           onClick={() => onUpdate({ metrics: { ...config.metrics, "": "" } })}
-          className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+          disabled={"" in config.metrics}
+          className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
         >
           + Add metric
         </button>

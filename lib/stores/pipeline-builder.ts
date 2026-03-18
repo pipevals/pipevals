@@ -128,8 +128,9 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         targetHandle: connection.targetHandle ?? null,
       };
 
-      // When wiring from a trigger handle → step input, write trigger.{fieldName}
-      // into the target step's config field that matches the targetHandle name.
+      // Precise handle-to-handle wiring: when the trigger schema has named fields,
+      // TriggerNode renders a handle per field. Dragging from a named handle writes
+      // `trigger.{field}` into the exact config key matching the target handle.
       if (
         connection.source === TRIGGER_NODE_ID &&
         connection.sourceHandle &&
@@ -165,6 +166,8 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         return;
       }
 
+      // General heuristic auto-wire: fires for step → step connections and for
+      // trigger connections without named handles (empty schema / generic handle).
       set((state) => {
         const sourceNode = state.nodes.find((n) => n.id === connection.source);
         const targetNode = state.nodes.find((n) => n.id === connection.target);

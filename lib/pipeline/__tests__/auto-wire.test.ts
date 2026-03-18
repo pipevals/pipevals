@@ -306,6 +306,18 @@ describe("autoWireInputs", () => {
     expect(result).toBeNull();
   });
 
+  test("metric_capture source returns null", () => {
+    const result = autoWireInputs(
+      "metric_capture",
+      "capture",
+      "node-7",
+      "ai_sdk",
+      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
+  });
+
   test("condition source returns null", () => {
     const result = autoWireInputs(
       "condition",

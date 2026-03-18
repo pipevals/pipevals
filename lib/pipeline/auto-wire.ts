@@ -8,7 +8,7 @@ const PRIMARY_OUTPUT: Record<StepType | "trigger", string | null> = {
   sandbox: null, // unknown output shape — skipped as source
   condition: null, // branching node, no data output
   transform: null, // output keys are user-defined
-  metric_capture: "value",
+  metric_capture: null, // output is a map of user-defined keys — no single primary output
 };
 
 // The config field to auto-populate on the target node (null = skip)

@@ -4,11 +4,11 @@ import { loadGraph } from "../../walker/graph-loader";
 import type { WalkerNode } from "../../walker/graph-loader";
 
 function makeGraph(
-  nodes: { id: string }[],
+  nodes: { id: string; label?: string }[],
   edges: { sourceNodeId: string; targetNodeId: string }[],
 ) {
   return loadGraph({
-    nodes: nodes.map((n) => ({ ...n, type: "transform", config: {} })),
+    nodes: nodes.map((n) => ({ type: "transform", config: {}, ...n })),
     edges: edges.map((e, i) => ({
       id: `e${i}`,
       ...e,
@@ -74,6 +74,48 @@ describe("resolveInputs", () => {
     );
 
     expect(input.steps).toEqual({});
+  });
+
+  //  a("llm") → b
+  test("also keys upstream output by label when present", () => {
+    const graph = makeGraph(
+      [{ id: "a", label: "llm" }, { id: "b" }],
+      [{ sourceNodeId: "a", targetNodeId: "b" }],
+    );
+
+    const results = new Map<string, Record<string, unknown>>();
+    results.set("a", { text: "hello" });
+
+    const input = resolveInputs(
+      graph.nodeMap.get("b")!,
+      graph,
+      results,
+      {},
+    );
+
+    expect(input.steps.a).toEqual({ text: "hello" });
+    expect(input.steps.llm).toEqual({ text: "hello" });
+  });
+
+  //  a (no label) → b
+  test("does not add label key when label is absent", () => {
+    const graph = makeGraph(
+      [{ id: "a" }, { id: "b" }],
+      [{ sourceNodeId: "a", targetNodeId: "b" }],
+    );
+
+    const results = new Map<string, Record<string, unknown>>();
+    results.set("a", { val: 1 });
+
+    const input = resolveInputs(
+      graph.nodeMap.get("b")!,
+      graph,
+      results,
+      {},
+    );
+
+    expect(input.steps.a).toEqual({ val: 1 });
+    expect(Object.keys(input.steps)).toEqual(["a"]);
   });
 
   //  a ─┐
