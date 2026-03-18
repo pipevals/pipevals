@@ -40,13 +40,15 @@ if (!values.org) {
   process.exit(1);
 }
 
-const sql = postgres(process.env.DATABASE_URL!);
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL environment variable is required");
+  process.exit(1);
+}
+
+const sql = postgres(process.env.DATABASE_URL);
 const db = drizzle(sql, { schema });
 
 async function main() {
-  const { organization, member } = schema;
-  const { eq } = await import("drizzle-orm");
-
   // Resolve org by ID or slug
   const org = await db.query.organization.findFirst({
     where: (o, { or, eq }) => or(eq(o.id, values.org!), eq(o.slug, values.org!)),

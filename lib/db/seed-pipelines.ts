@@ -1,6 +1,5 @@
 import { eq, and } from "drizzle-orm";
 import { pipelines, pipelineNodes, pipelineEdges } from "./pipeline-schema";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 interface SeedNode {
@@ -33,21 +32,23 @@ export interface SeedPipelineDefinition {
 // AI-as-a-Judge Scoring
 // ---------------------------------------------------------------------------
 
-const JUDGE_PROMPT = `You are an expert evaluator. Score the following AI-generated response on two criteria:
-
-1. Relevance - Does the response directly address the prompt?
-2. Coherence - Is the response well-structured, logical, and easy to follow?
-
-Use a 1-5 scale for each:
-- 1: Very poor
-- 2: Poor
-- 3: Acceptable
-- 4: Good
-- 5: Excellent
-
-Prompt: \${trigger.prompt}
-
-Response to evaluate: \${steps.Generator.text}`;
+const JUDGE_PROMPT = [
+  "You are an expert evaluator. Score the following AI-generated response on two criteria:",
+  "",
+  "1. Relevance - Does the response directly address the prompt?",
+  "2. Coherence - Is the response well-structured, logical, and easy to follow?",
+  "",
+  "Use a 1-5 scale for each:",
+  "- 1: Very poor",
+  "- 2: Poor",
+  "- 3: Acceptable",
+  "- 4: Good",
+  "- 5: Excellent",
+  "",
+  "Prompt: ${trigger.prompt}",
+  "",
+  "Response to evaluate: ${steps.Generator.text}",
+].join("\n");
 
 const aiAsAJudge: SeedPipelineDefinition = {
   name: "AI-as-a-Judge Scoring",
@@ -152,17 +153,19 @@ const aiAsAJudge: SeedPipelineDefinition = {
 // Model A/B Comparison
 // ---------------------------------------------------------------------------
 
-const COMPARISON_JUDGE_PROMPT = `You are an impartial judge comparing two AI-generated responses to the same prompt.
-
-Evaluate each response on overall quality (clarity, accuracy, helpfulness, and depth).
-
-Original prompt: \${trigger.prompt}
-
-Response A: \${steps.Collect Responses.response_a}
-
-Response B: \${steps.Collect Responses.response_b}
-
-Score each response 1-5 and pick a winner.`;
+const COMPARISON_JUDGE_PROMPT = [
+  "You are an impartial judge comparing two AI-generated responses to the same prompt.",
+  "",
+  "Evaluate each response on overall quality (clarity, accuracy, helpfulness, and depth).",
+  "",
+  "Original prompt: ${trigger.prompt}",
+  "",
+  "Response A: ${steps.Collect Responses.response_a}",
+  "",
+  "Response B: ${steps.Collect Responses.response_b}",
+  "",
+  "Score each response 1-5 and pick a winner.",
+].join("\n");
 
 const modelAbComparison: SeedPipelineDefinition = {
   name: "Model A/B Comparison",
@@ -317,16 +320,14 @@ export const seedPipelineDefinitions: SeedPipelineDefinition[] = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyDb = PostgresJsDatabase<any> | NodePgDatabase<any>;
-
 export async function seedPipelines(
-  db: AnyDb,
+  db: PostgresJsDatabase<any>,
   organizationId: string,
   createdBy: string,
 ) {
   for (const def of seedPipelineDefinitions) {
     // Idempotency: skip if slug already exists in this org
-    const existing = await (db as PostgresJsDatabase).select({ id: pipelines.id })
+    const existing = await db.select({ id: pipelines.id })
       .from(pipelines)
       .where(and(eq(pipelines.slug, def.slug), eq(pipelines.organizationId, organizationId)))
       .limit(1);
@@ -336,7 +337,7 @@ export async function seedPipelines(
       continue;
     }
 
-    await (db as PostgresJsDatabase).transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const [pipeline] = await tx
         .insert(pipelines)
         .values({

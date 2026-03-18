@@ -55,17 +55,12 @@ export function resolveTemplate(
       return resolveDotPath(context, template);
     }
 
-    // Inline interpolation (always returns a string)
-    if (INTERPOLATION_RE.test(template)) {
-      INTERPOLATION_RE.lastIndex = 0;
-      return template.replace(INTERPOLATION_RE, (_, dollarPath, mustachePath) => {
-        const path = dollarPath ?? mustachePath;
-        const value = resolveDotPath(context, path);
-        return String(value);
-      });
-    }
-
-    return template;
+    // Inline interpolation: replace ${steps.X.Y} / {{steps.X.Y}} expressions
+    return template.replace(INTERPOLATION_RE, (_, dollarPath, mustachePath) => {
+      const path = dollarPath ?? mustachePath;
+      const value = resolveDotPath(context, path);
+      return String(value);
+    });
   }
 
   if (Array.isArray(template)) {

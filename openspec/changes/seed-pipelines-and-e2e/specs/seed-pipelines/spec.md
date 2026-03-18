@@ -30,7 +30,7 @@ Model A and Model B nodes SHALL execute in parallel (both wired from trigger, co
 
 #### Scenario: Seed script creates Model A/B Comparison pipeline
 - **WHEN** the seed script runs against an organization that has no pipeline with slug `model-ab-comparison`
-- **THEN** a pipeline named "Model A/B Comparison" is created with 6 nodes and 5 edges, with Model A and Model B branching from trigger and converging at the transform node
+- **THEN** a pipeline named "Model A/B Comparison" is created with 6 nodes and 6 edges, with Model A and Model B branching from trigger and converging at the transform node
 
 #### Scenario: Parallel execution of models
 - **WHEN** the Model A/B Comparison pipeline is examined
