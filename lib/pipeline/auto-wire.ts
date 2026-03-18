@@ -5,7 +5,7 @@ const PRIMARY_OUTPUT: Record<StepType | "trigger", string | null> = {
   trigger: null, // resolved dynamically from triggerSchema
   api_request: "body",
   ai_sdk: "text",
-  sandbox: null, // unknown output shape
+  sandbox: null, // unknown output shape — skipped as source
   condition: null, // branching node, no data output
   transform: null, // output keys are user-defined
   metric_capture: "value",
@@ -15,7 +15,7 @@ const PRIMARY_OUTPUT: Record<StepType | "trigger", string | null> = {
 const PRIMARY_INPUT_FIELD: Record<StepType, string | null> = {
   api_request: "__body__",
   ai_sdk: "promptTemplate",
-  sandbox: null,
+  sandbox: "code",
   condition: "expression",
   transform: "__mapping__", // special case handled below
   metric_capture: "extractPath",
