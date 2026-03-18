@@ -28,6 +28,15 @@ export function resolveDotPath(obj: unknown, path: string): unknown {
 }
 
 /**
+ * Matches a whole-string dot-path: starts with steps. or trigger.,
+ * contains only valid path characters (word chars, dots, brackets).
+ *
+ * Labels with spaces (e.g. "steps.Collect Responses.x") should use
+ * interpolation syntax: "${steps.Collect Responses.x}".
+ */
+const WHOLE_DOTPATH_RE = /^(?:steps|trigger)\.[\w.\[\]]+$/;
+
+/**
  * Matches interpolation expressions: ${steps.X.Y}, ${trigger.X},
  * {{steps.X.Y}}, or {{trigger.X}}.
  */
@@ -51,7 +60,7 @@ export function resolveTemplate(
 ): unknown {
   if (typeof template === "string") {
     // Whole-string dot-path (preserves non-string types)
-    if (template.startsWith("steps.") || template.startsWith("trigger.")) {
+    if (WHOLE_DOTPATH_RE.test(template)) {
       return resolveDotPath(context, template);
     }
 

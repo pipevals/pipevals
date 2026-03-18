@@ -110,4 +110,16 @@ describe("resolveTemplate", () => {
     const ctx = { steps: { n1: { score: 0.9 } }, trigger: {} };
     expect(resolveTemplate("steps.n1.score", ctx)).toBe(0.9);
   });
+
+  test("string starting with steps. but containing extra text is not a whole-string dot-path", () => {
+    const ctx = { steps: { foo: { bar: "val" } }, trigger: {} };
+    // "steps.foo.bar extra text" should NOT be treated as a dot-path —
+    // it should pass through as a literal (no interpolation markers either)
+    expect(resolveTemplate("steps.foo.bar extra text", ctx)).toBe("steps.foo.bar extra text");
+  });
+
+  test("labels with spaces use interpolation syntax, not whole-string dot-path", () => {
+    const ctx = { steps: { "Collect Responses": { response_a: "hello" } }, trigger: {} };
+    expect(resolveTemplate("${steps.Collect Responses.response_a}", ctx)).toBe("hello");
+  });
 });

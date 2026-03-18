@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { seedPipelineDefinitions } from "../../lib/db/seed-pipelines";
 
 export const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
@@ -99,12 +99,20 @@ export async function signInDev(
     throw new Error(`Dev sign-in failed: ${res.status} ${await res.text()}`);
   }
 
-  // Extract set-cookie header and inject into the browser
+  // Extract set-cookie header and inject into the browser.
+  // Uses execFileSync (no shell) to avoid command injection from cookie values.
   const setCookie = res.headers.getSetCookie?.() ?? [];
   for (const cookie of setCookie) {
     const [nameValue] = cookie.split(";");
     const [name, value] = nameValue.split("=");
-    ab_exec(`eval "document.cookie='${name.trim()}=${value.trim()}; path=/'"`);
+    const safeName = name.trim().replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const safeValue = value.trim().replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const js = `document.cookie='${safeName}=${safeValue}; path=/'`;
+    execFileSync("agent-browser", [...BROWSER_FLAG.split(" "), "eval", js], {
+      encoding: "utf-8",
+      timeout: 10_000,
+      stdio: "pipe",
+    });
   }
 }
 
@@ -138,5 +146,4 @@ export function assert(condition: boolean, message: string): void {
 
 export function pass(testName: string): void {
   console.log(`PASS: ${testName}`);
-  process.exit(0);
 }

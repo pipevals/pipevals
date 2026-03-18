@@ -1,10 +1,11 @@
 import { eq, and } from "drizzle-orm";
 import { pipelines, pipelineNodes, pipelineEdges } from "./pipeline-schema";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { PipelineNodeType } from "../pipeline/types";
+import type { db as appDb } from ".";
 
 interface SeedNode {
   id: string;
-  type: (typeof import("./pipeline-schema").pipelineNodeTypeEnum)[number];
+  type: PipelineNodeType;
   label: string;
   config: Record<string, unknown>;
   positionX: number;
@@ -319,9 +320,8 @@ export const seedPipelineDefinitions: SeedPipelineDefinition[] = [
   modelAbComparison,
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function seedPipelines(
-  db: PostgresJsDatabase<any>,
+  db: typeof appDb,
   organizationId: string,
   createdBy: string,
 ) {
