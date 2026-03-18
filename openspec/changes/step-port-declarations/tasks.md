@@ -5,13 +5,13 @@
 
 ## 2. Step registry migration
 
-- [ ] 2.1 Refactor `lib/pipeline/steps/registry.ts` from `Record<StepType, StepHandler>` to `Record<StepType, StepDefinition>`
-- [ ] 2.2 Add port declarations for `ai_sdk` (scalar input on `promptTemplate`, output `text`)
-- [ ] 2.3 Add port declarations for `api_request` (additive input on `bodyTemplate`, output `body`)
-- [ ] 2.4 Add port declarations for `sandbox` (template input on `code` with runtime-aware generator, empty outputs)
-- [ ] 2.5 Add port declarations for `condition` (scalar input on `expression` with ` != null` suffix, empty outputs)
-- [ ] 2.6 Add port declarations for `transform` (additive input on `mapping`, empty outputs)
-- [ ] 2.7 Add port declarations for `metric_capture` (additive input on `metrics`, empty outputs)
+- [x] 2.1 Refactor `lib/pipeline/steps/registry.ts` from `Record<StepType, StepHandler>` to `Record<StepType, StepDefinition>`
+- [x] 2.2 Add port declarations for `ai_sdk` (scalar input on `promptTemplate`, output `text`)
+- [x] 2.3 Add port declarations for `api_request` (additive input on `bodyTemplate`, output `body`)
+- [x] 2.4 Add port declarations for `sandbox` (template input on `code` with runtime-aware generator, empty outputs)
+- [x] 2.5 Add port declarations for `condition` (scalar input on `expression` with ` != null` suffix, empty outputs)
+- [x] 2.6 Add port declarations for `transform` (additive input on `mapping`, empty outputs)
+- [x] 2.7 Add port declarations for `metric_capture` (additive input on `metrics`, empty outputs)
 
 ## 3. Generic auto-wire
 
