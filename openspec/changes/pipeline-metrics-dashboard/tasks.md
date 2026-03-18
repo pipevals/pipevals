@@ -20,7 +20,7 @@
 
 ## 5. Stat Cards
 
-- [ ] 5.1 Build stat cards row: total runs, pass rate (%), average value of first numeric metric, average run duration — using shadcn `Card` components
+- [x] 5.1 Build stat cards row: total runs, pass rate (%), average value of first numeric metric, average run duration — using shadcn `Card` components
 
 ## 6. Metric Trends Chart
 

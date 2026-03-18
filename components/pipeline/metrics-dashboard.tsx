@@ -3,12 +3,12 @@
 import useSWR from "swr";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Card, CardContent } from "@/components/ui/card";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
 
@@ -175,12 +175,14 @@ function MetricsStatCards({ agg }: { agg: MetricsAggregate }) {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-background p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
-        {value}
-      </p>
-    </div>
+    <Card size="sm">
+      <CardContent>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+          {value}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
