@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 
 async function triggerRun(url: string) {
@@ -47,6 +48,7 @@ export function RunListPageContent({
       setTriggerError(
         err instanceof Error ? err.message : "Failed to trigger run",
       );
+      handleApiError(err);
     },
   });
 

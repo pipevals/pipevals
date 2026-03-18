@@ -23,6 +23,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import type { PipelineSummary } from "@/lib/api/pipelines";
+import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
 
 interface PipelineListProps {
@@ -82,7 +83,9 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Failed to create pipeline");
+        const msg = data.error ?? "Failed to create pipeline";
+        setError(msg);
+        await handleApiError(new Error(msg));
         return;
       }
       setName("");
@@ -91,6 +94,7 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return;
       setError("Failed to create pipeline");
+      await handleApiError(e);
     } finally {
       setCreateController(null);
     }
@@ -99,10 +103,14 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
   const onDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/pipelines/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        await handleApiError(res);
+        return;
+      }
       await fetchPipelines();
-    } catch {
+    } catch (e) {
       setError("Failed to delete pipeline");
+      await handleApiError(e);
     }
   };
 

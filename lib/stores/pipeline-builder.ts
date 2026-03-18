@@ -16,6 +16,7 @@ import type {
 } from "@/lib/pipeline/types";
 import { defaultConfigs } from "@/lib/pipeline/types";
 import { autoWireInputs } from "@/lib/pipeline/auto-wire";
+import { handleApiError } from "@/lib/handle-api-error";
 
 export interface PipelineNodeData {
   label: string | null;
@@ -327,6 +328,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
           const data = await res.json().catch(() => ({}));
           const message = data.error ?? "Failed to save pipeline";
           set({ saveError: message });
+          await handleApiError(new Error(message));
           throw new Error(message);
         }
         set({ dirty: false });
