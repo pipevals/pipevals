@@ -1,5 +1,7 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import { autoWireInputs } from "../auto-wire";
+import { stepRegistry } from "../steps/registry";
+import type { StepDefinition, StepType } from "../types";
 
 const EMPTY_TRIGGER_SCHEMA = {};
 const TRIGGER_SCHEMA = { prompt: "string", context: "string" };
@@ -344,5 +346,66 @@ describe("autoWireInputs", () => {
     expect(result).not.toBeNull();
     const metrics = result!.config.metrics as Record<string, string>;
     expect(metrics[""]).toBe("steps.my-node-id.text");
+  });
+});
+
+describe("port-driven extensibility", () => {
+  const FAKE_TYPE = "webhook" as StepType;
+
+  beforeAll(() => {
+    // Register a hypothetical new step type with ports — no auto-wire.ts changes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (stepRegistry as Record<string, StepDefinition<any>>)[FAKE_TYPE] = {
+      handler: async (config: Record<string, unknown>) => ({
+        result: config.url,
+      }),
+      ports: {
+        inputs: [{ configField: "url", mode: "scalar" }],
+        outputs: [{ key: "result" }],
+      },
+    };
+  });
+
+  afterAll(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (stepRegistry as Record<string, StepDefinition<any>>)[FAKE_TYPE];
+  });
+
+  test("new step type auto-wires as source using declared output port", () => {
+    const result = autoWireInputs(
+      FAKE_TYPE,
+      "hook",
+      "node-99",
+      "ai_sdk",
+      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.promptTemplate).toBe("steps.hook.result");
+  });
+
+  test("new step type auto-wires as target using declared input port", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      FAKE_TYPE,
+      { type: FAKE_TYPE, url: "" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.url).toBe("steps.llm.text");
+  });
+
+  test("new step type scalar input does not overwrite existing value", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      FAKE_TYPE,
+      { type: FAKE_TYPE, url: "https://existing.com" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
   });
 });

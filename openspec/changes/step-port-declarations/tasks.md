@@ -25,7 +25,7 @@
 
 ## 5. Tests
 
-- [ ] 5.1 Update `lib/pipeline/__tests__/auto-wire.test.ts` — all existing test cases must pass with identical assertions against the new generic implementation
-- [ ] 5.2 Add test: new step type with declared ports auto-wires correctly without any auto-wire.ts changes
-- [ ] 5.3 Update `lib/pipeline/__tests__/walker/input-resolver.test.ts` if the import of registry types changed
-- [ ] 5.4 Run full test suite (`bun test`) and verify zero regressions
+- [x] 5.1 Update `lib/pipeline/__tests__/auto-wire.test.ts` — all existing test cases must pass with identical assertions against the new generic implementation
+- [x] 5.2 Add test: new step type with declared ports auto-wires correctly without any auto-wire.ts changes
+- [x] 5.3 Update `lib/pipeline/__tests__/walker/input-resolver.test.ts` if the import of registry types changed
+- [x] 5.4 Run full test suite (`bun test`) and verify zero regressions
