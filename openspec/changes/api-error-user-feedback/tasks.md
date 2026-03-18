@@ -1,11 +1,11 @@
 ## 1. Install and Configure Sonner
 
-- [ ] 1.1 Add `sonner` package via `bun add sonner`
-- [ ] 1.2 Add `<Toaster>` component to `app/layout.tsx`
+- [x] 1.1 Add `sonner` package via `bun add sonner`
+- [x] 1.2 Add `<Toaster>` component to `app/layout.tsx`
 
 ## 2. Create `handleApiError` Utility
 
-- [ ] 2.1 Create `lib/handle-api-error.ts` that accepts `Response | unknown`, parses `response.json().error` when available, and calls `toast.error()` with the message or a generic fallback
+- [x] 2.1 Create `lib/handle-api-error.ts` that accepts `Response | unknown`, parses `response.json().error` when available, and calls `toast.error()` with the message or a generic fallback
 
 ## 3. Surface Errors in Pipeline List
 
