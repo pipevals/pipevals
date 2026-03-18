@@ -36,8 +36,8 @@
 
 ## 7. E2E Test Infrastructure
 
-- [ ] 7.1 Create `tests/e2e/` directory with a README documenting prerequisites (dev server, seed script, auth)
-- [ ] 7.2 Create an E2E test script for the pipeline list smoke test: sign in → verify both seed pipeline names appear in the list
-- [ ] 7.3 Create an E2E test script for the canvas render smoke test: open AI-as-a-Judge pipeline → verify "Generator" and "Judge" nodes render on canvas
-- [ ] 7.4 Create an E2E test script for the canvas render smoke test: open Model A/B pipeline → verify "Model A", "Model B", "Collect Responses", "Judge" nodes render
-- [ ] 7.5 Create an E2E test script for the run trigger smoke test: open a pipeline → fill trigger input → click run → verify run appears in run list
+- [x] 7.1 Create `tests/e2e/` directory with a README documenting prerequisites (dev server, seed script, auth)
+- [x] 7.2 Create an E2E test script for the pipeline list smoke test: sign in → verify both seed pipeline names appear in the list
+- [x] 7.3 Create an E2E test script for the canvas render smoke test: open AI-as-a-Judge pipeline → verify "Generator" and "Judge" nodes render on canvas
+- [x] 7.4 Create an E2E test script for the canvas render smoke test: open Model A/B pipeline → verify "Model A", "Model B", "Collect Responses", "Judge" nodes render
+- [x] 7.5 Create an E2E test script for the run trigger smoke test: open a pipeline → fill trigger input → click run → verify run appears in run list
