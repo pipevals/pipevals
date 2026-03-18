@@ -31,8 +31,8 @@
 
 ## 6. Unit Tests for Seed Definitions
 
-- [ ] 6.1 Write Bun tests verifying each seed pipeline's node configs pass their respective Zod schemas
-- [ ] 6.2 Write Bun tests verifying each seed pipeline's graph passes `validateGraph`
+- [x] 6.1 Write Bun tests verifying each seed pipeline's node configs pass their respective Zod schemas
+- [x] 6.2 Write Bun tests verifying each seed pipeline's graph passes `validateGraph`
 
 ## 7. E2E Test Infrastructure
 
