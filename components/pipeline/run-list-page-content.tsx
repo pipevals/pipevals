@@ -17,11 +17,14 @@ import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
-async function triggerRun(url: string) {
+async function triggerRun(
+  url: string,
+  { arg }: { arg?: Record<string, unknown> } = {},
+) {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source: "ui" }),
+    body: JSON.stringify({ ...arg, source: "ui" }),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -86,11 +89,7 @@ export function RunListPageContent({
               <p className="text-xs text-destructive">{triggerError}</p>
             )}
             <TriggerWithPayloadDialog
-              pipelineId={pipelineId}
-              onSuccess={() => {
-                setTriggerError(null);
-                mutate(apiUrl);
-              }}
+              onTrigger={(payload) => trigger(payload)}
             />
             <Button size="sm" onClick={() => trigger()} disabled={isMutating}>
               {isMutating ? "Triggering…" : "Trigger Run"}

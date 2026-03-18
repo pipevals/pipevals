@@ -1,123 +1,87 @@
 import { describe, test, expect, mock, beforeEach } from "bun:test";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { TriggerWithPayloadDialog } from "../trigger-with-payload-dialog";
 
-const onSuccess = mock(() => {});
+const onTrigger = mock(() => Promise.resolve());
 
 beforeEach(() => {
-  onSuccess.mockClear();
-  // @ts-expect-error — mock fetch
-  globalThis.fetch = mock(() => {});
+  onTrigger.mockClear();
 });
 
-function renderOpen() {
-  // Render and click the trigger to open the dialog
-  render(
-    <TriggerWithPayloadDialog pipelineId="p1" onSuccess={onSuccess} />,
+async function renderOpen() {
+  const user = userEvent.setup();
+  render(<TriggerWithPayloadDialog onTrigger={onTrigger} />);
+  await user.click(
+    screen.getByRole("button", { name: /trigger with payload/i }),
   );
-  fireEvent.click(screen.getByText("Trigger with payload…"));
+  return user;
 }
 
 // 3.1
 describe("initial state", () => {
-  test("renders with {} pre-filled and submit button enabled", () => {
-    renderOpen();
+  test("renders with {} pre-filled and submit button enabled", async () => {
+    await renderOpen();
 
-    const textarea = screen.getByRole("textbox");
-    expect(textarea).toHaveValue("{}");
-
-    const triggerBtn = screen.getByRole("button", { name: "Trigger" });
-    expect(triggerBtn).toBeEnabled();
+    expect(screen.getByRole("textbox")).toHaveValue("{}");
+    expect(screen.getByRole("button", { name: "Trigger" })).toBeEnabled();
   });
 });
 
 // 3.2
 describe("JSON validation", () => {
-  test("invalid JSON disables submit button and shows error", () => {
-    renderOpen();
+  test("invalid JSON disables submit button and shows error", async () => {
+    const user = await renderOpen();
 
-    const textarea = screen.getByRole("textbox");
-    fireEvent.change(textarea, { target: { value: "{ bad json }" } });
+    await user.clear(screen.getByRole("textbox"));
+    await user.type(screen.getByRole("textbox"), "{{} bad json }");
 
-    expect(
-      screen.getByRole("button", { name: "Trigger" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Trigger" })).toBeDisabled();
     expect(screen.getByText("Invalid JSON")).toBeInTheDocument();
   });
 });
 
 // 3.3
 describe("API call", () => {
-  test("valid JSON triggers correct API call with merged payload", async () => {
-    const fetchMock = mock(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ runId: "r1" }), { status: 202 }),
-      ),
-    );
-    // @ts-expect-error — mock fetch
-    globalThis.fetch = fetchMock;
+  test("valid JSON calls onTrigger with parsed payload", async () => {
+    const user = await renderOpen();
 
-    renderOpen();
-
-    const textarea = screen.getByRole("textbox");
-    fireEvent.change(textarea, {
-      target: { value: '{"prompt":"hello"}' },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Trigger" }));
+    await user.clear(screen.getByRole("textbox"));
+    await user.type(screen.getByRole("textbox"), '{{"prompt":"hello"}');
+    await user.click(screen.getByRole("button", { name: "Trigger" }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(onTrigger).toHaveBeenCalledTimes(1);
     });
 
-    const [url, opts] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/pipelines/p1/runs");
-    expect(opts.method).toBe("POST");
-    expect(JSON.parse(opts.body)).toEqual({
-      prompt: "hello",
-      source: "ui",
-    });
+    expect(onTrigger).toHaveBeenCalledWith({ prompt: "hello" });
   });
 });
 
 // 3.4
 describe("success flow", () => {
-  test("dialog closes and onSuccess fires after successful response", async () => {
-    // @ts-expect-error — mock fetch
-    globalThis.fetch = mock(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ runId: "r1" }), { status: 202 }),
-      ),
-    );
-
-    renderOpen();
-    fireEvent.click(screen.getByRole("button", { name: "Trigger" }));
+  test("dialog closes after successful trigger", async () => {
+    const user = await renderOpen();
+    await user.click(screen.getByRole("button", { name: "Trigger" }));
 
     await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledTimes(1);
+      expect(onTrigger).toHaveBeenCalledTimes(1);
     });
 
-    expect(
-      screen.queryByRole("dialog"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 
 // 3.5
 describe("cancel", () => {
-  test("Cancel button closes dialog without API call", async () => {
-    const fetchMock = mock(() => Promise.resolve(new Response()));
-    // @ts-expect-error — mock fetch
-    globalThis.fetch = fetchMock;
-
-    renderOpen();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+  test("Cancel button closes dialog without calling onTrigger", async () => {
+    const user = await renderOpen();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("dialog"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(onTrigger).not.toHaveBeenCalled();
   });
 });

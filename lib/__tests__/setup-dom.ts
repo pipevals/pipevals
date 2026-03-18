@@ -1,6 +1,4 @@
 import { JSDOM } from "jsdom";
-import { expect } from "bun:test";
-import * as matchers from "@testing-library/jest-dom/matchers";
 
 const dom = new JSDOM("<!doctype html><html><body></body></html>", {
   url: "http://localhost",
@@ -9,7 +7,8 @@ const dom = new JSDOM("<!doctype html><html><body></body></html>", {
 
 const window = dom.window;
 
-// Expose DOM globals for @testing-library and React
+// Expose DOM globals for @testing-library and React.
+// Must run before @testing-library/react is imported (it checks for document.body at eval time).
 const globals: Record<string, unknown> = {
   window,
   document: window.document,
@@ -48,5 +47,3 @@ for (const [key, value] of Object.entries(globals)) {
     value,
   });
 }
-
-expect.extend(matchers);

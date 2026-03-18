@@ -13,25 +13,16 @@ import {
 } from "@/components/ui/dialog";
 
 export function TriggerWithPayloadDialog({
-  pipelineId,
-  onSuccess,
+  onTrigger,
 }: {
-  pipelineId: string;
-  onSuccess: () => void;
+  onTrigger: (payload: Record<string, unknown>) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [json, setJson] = useState("{}");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const isValid = (() => {
-    try {
-      JSON.parse(json);
-      return true;
-    } catch {
-      return false;
-    }
-  })();
+  const isValid = error === null;
 
   function handleJsonChange(value: string) {
     setJson(value);
@@ -53,19 +44,10 @@ export function TriggerWithPayloadDialog({
 
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/pipelines/${pipelineId}/runs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed, source: "ui" }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Failed to trigger run");
-      }
+      await onTrigger(parsed);
       setOpen(false);
       setJson("{}");
       setError(null);
-      onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to trigger run");
     } finally {
@@ -89,6 +71,7 @@ export function TriggerWithPayloadDialog({
         </DialogHeader>
         <div className="grid gap-1.5">
           <textarea
+            aria-label="JSON payload"
             className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={json}
             onChange={(e) => handleJsonChange(e.target.value)}

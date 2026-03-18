@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -45,7 +44,8 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
       const hasSchema =
         schema && typeof schema === "object" && Object.keys(schema).length > 0;
       const body = hasSchema ? JSON.stringify(schema) : "{}";
-      const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${body}'`;
+      const escaped = body.replace(/'/g, "'\\''");
+      const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
       navigator.clipboard.writeText(cmd);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);

@@ -1,2 +1,5 @@
 [test]
-preload = ["./lib/__tests__/setup-dom.ts"]
+# Global preload: jsdom + jest-dom matchers + RTL cleanup.
+# Runs for all tests (including non-UI). The overhead is minimal and server-side
+# tests are unaffected by the presence of browser globals.
+preload = ["./lib/__tests__/setup-dom.ts", "./lib/__tests__/setup-matchers.ts"]
