@@ -13,8 +13,8 @@
 
 ## 3. Tests
 
-- [ ] 3.1 Unit test: dialog renders with `{}` pre-filled and submit button enabled
-- [ ] 3.2 Unit test: invalid JSON disables submit button and shows error message
-- [ ] 3.3 Unit test: valid JSON triggers the correct API call with merged payload
-- [ ] 3.4 Unit test: dialog closes and `onSuccess` fires after successful API response
-- [ ] 3.5 Unit test: Cancel button closes dialog without making an API call
+- [x] 3.1 Unit test: dialog renders with `{}` pre-filled and submit button enabled
+- [x] 3.2 Unit test: invalid JSON disables submit button and shows error message
+- [x] 3.3 Unit test: valid JSON triggers the correct API call with merged payload
+- [x] 3.4 Unit test: dialog closes and `onSuccess` fires after successful API response
+- [x] 3.5 Unit test: Cancel button closes dialog without making an API call
