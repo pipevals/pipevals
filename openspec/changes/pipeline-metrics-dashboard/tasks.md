@@ -1,7 +1,7 @@
 ## 1. Dependencies & UI Primitives
 
-- [ ] 1.1 Install recharts and add shadcn chart component (`npx shadcn@latest add chart`)
-- [ ] 1.2 Verify chart component renders with a smoke test (import in a page, confirm no build errors)
+- [x] 1.1 Install recharts and add shadcn chart component (`npx shadcn@latest add chart`)
+- [x] 1.2 Verify chart component renders with a smoke test (import in a page, confirm no build errors)
 
 ## 2. Metrics API Endpoint
 
