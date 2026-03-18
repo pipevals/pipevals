@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { computeDuration, formatDateTime } from "@/lib/format";
+import { computeDuration, formatDateTime, shortId } from "@/lib/format";
 import type { RunStatus } from "@/lib/stores/run-viewer";
 
 interface RunSummary {
@@ -153,9 +153,9 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
                       <Link
                         href={`/pipelines/${pipelineId}/runs/${run.id}`}
                         className="absolute inset-0"
-                        aria-label={`View run ${run.id.slice(0, 12)}`}
+                        aria-label={`View run ${shortId(run.id)}`}
                       />
-                      {run.id.slice(0, 12)}
+                      {shortId(run.id)}
                     </TableCell>
                     <TableCell>
                       <StatusDot status={run.status} />

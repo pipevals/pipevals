@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { shortId } from "@/lib/format";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Rocket01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ export function PipelineToolbar() {
                     href={`/pipelines/${pipelineId}`}
                     className="max-w-[180px] truncate"
                   >
-                    {pipelineSlug ?? pipelineId.slice(0, 8)}
+                    {pipelineSlug ?? shortId(pipelineId)}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>

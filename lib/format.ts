@@ -1,5 +1,11 @@
 import { DateTime, Duration } from "luxon";
 
+const SHORT_ID_LENGTH = 8;
+
+export function shortId(id: string): string {
+  return id.slice(0, SHORT_ID_LENGTH);
+}
+
 export function formatDuration(ms: number): string {
   const dur = Duration.fromMillis(ms);
   if (ms < 1000) return `${ms}ms`;

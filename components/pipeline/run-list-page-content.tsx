@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { shortId } from "@/lib/format";
 import Link from "next/link";
 import useSWRMutation from "swr/mutation";
 import { mutate } from "swr";
@@ -114,7 +115,7 @@ export function RunListPageContent({
                     href={`/pipelines/${pipelineId}`}
                     className="truncate max-w-[200px]"
                   >
-                    {pipelineSlug ?? pipelineId.slice(0, 8)}
+                    {pipelineSlug ?? shortId(pipelineId)}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
