@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import useSWR from "swr";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PlayIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import {
   Empty,
@@ -112,19 +114,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <svg
-                    aria-hidden
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
+                  <HugeiconsIcon icon={PlayIcon} size={24} aria-hidden />
                 </EmptyMedia>
                 <EmptyTitle>No runs yet</EmptyTitle>
                 <EmptyDescription>

@@ -13,6 +13,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
@@ -42,6 +50,7 @@ export function RunListPageContent({
 }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
   const [triggerError, setTriggerError] = useState<string | null>(null);
+  const [payloadDialogOpen, setPayloadDialogOpen] = useState(false);
 
   const { trigger, isMutating } = useSWRMutation(apiUrl, triggerRun, {
     onSuccess: () => {
@@ -89,11 +98,48 @@ export function RunListPageContent({
               <p className="text-xs text-destructive">{triggerError}</p>
             )}
             <TriggerWithPayloadDialog
+              open={payloadDialogOpen}
+              onOpenChange={setPayloadDialogOpen}
               onTrigger={(payload) => trigger(payload)}
             />
-            <Button size="sm" onClick={() => trigger()} disabled={isMutating}>
-              {isMutating ? "Triggering…" : "Trigger Run"}
-            </Button>
+            <div className="flex rounded-md overflow-hidden">
+              <Button
+                size="sm"
+                onClick={() => trigger()}
+                disabled={isMutating}
+                className="rounded-none border-0 ring-0"
+              >
+                {isMutating ? "Triggering…" : "Trigger Run"}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="rounded-none border-0 border-l border-primary-foreground/20 px-2 ring-0"
+                    disabled={isMutating}
+                    aria-label="More trigger options"
+                  >
+                    <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => trigger()}
+                    disabled={isMutating}
+                  >
+                    Trigger Run
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setPayloadDialogOpen(true);
+                    }}
+                  >
+                    Trigger with payload…
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>

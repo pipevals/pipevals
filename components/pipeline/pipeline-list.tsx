@@ -21,6 +21,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  BrowserIcon,
+  CheckmarkCircle01Icon,
+  Copy01Icon,
+  Search01Icon,
+} from "@hugeicons/core-free-icons";
 import type { PipelineSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
@@ -183,21 +190,12 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <svg
-            aria-hidden="true"
+          <HugeiconsIcon
+            icon={Search01Icon}
+            size={16}
             className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+            aria-hidden
+          />
           <input
             aria-label="Search pipelines"
             name="search"
@@ -228,20 +226,7 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
               <Empty className="py-12">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
-                    <svg
-                      aria-hidden
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
-                      <path d="M2 10h20" />
-                    </svg>
+                    <HugeiconsIcon icon={BrowserIcon} size={24} aria-hidden />
                   </EmptyMedia>
                   <EmptyTitle>
                     {search
@@ -288,39 +273,12 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
                         aria-label="Copy curl command"
                       >
                         {copiedId === p.id ? (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                          <HugeiconsIcon
+                            icon={CheckmarkCircle01Icon}
+                            size={12}
+                          />
                         ) : (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect
-                              width="14"
-                              height="14"
-                              x="8"
-                              y="8"
-                              rx="2"
-                              ry="2"
-                            />
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                          </svg>
+                          <HugeiconsIcon icon={Copy01Icon} size={12} />
                         )}
                       </button>
                     </span>
