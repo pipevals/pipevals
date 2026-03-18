@@ -1,7 +1,7 @@
 export default function PipelineEditorLoading() {
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex h-12 items-center border-b border-border px-4">
+      <div className="flex h-12 items-center border-b border-border px-8">
         <div className="h-4 w-24 animate-pulse rounded bg-muted" />
       </div>
       <div className="flex min-h-0 flex-1">

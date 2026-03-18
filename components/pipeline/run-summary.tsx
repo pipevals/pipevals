@@ -86,7 +86,7 @@ export function RunSummary() {
   const metrics = extractMetrics(run);
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-border bg-background px-8 py-3">
+    <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-8">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

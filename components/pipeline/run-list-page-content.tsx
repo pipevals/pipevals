@@ -68,7 +68,7 @@ export function RunListPageContent({
   return (
     <>
       <div className="border-b border-border bg-background">
-        <div className="px-8 py-3 flex items-center justify-between">
+        <div className="flex h-12 shrink-0 items-center justify-between px-8">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

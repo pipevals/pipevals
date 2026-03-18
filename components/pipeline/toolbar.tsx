@@ -23,7 +23,7 @@ export function PipelineToolbar() {
   const save = usePipelineBuilderStore((s) => s.save);
 
   return (
-    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-5">
+    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-8">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
