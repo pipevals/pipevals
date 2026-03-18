@@ -1,7 +1,7 @@
 ## 1. Port type system
 
-- [ ] 1.1 Add `InputPort`, `OutputPort`, and `StepDefinition` types to `lib/pipeline/types.ts`
-- [ ] 1.2 Add unit tests verifying the type structure compiles correctly with sample declarations
+- [x] 1.1 Add `InputPort`, `OutputPort`, and `StepDefinition` types to `lib/pipeline/types.ts`
+- [x] 1.2 Add unit tests verifying the type structure compiles correctly with sample declarations
 
 ## 2. Step registry migration
 

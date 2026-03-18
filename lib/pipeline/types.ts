@@ -69,6 +69,42 @@ export type StepHandler<C = Record<string, unknown>> = (
   input: StepInput,
 ) => Promise<StepOutput>;
 
+// --- Port declarations (BPMN-inspired input/output associations) ---
+
+export interface ScalarInputPort {
+  configField: string;
+  mode: "scalar";
+  /** Optional suffix appended to the dot-path value (e.g. " != null" for condition expressions) */
+  valueSuffix?: string;
+}
+
+export interface AdditiveInputPort {
+  configField: string;
+  mode: "additive";
+}
+
+export interface TemplateInputPort {
+  configField: string;
+  mode: "template";
+  generate: (dotPath: string, config: Record<string, unknown>) => string;
+}
+
+export type InputPort = ScalarInputPort | AdditiveInputPort | TemplateInputPort;
+
+export interface OutputPort {
+  /** The output key that downstream steps reference via dot-paths */
+  key: string;
+}
+
+export interface StepDefinition<C = Record<string, unknown>> {
+  handler: StepHandler<C>;
+  ports: {
+    inputs: InputPort[];
+    /** Empty array means this step type is not auto-wireable as a source */
+    outputs: OutputPort[];
+  };
+}
+
 // --- Default configs ---
 
 export const defaultConfigs: Record<StepType, NodeConfig> = {
