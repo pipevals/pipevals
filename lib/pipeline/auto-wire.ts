@@ -95,6 +95,28 @@ export function autoWireInputs(
     };
   }
 
+  // Special case: sandbox target sets a runtime-aware starter code template
+  if (inputField === "code") {
+    if (targetConfig.code !== "" && targetConfig.code !== undefined) return null;
+
+    // Convert dot-path to bracket notation: "steps.llm.text" → input["steps"]["llm"]["text"]
+    const brackets = dotPath
+      .split(".")
+      .map((seg) => `["${seg}"]`)
+      .join("");
+    const isPython = targetConfig.runtime === "python";
+    const codeTemplate = isPython
+      ? `return input${brackets}`
+      : `return input${brackets};`;
+
+    return {
+      config: {
+        ...targetConfig,
+        code: codeTemplate,
+      },
+    };
+  }
+
   // Standard string field: only populate if empty/absent
   const currentValue = targetConfig[inputField];
   if (currentValue !== "" && currentValue !== undefined) return null;
