@@ -35,7 +35,7 @@
 
 ## 8. Step Duration Chart
 
-- [ ] 8.1 Build horizontal bar chart component showing average `durationMs` per step label across all runs, ordered by duration descending
+- [x] 8.1 Build horizontal bar chart component showing average `durationMs` per step label across all runs, ordered by duration descending
 
 ## 9. Recent Runs Table
 

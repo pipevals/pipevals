@@ -13,6 +13,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
 import { MetricTrendsChart } from "./charts/metric-trends-chart";
 import { ScoreDistributionChart } from "./charts/score-distribution-chart";
+import { StepDurationChart } from "./charts/step-duration-chart";
 
 export interface MetricRunEntry {
   id: string;
@@ -142,7 +143,7 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
       )}
       <div className="grid grid-cols-2 gap-8">
         <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
-        <StepDurationPlaceholder />
+        <StepDurationChart runs={agg.runs} />
       </div>
       <RecentRunsPlaceholder />
     </div>
@@ -193,10 +194,6 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function formatMs(ms: number): string {
   if (ms < 1000) return `${Math.round(ms)}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
-}
-
-function StepDurationPlaceholder() {
-  return <ChartPlaceholder label="Avg Step Duration" />;
 }
 
 function RecentRunsPlaceholder() {
