@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
+import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
 async function triggerRun(url: string) {
   const res = await fetch(url, {
@@ -84,6 +85,13 @@ export function RunListPageContent({
             {triggerError && (
               <p className="text-xs text-destructive">{triggerError}</p>
             )}
+            <TriggerWithPayloadDialog
+              pipelineId={pipelineId}
+              onSuccess={() => {
+                setTriggerError(null);
+                mutate(apiUrl);
+              }}
+            />
             <Button size="sm" onClick={() => trigger()} disabled={isMutating}>
               {isMutating ? "Triggering…" : "Trigger Run"}
             </Button>

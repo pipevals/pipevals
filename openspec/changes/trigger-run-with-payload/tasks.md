@@ -7,9 +7,9 @@
 
 ## 2. Run List Page Integration
 
-- [ ] 2.1 Import and render `TriggerWithPayloadDialog` in `components/pipeline/run-list-page-content.tsx`
-- [ ] 2.2 Add a "Trigger with payload…" secondary button next to the existing "Trigger" button
-- [ ] 2.3 Wire the dialog's `onSuccess` to the same run-list refresh mechanism used by the existing trigger button
+- [x] 2.1 Import and render `TriggerWithPayloadDialog` in `components/pipeline/run-list-page-content.tsx`
+- [x] 2.2 Add a "Trigger with payload…" secondary button next to the existing "Trigger" button
+- [x] 2.3 Wire the dialog's `onSuccess` to the same run-list refresh mechanism used by the existing trigger button
 
 ## 3. Tests
 
