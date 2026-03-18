@@ -18,7 +18,7 @@ const PRIMARY_INPUT_FIELD: Record<StepType, string | null> = {
   sandbox: "code",
   condition: "expression",
   transform: "__mapping__", // special case handled below
-  metric_capture: "extractPath",
+  metric_capture: "__metrics__",
 };
 
 export interface AutoWirePatch {
@@ -91,6 +91,23 @@ export function autoWireInputs(
       config: {
         ...targetConfig,
         bodyTemplate: { ...existingBody, "": dotPath },
+      },
+    };
+  }
+
+  // Special case: metric_capture target adds an entry to metrics
+  if (inputField === "__metrics__") {
+    const existingMetrics =
+      typeof targetConfig.metrics === "object" &&
+      targetConfig.metrics !== null &&
+      !Array.isArray(targetConfig.metrics)
+        ? (targetConfig.metrics as Record<string, string>)
+        : {};
+
+    return {
+      config: {
+        ...targetConfig,
+        metrics: { ...existingMetrics, "": dotPath },
       },
     };
   }
