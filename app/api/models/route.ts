@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { gateway } from "ai";
+import { requireAuth } from "@/lib/api/auth";
 import type { GatewayModel } from "@/lib/pipeline/types";
 
 export async function GET() {
+  const authResult = await requireAuth();
+  if ("error" in authResult) return authResult.error;
+
   try {
     const { models: raw } = await gateway.getAvailableModels();
     const models: GatewayModel[] = raw
