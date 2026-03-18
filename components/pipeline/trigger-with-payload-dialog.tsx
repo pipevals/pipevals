@@ -1,0 +1,112 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+export function TriggerWithPayloadDialog({
+  pipelineId,
+  onSuccess,
+}: {
+  pipelineId: string;
+  onSuccess: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [json, setJson] = useState("{}");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const isValid = (() => {
+    try {
+      JSON.parse(json);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  function handleJsonChange(value: string) {
+    setJson(value);
+    try {
+      JSON.parse(value);
+      setError(null);
+    } catch {
+      setError("Invalid JSON");
+    }
+  }
+
+  async function handleSubmit() {
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/pipelines/${pipelineId}/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...parsed, source: "ui" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to trigger run");
+      }
+      setOpen(false);
+      setJson("{}");
+      setError(null);
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to trigger run");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          Trigger with payload…
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Trigger with payload</DialogTitle>
+          <DialogDescription>
+            Enter a JSON payload to pass to the pipeline run.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-1.5">
+          <textarea
+            className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            value={json}
+            onChange={(e) => handleJsonChange(e.target.value)}
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!isValid || submitting}
+          >
+            {submitting ? "Triggering…" : "Trigger"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

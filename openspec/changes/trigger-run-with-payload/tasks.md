@@ -1,9 +1,9 @@
 ## 1. Dialog Component
 
-- [ ] 1.1 Create `components/pipeline/trigger-with-payload-dialog.tsx` with a shadcn/ui Dialog, a JSON textarea pre-filled with `{}`, and Cancel / Trigger buttons
-- [ ] 1.2 Add client-side JSON validation: disable the submit button and show an inline error when the textarea content is not valid JSON
-- [ ] 1.3 On submit, merge the parsed payload with `{ "source": "ui" }` and call `POST /api/pipelines/:id/runs` with the merged object as the request body
-- [ ] 1.4 Close the dialog and call the `onSuccess` callback (to refresh the run list) after a successful API response
+- [x] 1.1 Create `components/pipeline/trigger-with-payload-dialog.tsx` with a shadcn/ui Dialog, a JSON textarea pre-filled with `{}`, and Cancel / Trigger buttons
+- [x] 1.2 Add client-side JSON validation: disable the submit button and show an inline error when the textarea content is not valid JSON
+- [x] 1.3 On submit, merge the parsed payload with `{ "source": "ui" }` and call `POST /api/pipelines/:id/runs` with the merged object as the request body
+- [x] 1.4 Close the dialog and call the `onSuccess` callback (to refresh the run list) after a successful API response
 
 ## 2. Run List Page Integration
 
