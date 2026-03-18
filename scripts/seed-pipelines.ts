@@ -3,7 +3,28 @@ import { parseArgs } from "util";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../lib/db/schema";
-import { seedPipelines } from "../lib/db/seed-pipelines";
+import { seedPipelines, seedPipelineDefinitions } from "../lib/db/seed-pipelines";
+import { validateGraph } from "../lib/pipeline/graph-validation";
+
+// Validate all seed definitions at startup (fail fast)
+for (const def of seedPipelineDefinitions) {
+  const nodes = def.nodes.map((n) => ({ id: n.id, type: n.type, config: n.config }));
+  const edges = def.edges.map((e) => ({
+    id: e.id,
+    sourceNodeId: e.sourceNodeId,
+    sourceHandle: e.sourceHandle,
+    targetNodeId: e.targetNodeId,
+    targetHandle: e.targetHandle,
+  }));
+  const result = validateGraph(nodes, edges);
+  if (!result.valid) {
+    console.error(`Seed pipeline "${def.name}" has invalid graph:`);
+    for (const err of result.errors) {
+      console.error(`  - [${err.code}] ${err.message}`);
+    }
+    process.exit(1);
+  }
+}
 
 const { values } = parseArgs({
   options: {

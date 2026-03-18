@@ -28,19 +28,43 @@ export function resolveDotPath(obj: unknown, path: string): unknown {
 }
 
 /**
- * Recursively walks a value and replaces any string that is a dot-path
- * expression (e.g. "steps.node1.output.text") with its resolved value.
+ * Matches interpolation expressions: ${steps.X.Y}, ${trigger.X},
+ * {{steps.X.Y}}, or {{trigger.X}}.
+ */
+const INTERPOLATION_RE = /\$\{((?:steps|trigger)\.[^}]+)\}|\{\{((?:steps|trigger)\.[^}]+)\}\}/g;
+
+/**
+ * Recursively walks a value and replaces dot-path expressions with their
+ * resolved values from context.
  *
- * Strings that don't start with "steps." or "trigger." are left as-is.
+ * Resolution modes (in order of precedence):
+ * 1. **Whole-string dot-path** — if the entire string is a dot-path
+ *    (starts with "steps." or "trigger."), resolve and return the raw value
+ *    (may be non-string).
+ * 2. **Interpolation** — `${steps.X.Y}` or `{{steps.X.Y}}` expressions
+ *    within a larger string are replaced inline, returning a string.
+ * 3. **Literal** — strings without dot-path references are returned as-is.
  */
 export function resolveTemplate(
   template: unknown,
   context: Record<string, unknown>,
 ): unknown {
   if (typeof template === "string") {
+    // Whole-string dot-path (preserves non-string types)
     if (template.startsWith("steps.") || template.startsWith("trigger.")) {
       return resolveDotPath(context, template);
     }
+
+    // Inline interpolation (always returns a string)
+    if (INTERPOLATION_RE.test(template)) {
+      INTERPOLATION_RE.lastIndex = 0;
+      return template.replace(INTERPOLATION_RE, (_, dollarPath, mustachePath) => {
+        const path = dollarPath ?? mustachePath;
+        const value = resolveDotPath(context, path);
+        return String(value);
+      });
+    }
+
     return template;
   }
 
