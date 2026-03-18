@@ -5,7 +5,7 @@ const EMPTY_TRIGGER_SCHEMA = {};
 const TRIGGER_SCHEMA = { prompt: "string", context: "string" };
 
 describe("autoWireInputs", () => {
-  // --- 3.1: Basic source → target combinations ---
+  // --- ai_sdk target ---
 
   test("ai_sdk → ai_sdk: populates empty promptTemplate", () => {
     const result = autoWireInputs(
@@ -20,20 +20,97 @@ describe("autoWireInputs", () => {
     expect(result!.config.promptTemplate).toBe("steps.llm.text");
   });
 
-  test("ai_sdk → metric_capture: populates empty extractPath", () => {
+  test("does not overwrite existing promptTemplate", () => {
     const result = autoWireInputs(
       "ai_sdk",
-      "eval",
-      "node-2",
-      "metric_capture",
-      { type: "metric_capture", metricName: "score", extractPath: "" },
+      "llm",
+      "node-1",
+      "ai_sdk",
+      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "existing value" },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
+  });
+
+  // --- api_request target (body) ---
+
+  test("ai_sdk → api_request: adds entry to empty bodyTemplate", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      "api_request",
+      { type: "api_request", url: "https://api.example.com", method: "POST", bodyTemplate: {} },
       EMPTY_TRIGGER_SCHEMA,
     );
     expect(result).not.toBeNull();
-    expect(result!.config.extractPath).toBe("steps.eval.text");
+    const body = result!.config.bodyTemplate as Record<string, string>;
+    expect(body[""]).toBe("steps.llm.text");
   });
 
-  test("api_request → condition: populates empty expression", () => {
+  test("ai_sdk → api_request: additive — preserves existing bodyTemplate entries", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      "api_request",
+      {
+        type: "api_request",
+        url: "https://api.example.com",
+        method: "POST",
+        bodyTemplate: { existing: "steps.other.value" },
+      },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    const body = result!.config.bodyTemplate as Record<string, string>;
+    expect(body[""]).toBe("steps.llm.text");
+    expect(body["existing"]).toBe("steps.other.value");
+  });
+
+  // --- sandbox target (code) ---
+
+  test("ai_sdk → sandbox (node): sets bracket-notation code template", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      "sandbox",
+      { type: "sandbox", runtime: "node", code: "", timeout: 30000 },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.code).toBe('return input["steps"]["llm"]["text"];');
+  });
+
+  test("ai_sdk → sandbox (python): sets bracket-notation code template without semicolon", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      "sandbox",
+      { type: "sandbox", runtime: "python", code: "", timeout: 30000 },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.code).toBe('return input["steps"]["llm"]["text"]');
+  });
+
+  test("sandbox code not overwritten when non-empty", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "llm",
+      "node-1",
+      "sandbox",
+      { type: "sandbox", runtime: "node", code: "return 42;", timeout: 30000 },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
+  });
+
+  // --- condition target (expression with default) ---
+
+  test("api_request → condition: populates expression with default comparison", () => {
     const result = autoWireInputs(
       "api_request",
       "fetch",
@@ -43,8 +120,22 @@ describe("autoWireInputs", () => {
       EMPTY_TRIGGER_SCHEMA,
     );
     expect(result).not.toBeNull();
-    expect(result!.config.expression).toBe("steps.fetch.body");
+    expect(result!.config.expression).toBe("steps.fetch.body != null");
   });
+
+  test("does not overwrite existing expression", () => {
+    const result = autoWireInputs(
+      "api_request",
+      "fetch",
+      "node-3",
+      "condition",
+      { type: "condition", expression: "steps.foo.bar > 0", handles: ["true", "false"] },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).toBeNull();
+  });
+
+  // --- transform target (mapping) ---
 
   test("ai_sdk → transform: adds a new mapping entry", () => {
     const result = autoWireInputs(
@@ -61,6 +152,39 @@ describe("autoWireInputs", () => {
     expect(mapping["existing"]).toBe("steps.other.value");
   });
 
+  // --- metric_capture target (metrics map) ---
+
+  test("ai_sdk → metric_capture: adds entry to metrics map", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "eval",
+      "node-2",
+      "metric_capture",
+      { type: "metric_capture", metrics: {} },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    const metrics = result!.config.metrics as Record<string, string>;
+    expect(metrics[""]).toBe("steps.eval.text");
+  });
+
+  test("ai_sdk → metric_capture: additive — preserves existing metrics entries", () => {
+    const result = autoWireInputs(
+      "ai_sdk",
+      "eval",
+      "node-2",
+      "metric_capture",
+      { type: "metric_capture", metrics: { accuracy: "steps.scorer.score" } },
+      EMPTY_TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    const metrics = result!.config.metrics as Record<string, string>;
+    expect(metrics[""]).toBe("steps.eval.text");
+    expect(metrics["accuracy"]).toBe("steps.scorer.score");
+  });
+
+  // --- trigger source ---
+
   test("trigger → ai_sdk: uses first schema key", () => {
     const result = autoWireInputs(
       "trigger",
@@ -74,45 +198,101 @@ describe("autoWireInputs", () => {
     expect(result!.config.promptTemplate).toBe("trigger.prompt");
   });
 
-  // --- 3.2: Non-overwrite behavior ---
-
-  test("does not overwrite existing promptTemplate", () => {
+  test("trigger source with empty schema uses bare 'trigger' prefix", () => {
     const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
       "ai_sdk",
-      "llm",
-      "node-1",
-      "ai_sdk",
-      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "existing value" },
+      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
       EMPTY_TRIGGER_SCHEMA,
     );
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result!.config.promptTemplate).toBe("trigger");
   });
 
-  test("does not overwrite existing extractPath", () => {
+  test("trigger → api_request: adds entry to bodyTemplate", () => {
     const result = autoWireInputs(
-      "ai_sdk",
-      "eval",
-      "node-2",
-      "metric_capture",
-      { type: "metric_capture", metricName: "score", extractPath: "steps.other.value" },
-      EMPTY_TRIGGER_SCHEMA,
-    );
-    expect(result).toBeNull();
-  });
-
-  test("does not overwrite existing expression", () => {
-    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
       "api_request",
-      "fetch",
-      "node-3",
-      "condition",
-      { type: "condition", expression: "steps.foo.bar > 0", handles: ["true", "false"] },
-      EMPTY_TRIGGER_SCHEMA,
+      { type: "api_request", url: "https://api.example.com", method: "POST", bodyTemplate: {} },
+      TRIGGER_SCHEMA,
     );
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    const body = result!.config.bodyTemplate as Record<string, string>;
+    expect(body[""]).toBe("trigger.prompt");
   });
 
-  // --- 3.3: Skip cases ---
+  test("trigger → sandbox (node): sets bracket-notation code template", () => {
+    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
+      "sandbox",
+      { type: "sandbox", runtime: "node", code: "", timeout: 30000 },
+      TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.code).toBe('return input["trigger"]["prompt"];');
+  });
+
+  test("trigger → sandbox (python): sets bracket-notation code template without semicolon", () => {
+    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
+      "sandbox",
+      { type: "sandbox", runtime: "python", code: "", timeout: 30000 },
+      TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.code).toBe('return input["trigger"]["prompt"]');
+  });
+
+  test("trigger → condition: populates expression with default comparison", () => {
+    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
+      "condition",
+      { type: "condition", expression: "", handles: ["true", "false"] },
+      TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.config.expression).toBe("trigger.prompt != null");
+  });
+
+  test("trigger → transform: adds entry to mapping", () => {
+    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
+      "transform",
+      { type: "transform", mapping: {} },
+      TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    const mapping = result!.config.mapping as Record<string, string>;
+    expect(mapping[""]).toBe("trigger.prompt");
+  });
+
+  test("trigger → metric_capture: adds entry to metrics map", () => {
+    const result = autoWireInputs(
+      "trigger",
+      "Trigger",
+      "trigger-source",
+      "metric_capture",
+      { type: "metric_capture", metrics: {} },
+      TRIGGER_SCHEMA,
+    );
+    expect(result).not.toBeNull();
+    const metrics = result!.config.metrics as Record<string, string>;
+    expect(metrics[""]).toBe("trigger.prompt");
+  });
+
+  // --- skip cases ---
 
   test("sandbox source returns null", () => {
     const result = autoWireInputs(
@@ -138,34 +318,7 @@ describe("autoWireInputs", () => {
     expect(result).toBeNull();
   });
 
-  test("sandbox target returns null", () => {
-    const result = autoWireInputs(
-      "ai_sdk",
-      "llm",
-      "node-1",
-      "sandbox",
-      { type: "sandbox", runtime: "node", code: "", timeout: 30000 },
-      EMPTY_TRIGGER_SCHEMA,
-    );
-    expect(result).toBeNull();
-  });
-
-  // --- 3.4: Trigger with empty schema ---
-
-  test("trigger source with empty schema uses bare 'trigger' prefix", () => {
-    const result = autoWireInputs(
-      "trigger",
-      "Trigger",
-      "trigger-source",
-      "ai_sdk",
-      { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
-      EMPTY_TRIGGER_SCHEMA,
-    );
-    expect(result).not.toBeNull();
-    expect(result!.config.promptTemplate).toBe("trigger");
-  });
-
-  // --- Extra: label fallback to ID when label is empty ---
+  // --- label fallback ---
 
   test("uses sourceId as fallback when label is empty", () => {
     const result = autoWireInputs(
@@ -173,10 +326,11 @@ describe("autoWireInputs", () => {
       "",
       "my-node-id",
       "metric_capture",
-      { type: "metric_capture", metricName: "", extractPath: "" },
+      { type: "metric_capture", metrics: {} },
       EMPTY_TRIGGER_SCHEMA,
     );
     expect(result).not.toBeNull();
-    expect(result!.config.extractPath).toBe("steps.my-node-id.text");
+    const metrics = result!.config.metrics as Record<string, string>;
+    expect(metrics[""]).toBe("steps.my-node-id.text");
   });
 });
