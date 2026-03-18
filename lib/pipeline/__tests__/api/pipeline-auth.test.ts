@@ -1,21 +1,10 @@
 import { describe, expect, test, mock } from "bun:test";
-import { setupTestDb } from "./setup";
+import { setupMocks, setActiveHeaders } from "./setup";
 
-const { db: testDb, auth: testAuth } = await setupTestDb();
+await setupMocks();
 
-mock.module("next/headers", () => ({
-  headers: () => Promise.resolve(new Headers()),
-}));
-
-mock.module("@/lib/auth", () => ({ auth: testAuth }));
-mock.module("@/lib/db", () => ({ db: testDb }));
-
-mock.module("workflow/api", () => ({
-  start: mock(() => Promise.resolve({ runId: "wf-mock" })),
-}));
-mock.module("@/lib/pipeline/walker/workflow", () => ({
-  runPipelineWorkflow: () => {},
-}));
+// Auth tests use empty headers — unauthenticated
+setActiveHeaders(new Headers());
 
 const { GET: listPipelines, POST: createPipeline } = await import(
   "@/app/api/pipelines/route"
@@ -45,21 +34,25 @@ const runParams = { params: Promise.resolve({ id: "any", runId: "any" }) };
 
 describe("auth: 401 on unauthenticated requests", () => {
   test("GET /api/pipelines", async () => {
+    setActiveHeaders(new Headers());
     const res = await listPipelines();
     expect(res.status).toBe(401);
   });
 
   test("POST /api/pipelines", async () => {
+    setActiveHeaders(new Headers());
     const res = await createPipeline(json({ name: "test" }));
     expect(res.status).toBe(401);
   });
 
   test("GET /api/pipelines/:id", async () => {
+    setActiveHeaders(new Headers());
     const res = await getPipeline(new Request("http://localhost"), pipelineParams);
     expect(res.status).toBe(401);
   });
 
   test("PUT /api/pipelines/:id", async () => {
+    setActiveHeaders(new Headers());
     const res = await updatePipeline(
       json({ nodes: [], edges: [] }),
       pipelineParams,
@@ -68,6 +61,7 @@ describe("auth: 401 on unauthenticated requests", () => {
   });
 
   test("DELETE /api/pipelines/:id", async () => {
+    setActiveHeaders(new Headers());
     const res = await deletePipeline(
       new Request("http://localhost", { method: "DELETE" }),
       pipelineParams,
@@ -76,16 +70,19 @@ describe("auth: 401 on unauthenticated requests", () => {
   });
 
   test("POST /api/pipelines/:id/runs", async () => {
+    setActiveHeaders(new Headers());
     const res = await triggerRun(json({}), pipelineParams);
     expect(res.status).toBe(401);
   });
 
   test("GET /api/pipelines/:id/runs", async () => {
+    setActiveHeaders(new Headers());
     const res = await listRuns(new Request("http://localhost"), pipelineParams);
     expect(res.status).toBe(401);
   });
 
   test("GET /api/pipelines/:id/runs/:runId", async () => {
+    setActiveHeaders(new Headers());
     const res = await getRun(new Request("http://localhost"), runParams);
     expect(res.status).toBe(401);
   });

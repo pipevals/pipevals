@@ -1,16 +1,7 @@
-import { describe, expect, test, mock } from "bun:test";
-import { NextResponse } from "next/server";
+import { describe, expect, test, mock, beforeAll } from "bun:test";
+import { setupMocks, setActiveHeaders, createAuthenticatedUser } from "./setup";
 
-// Mock auth — default to valid session, override per-test via mockImplementationOnce
-const requireAuth = mock(() =>
-  Promise.resolve({
-    userId: "u1",
-    organizationId: "o1",
-    session: {},
-  }),
-);
-
-mock.module("@/lib/api/auth", () => ({ requireAuth }));
+await setupMocks();
 
 // Mock the gateway.getAvailableModels() call
 const getAvailableModels = mock(() =>
@@ -32,16 +23,19 @@ const { GET } = await import("@/app/api/models/route");
 describe("GET /api/models", () => {
   const originalEnv = process.env.AI_GATEWAY_API_KEY;
 
-  test("returns 401 when auth fails", async () => {
-    requireAuth.mockImplementationOnce(
-      () =>
-        Promise.resolve({
-          error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-        }) as unknown as ReturnType<typeof requireAuth>,
-    );
+  beforeAll(async () => {
+    const ctx = await createAuthenticatedUser();
+    setActiveHeaders(ctx.headers);
+  });
+
+  test("returns 401 when unauthenticated", async () => {
+    const savedHeaders = (await import("./setup")).headerState.current;
+    setActiveHeaders(new Headers());
 
     const res = await GET();
     expect(res.status).toBe(401);
+
+    setActiveHeaders(savedHeaders);
   });
 
   test("returns language models mapped to { id, name, provider }", async () => {

@@ -1,16 +1,7 @@
 import { describe, expect, test, mock, beforeAll } from "bun:test";
-import { setupTestDb, createAuthenticatedUser, type TestContext } from "./setup";
+import { setupMocks, setActiveHeaders, createAuthenticatedUser, type TestContext } from "./setup";
 
-const { db: testDb, auth: testAuth } = await setupTestDb();
-
-let activeHeaders: Headers;
-
-mock.module("next/headers", () => ({
-  headers: () => Promise.resolve(activeHeaders),
-}));
-
-mock.module("@/lib/auth", () => ({ auth: testAuth }));
-mock.module("@/lib/db", () => ({ db: testDb }));
+const { db: testDb } = await setupMocks();
 
 const { GET: listPipelines, POST: createPipeline } = await import(
   "@/app/api/pipelines/route"
@@ -78,7 +69,7 @@ async function seedGraph(pipelineId: string) {
 describe("pipeline CRUD (PGlite integration)", () => {
   beforeAll(async () => {
     ctx = await createAuthenticatedUser();
-    activeHeaders = ctx.headers;
+    setActiveHeaders(ctx.headers);
   });
 
   describe("POST /api/pipelines", () => {

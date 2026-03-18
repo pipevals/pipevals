@@ -1,25 +1,7 @@
 import { describe, expect, test, mock, beforeAll } from "bun:test";
-import { setupTestDb, createAuthenticatedUser, type TestContext } from "./setup";
+import { setupMocks, setActiveHeaders, createAuthenticatedUser, type TestContext } from "./setup";
 
-// --- Bootstrap test DB before any mocks that depend on it ---
-const { db: testDb, auth: testAuth } = await setupTestDb();
-
-let activeHeaders: Headers;
-
-mock.module("next/headers", () => ({
-  headers: () => Promise.resolve(activeHeaders),
-}));
-
-mock.module("@/lib/auth", () => ({ auth: testAuth }));
-mock.module("@/lib/db", () => ({ db: testDb }));
-
-const mockWorkflowStart = mock(() =>
-  Promise.resolve({ runId: `wf-${crypto.randomUUID()}` }),
-);
-mock.module("workflow/api", () => ({ start: mockWorkflowStart }));
-mock.module("@/lib/pipeline/walker/workflow", () => ({
-  runPipelineWorkflow: () => {},
-}));
+const { db: testDb, mockWorkflowStart } = await setupMocks();
 
 const { POST: triggerRun, GET: listRuns } = await import(
   "@/app/api/pipelines/[id]/runs/route"
@@ -75,7 +57,7 @@ function runDetailParams(id: string, runId: string) {
 describe("run endpoints (PGlite integration)", () => {
   beforeAll(async () => {
     ctx = await createAuthenticatedUser();
-    activeHeaders = ctx.headers;
+    setActiveHeaders(ctx.headers);
   });
 
   describe("POST /api/pipelines/:id/runs", () => {

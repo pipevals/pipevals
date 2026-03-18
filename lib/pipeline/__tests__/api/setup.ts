@@ -106,6 +106,53 @@ export interface TestContext {
   headers: Headers;
 }
 
+// ---------------------------------------------------------------------------
+// Shared module mocks — call from every API test file instead of doing
+// mock.module() directly. Since mock.module is global, the last call wins.
+// By centralizing here, all files use the same mutable `activeHeaders` ref
+// so auth-test files can set it to empty Headers while crud/runs files set
+// it to authenticated headers — without conflicting.
+// ---------------------------------------------------------------------------
+
+import { mock } from "bun:test";
+
+/**
+ * Shared mutable state for the mock.module("next/headers") callback.
+ * Uses an object ref so all closures (across files) see the same value,
+ * even when mock.module is re-registered by different test files.
+ */
+export const headerState = { current: new Headers() };
+
+export function setActiveHeaders(h: Headers) {
+  headerState.current = h;
+}
+
+/**
+ * Registers global mock.module() calls for the API test suite.
+ * Safe to call from every test file — all files share the same PGlite
+ * instance and the same headerState ref.
+ */
+export async function setupMocks() {
+  const { db: testDb, auth: testAuth } = await setupTestDb();
+
+  mock.module("next/headers", () => ({
+    headers: () => Promise.resolve(headerState.current),
+  }));
+
+  mock.module("@/lib/auth", () => ({ auth: testAuth }));
+  mock.module("@/lib/db", () => ({ db: testDb }));
+
+  const mockWorkflowStart = mock(() =>
+    Promise.resolve({ runId: `wf-${crypto.randomUUID()}` }),
+  );
+  mock.module("workflow/api", () => ({ start: mockWorkflowStart }));
+  mock.module("@/lib/pipeline/walker/workflow", () => ({
+    runPipelineWorkflow: () => {},
+  }));
+
+  return { db: testDb, auth: testAuth, mockWorkflowStart };
+}
+
 /**
  * Creates a test user with an active organization and returns
  * authenticated headers ready for API calls.
