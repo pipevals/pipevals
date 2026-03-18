@@ -15,8 +15,8 @@
 
 ## 4. Metrics Page — Layout & Data Fetching
 
-- [ ] 4.1 Create page at `app/pipelines/[id]/metrics/page.tsx` — server component with auth check, renders `AppHeader` + `PipelineSubNav` + client metrics content component
-- [ ] 4.2 Create client component `MetricsDashboard` that fetches from `/api/pipelines/:id/runs/metrics` via SWR and computes aggregates (total runs, pass rate, avg metric, avg duration, metric name union)
+- [x] 4.1 Create page at `app/pipelines/[id]/metrics/page.tsx` — server component with auth check, renders `AppHeader` + `PipelineSubNav` + client metrics content component
+- [x] 4.2 Create client component `MetricsDashboard` that fetches from `/api/pipelines/:id/runs/metrics` via SWR and computes aggregates (total runs, pass rate, avg metric, avg duration, metric name union)
 
 ## 5. Stat Cards
 
