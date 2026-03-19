@@ -22,10 +22,10 @@
 
 ## 4. Task APIs
 
-- [ ] 4.1 Create `GET /api/pipelines/[id]/tasks` route — list tasks for a pipeline with auth and org verification
-- [ ] 4.2 Create `GET /api/tasks/[id]` route — fetch full task detail (rubric, displayData, response) with auth
-- [ ] 4.3 Create `POST /api/tasks/[id]/submit` route — validate submission against rubric, update task, call `resumeHook`, return updated task
-- [ ] 4.4 Add rubric validation logic (rating range, boolean type, select options, all fields required)
+- [x] 4.1 Create `GET /api/pipelines/[id]/tasks` route — list tasks for a pipeline with auth and org verification
+- [x] 4.2 Create `GET /api/tasks/[id]` route — fetch full task detail (rubric, displayData, response) with auth
+- [x] 4.3 Create `POST /api/tasks/[id]/submit` route — validate submission against rubric, update task, call `resumeHook`, return updated task
+- [x] 4.4 Add rubric validation logic (rating range, boolean type, select options, all fields required)
 
 ## 5. Pipeline Builder UI
 
