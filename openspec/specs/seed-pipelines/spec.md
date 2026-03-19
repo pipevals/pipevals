@@ -37,24 +37,30 @@ Model A and Model B nodes SHALL execute in parallel (both wired from trigger, co
 - **THEN** Model A and Model B nodes SHALL both have incoming edges from the trigger node (enabling parallel execution by the walker)
 
 ### Requirement: Seed script CLI interface
-The system SHALL provide a script at `scripts/seed-pipelines.ts` runnable via `bun run scripts/seed-pipelines.ts` that:
-- Accepts a `--org <id-or-slug>` flag to specify the target organization
-- Accepts an optional `--user <id>` flag for the `created_by` field (defaults to the first member of the org)
+The system SHALL provide a script at `scripts/seed-templates.ts` runnable via `bun run scripts/seed-templates.ts` that:
+- Requires no flags (built-in templates have `organizationId = NULL`)
 - Connects to the database using the same configuration as the app
-- Creates seed pipelines inside a database transaction (per pipeline)
-- Outputs which pipelines were created vs skipped to stdout
+- Creates built-in templates inside a database transaction (per template)
+- Is idempotent: skips templates whose slug already exists with `organizationId = NULL`
+- Outputs which templates were created vs skipped to stdout
 
-#### Scenario: Seed script with org flag
-- **WHEN** `bun run scripts/seed-pipelines.ts --org my-org-id` is executed
-- **THEN** the script inserts seed pipelines into the organization with that ID
+#### Scenario: Seed script creates built-in templates
+- **WHEN** `bun run scripts/seed-templates.ts` is executed and no built-in templates exist
+- **THEN** the script inserts 3 built-in templates (AI-as-a-Judge, Model A/B Comparison, Human-in-the-Loop Review) with `organizationId = NULL` and `createdBy = NULL`
 
-#### Scenario: Seed script skips existing pipelines
-- **WHEN** the seed script runs and a pipeline with slug `ai-as-a-judge-scoring` already exists in the target org
+#### Scenario: Seed script skips existing templates
+- **WHEN** the seed script runs and a built-in template with slug `ai-as-a-judge-scoring` already exists
 - **THEN** the script logs that it skipped "AI-as-a-Judge Scoring" and does not error
 
-#### Scenario: Seed script with missing org
-- **WHEN** the seed script runs without the `--org` flag
-- **THEN** the script exits with an error message indicating the flag is required
+#### Scenario: Seed script no longer requires --org flag
+- **WHEN** `bun run scripts/seed-templates.ts` is executed without any flags
+- **THEN** the script runs successfully (built-in templates are not org-scoped)
+
+---
+
+> **REMOVED:** The previous "Seed script CLI interface" requirement (targeting `scripts/seed-pipelines.ts` with `--org` flag) has been replaced.
+> **Reason:** Replaced by `scripts/seed-templates.ts` which targets the `pipeline_template` table with `organizationId = NULL` instead of creating pipelines in a specific org.
+> **Migration:** Run `bun run scripts/seed-templates.ts` instead of `bun run scripts/seed-pipelines.ts --org <id>`. Existing pipelines created by the old seeder remain in the database unchanged.
 
 ### Requirement: Seed pipeline graph validity
 All seed pipelines SHALL pass the existing `validateGraph` function without errors. Node configs SHALL conform to their respective Zod schemas (`aiSdkConfigSchema`, `metricCaptureConfigSchema`, `transformConfigSchema`).
