@@ -7,8 +7,10 @@
 
 import {
   JUDGE_PIPELINE_NAME,
+  BASE_URL,
   navigateAuthenticated,
   ensurePipeline,
+  getPipelineId,
   ab_exec,
   fullSnapshot,
   assert,
@@ -18,8 +20,11 @@ import {
 await navigateAuthenticated("/pipelines");
 ensurePipeline(JUDGE_PIPELINE_NAME);
 
-ab_exec(`find text "${JUDGE_PIPELINE_NAME}" click`);
+// Navigate to the editor via direct URL to avoid ambiguous find text matches
+const pipelineId = getPipelineId(JUDGE_PIPELINE_NAME);
+ab_exec(`open ${BASE_URL}/pipelines/${pipelineId}`);
 ab_exec("wait --load networkidle");
+ab_exec("wait 2000");
 
 const snap = fullSnapshot();
 

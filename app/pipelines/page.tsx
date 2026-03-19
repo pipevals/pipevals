@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { eq, or, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { member } from "@/lib/db/schema";
-import { pipelineTemplates } from "@/lib/db/pipeline-schema";
-import { getPipelinesForOrg } from "@/lib/api/pipelines";
+import { getPipelinesForOrg, getTemplatesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
 import { AppHeader } from "@/components/app-header";
 import { isAutoInviteEnabled } from "@/lib/auto-invite";
@@ -38,21 +37,7 @@ export default async function PipelinesPage() {
 
   const [pipelines, templates] = await Promise.all([
     getPipelinesForOrg(organizationId),
-    db
-      .select({
-        id: pipelineTemplates.id,
-        name: pipelineTemplates.name,
-        slug: pipelineTemplates.slug,
-        description: pipelineTemplates.description,
-        organizationId: pipelineTemplates.organizationId,
-      })
-      .from(pipelineTemplates)
-      .where(
-        or(
-          isNull(pipelineTemplates.organizationId),
-          eq(pipelineTemplates.organizationId, organizationId),
-        ),
-      ),
+    getTemplatesForOrg(organizationId),
   ]);
 
   return (

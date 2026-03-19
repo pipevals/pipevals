@@ -35,16 +35,46 @@ import {
   Search01Icon,
   WorkflowSquare05Icon,
 } from "@hugeicons/core-free-icons";
-import type { PipelineSummary } from "@/lib/api/pipelines";
+import type { PipelineSummary, TemplateSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
 
-export interface TemplateSummary {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  organizationId: string | null;
+function TemplateCard({
+  template,
+  selected,
+  onClick,
+  className,
+}: {
+  template: TemplateSummary;
+  selected?: boolean;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+        selected
+          ? "border-ring bg-muted/60 ring-1 ring-ring"
+          : "border-border bg-background hover:bg-muted/40"
+      } ${className ?? ""}`}
+    >
+      <span className="flex items-center gap-1.5">
+        <span className="font-medium text-foreground">{template.name}</span>
+        {template.organizationId === null && (
+          <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
+            Built-in
+          </span>
+        )}
+      </span>
+      {template.description && (
+        <span className="block text-muted-foreground mt-0.5 line-clamp-2">
+          {template.description}
+        </span>
+      )}
+    </button>
+  );
 }
 
 interface PipelineListProps {
@@ -190,30 +220,15 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
                     <span className="block text-muted-foreground mt-0.5">Empty pipeline</span>
                   </button>
                   {templates.map((t) => (
-                    <button
+                    <TemplateCard
                       key={t.id}
-                      type="button"
-                      onClick={() => setSelectedTemplateId(t.id)}
-                      className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
-                        selectedTemplateId === t.id
-                          ? "border-ring bg-muted/60 ring-1 ring-ring"
-                          : "border-border bg-background hover:bg-muted/40"
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-medium text-foreground">{t.name}</span>
-                        {t.organizationId === null && (
-                          <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
-                            Built-in
-                          </span>
-                        )}
-                      </span>
-                      {t.description && (
-                        <span className="block text-muted-foreground mt-0.5 line-clamp-2">
-                          {t.description}
-                        </span>
-                      )}
-                    </button>
+                      template={t}
+                      selected={selectedTemplateId === t.id}
+                      onClick={() => {
+                        setSelectedTemplateId(t.id);
+                        if (!name.trim()) setName(t.name);
+                      }}
+                    />
                   ))}
                 </div>
               </div>
@@ -321,30 +336,16 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
                 {templates.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-2xl">
                     {templates.map((t) => (
-                      <button
+                      <TemplateCard
                         key={t.id}
-                        type="button"
+                        template={t}
                         onClick={() => {
                           setSelectedTemplateId(t.id);
                           setName(t.name);
                           setCreating(true);
                         }}
-                        className="rounded-lg border border-border bg-card px-4 py-3 text-left text-xs hover:bg-muted/40 transition-colors"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span className="font-medium text-foreground">{t.name}</span>
-                          {t.organizationId === null && (
-                            <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
-                              Built-in
-                            </span>
-                          )}
-                        </span>
-                        {t.description && (
-                          <span className="block text-muted-foreground mt-1 line-clamp-2">
-                            {t.description}
-                          </span>
-                        )}
-                      </button>
+                        className="rounded-lg px-4 py-3"
+                      />
                     ))}
                   </div>
                 )}
@@ -362,6 +363,7 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
             {filtered.map((p) => (
               <div
                 key={p.id}
+                data-pipeline-id={p.id}
                 className="group flex items-center justify-between border-b border-border py-4 hover:bg-muted/40 -mx-2 px-2 rounded-sm transition-colors"
               >
                 <Link

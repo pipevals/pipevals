@@ -104,14 +104,21 @@ export async function POST(request: Request) {
 
         if (snapshot.edges.length > 0) {
           await tx.insert(pipelineEdges).values(
-            snapshot.edges.map((e) => ({
-              id: crypto.randomUUID(),
-              pipelineId: pipeline.id,
-              sourceNodeId: idMap[e.sourceNodeId as string],
-              sourceHandle: (e.sourceHandle as string) ?? null,
-              targetNodeId: idMap[e.targetNodeId as string],
-              targetHandle: (e.targetHandle as string) ?? null,
-            })),
+            snapshot.edges.map((e) => {
+              const sourceNodeId = idMap[e.sourceNodeId as string];
+              const targetNodeId = idMap[e.targetNodeId as string];
+              if (!sourceNodeId || !targetNodeId) {
+                throw new Error("Template snapshot has dangling edge reference");
+              }
+              return {
+                id: crypto.randomUUID(),
+                pipelineId: pipeline.id,
+                sourceNodeId,
+                sourceHandle: (e.sourceHandle as string) ?? null,
+                targetNodeId,
+                targetHandle: (e.targetHandle as string) ?? null,
+              };
+            }),
           );
         }
       }

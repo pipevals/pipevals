@@ -13,6 +13,7 @@ import {
   BASE_URL,
   navigateAuthenticated,
   ensurePipeline,
+  getPipelineId,
   ab_exec,
   ab_run,
   snapshot,
@@ -22,14 +23,10 @@ import {
 
 // Navigate to the pipeline list and ensure the Judge pipeline exists
 await navigateAuthenticated("/pipelines");
-const snap = ensurePipeline(JUDGE_PIPELINE_NAME);
+ensurePipeline(JUDGE_PIPELINE_NAME);
 
-// Extract pipeline ID from the snapshot text (contains POST /api/pipelines/<uuid>/runs)
-const idMatch = snap.match(/\/api\/pipelines\/([0-9a-f-]+)\/runs/);
-assert(!!idMatch, "Pipeline ID found in snapshot");
-const pipelineId = idMatch![1];
-
-// Navigate directly to the runs page
+// Extract pipeline ID via data attribute and navigate to runs page
+const pipelineId = getPipelineId(JUDGE_PIPELINE_NAME);
 ab_exec(`open ${BASE_URL}/pipelines/${pipelineId}/runs`);
 ab_exec("wait --load networkidle");
 

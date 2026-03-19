@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { or, isNull, eq } from "drizzle-orm";
+import { or, isNull, eq, asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineTemplates } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
@@ -26,7 +26,8 @@ export async function GET() {
         isNull(pipelineTemplates.organizationId),
         eq(pipelineTemplates.organizationId, authResult.organizationId),
       ),
-    );
+    )
+    .orderBy(asc(pipelineTemplates.name));
 
   return NextResponse.json(templates);
 }
@@ -35,8 +36,20 @@ const createTemplateSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().nullable().optional(),
   graphSnapshot: z.object({
-    nodes: z.array(z.record(z.string(), z.unknown())),
-    edges: z.array(z.record(z.string(), z.unknown())),
+    nodes: z.array(
+      z.object({
+        id: z.string(),
+        type: z.string(),
+        positionX: z.number(),
+        positionY: z.number(),
+      }).passthrough(),
+    ),
+    edges: z.array(
+      z.object({
+        sourceNodeId: z.string(),
+        targetNodeId: z.string(),
+      }).passthrough(),
+    ),
   }),
   triggerSchema: z.record(z.string(), z.unknown()),
 });

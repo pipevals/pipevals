@@ -134,9 +134,11 @@ export async function navigateAuthenticated(path: string): Promise<void> {
 }
 
 /**
- * Ensure a pipeline exists in the list. If not, creates it from a template
- * in the empty state. Must be called after navigateAuthenticated("/pipelines").
+ * Ensure a pipeline exists in the list. If not, creates it from a template.
+ * Works from both the empty state (template cards visible) and the populated
+ * list (uses "New Pipeline" button to open the template picker).
  *
+ * Must be called after navigateAuthenticated("/pipelines").
  * Returns the updated interactive snapshot.
  */
 export function ensurePipeline(pipelineName: string): string {
@@ -145,8 +147,24 @@ export function ensurePipeline(pipelineName: string): string {
 
   console.log(`  → "${pipelineName}" not found, creating from template...`);
 
+  // If the empty state is showing, the template card is already visible.
+  // Otherwise, click "New Pipeline" to open the creation form with the picker.
+  if (!snap.includes("No pipelines yet")) {
+    ab_exec('find text "New Pipeline" click');
+    ab_exec("wait 500");
+  }
+
+  // Click the template card
   ab_exec(`find text "${pipelineName}" click`);
   ab_exec("wait 1000");
+
+  // Verify the creation form opened
+  const formSnap = snapshot();
+  assert(
+    formSnap.includes("Create"),
+    `Creation form opened after clicking "${pipelineName}" template`,
+  );
+
   ab_exec('find text "Create" click');
   ab_exec("wait --load networkidle");
   ab_exec("wait 1000");
@@ -154,6 +172,18 @@ export function ensurePipeline(pipelineName: string): string {
   snap = snapshot();
   assert(snap.includes(pipelineName), `"${pipelineName}" pipeline created from template`);
   return snap;
+}
+
+/**
+ * Extract a pipeline ID from the page using the data-pipeline-id attribute.
+ * Evaluates JS in the browser to read it.
+ */
+export function getPipelineId(pipelineName: string): string {
+  const id = ab_run(
+    `eval "document.querySelector('[data-pipeline-id]')?.getAttribute('data-pipeline-id') ?? ''"`,
+  );
+  assert(!!id, `Pipeline ID found for "${pipelineName}"`);
+  return id;
 }
 
 /**
