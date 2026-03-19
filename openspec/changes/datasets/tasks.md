@@ -36,10 +36,10 @@
 
 ## 6. Eval Run UI
 
-- [ ] 6.1 Create "Run Dataset" button and dataset picker dialog on the pipeline page
-- [ ] 6.2 Create eval runs list section/tab on the pipeline detail page (`components/pipeline/eval-run-list.tsx`)
-- [ ] 6.3 Create eval run detail page at `app/pipelines/[id]/eval-runs/[evalRunId]/page.tsx`
-- [ ] 6.4 Create eval run detail client component with progress bar, aggregate metrics, and per-item results table
+- [x] 6.1 Create "Run Dataset" button and dataset picker dialog on the pipeline page
+- [x] 6.2 Create eval runs list section/tab on the pipeline detail page (`components/pipeline/eval-run-list.tsx`)
+- [x] 6.3 Create eval run detail page at `app/pipelines/[id]/eval-runs/[evalRunId]/page.tsx`
+- [x] 6.4 Create eval run detail client component with progress bar, aggregate metrics, and per-item results table
 
 ## 7. Tests
 

@@ -15,6 +15,7 @@ import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
+import { DatasetPickerDialog } from "./dataset-picker-dialog";
 
 const EMPTY_SCHEMA: Record<string, unknown> = {};
 
@@ -66,6 +67,8 @@ export function TriggerRunButton({
   const samplePayload = sampleFromSchema(triggerSchema);
   const hasRequiredFields = samplePayload !== null;
 
+  const [datasetPickerOpen, setDatasetPickerOpen] = useState(false);
+
   const { trigger, isMutating } = useSWRMutation(apiUrl, triggerRun, {
     onSuccess: () => mutate(apiUrl),
     onError: (err) => handleApiError(err),
@@ -73,6 +76,12 @@ export function TriggerRunButton({
 
   return (
     <>
+      <DatasetPickerDialog
+        open={datasetPickerOpen}
+        onOpenChange={setDatasetPickerOpen}
+        pipelineId={pipelineId}
+        triggerSchema={triggerSchema}
+      />
       <TriggerWithPayloadDialog
         open={payloadDialogOpen}
         onOpenChange={setPayloadDialogOpen}
@@ -118,6 +127,14 @@ export function TriggerRunButton({
               }}
             >
               Trigger with payload…
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setDatasetPickerOpen(true);
+              }}
+            >
+              Run against dataset…
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
