@@ -140,23 +140,26 @@ export async function POST(request: Request, { params }: RouteParams) {
     )
     .returning({ id: pipelineRuns.id });
 
-  // Start all workflows concurrently
-  const workflowResults = await Promise.all(
-    runRows.map(async (run) => {
-      const wf = await start(runPipelineWorkflow, [run.id]);
-      return { runId: run.id, workflowRunId: wf.runId };
-    }),
-  );
-
-  // Update workflow run IDs
-  await Promise.all(
-    workflowResults.map(({ runId, workflowRunId }) =>
-      db
-        .update(pipelineRuns)
-        .set({ workflowRunId })
-        .where(eq(pipelineRuns.id, runId)),
-    ),
-  );
+  // Start workflows in batches to avoid exhausting DB connection pool
+  const poolMax = Number(process.env.DB_POOL_MAX || 10);
+  const BATCH_SIZE = Math.max(1, Math.floor(poolMax / 3));
+  for (let i = 0; i < runRows.length; i += BATCH_SIZE) {
+    const batch = runRows.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (run) => {
+        const wf = await start(runPipelineWorkflow, [run.id]);
+        return { runId: run.id, workflowRunId: wf.runId };
+      }),
+    );
+    await Promise.all(
+      results.map(({ runId, workflowRunId }) =>
+        db
+          .update(pipelineRuns)
+          .set({ workflowRunId })
+          .where(eq(pipelineRuns.id, runId)),
+      ),
+    );
+  }
 
   // Mark eval run as running
   await db
