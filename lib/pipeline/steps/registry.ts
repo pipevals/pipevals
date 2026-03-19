@@ -5,6 +5,7 @@ import { sandboxHandler } from "./sandbox";
 import { conditionHandler } from "./condition";
 import { transformHandler } from "./transform";
 import { metricCaptureHandler } from "./metric-capture";
+import { humanReviewHandler } from "./human-review";
 import { portRegistry } from "./ports";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,5 +38,10 @@ export const stepRegistry: Record<StepType, StepDefinition<any>> = {
   metric_capture: {
     handler: metricCaptureHandler,
     ports: portRegistry.metric_capture,
+  },
+
+  human_review: {
+    handler: humanReviewHandler,
+    ports: portRegistry.human_review,
   },
 };

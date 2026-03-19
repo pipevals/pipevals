@@ -53,4 +53,9 @@ export const portRegistry: Record<StepType, PortDefinition> = {
     inputs: [{ configField: "metrics", mode: "additive" }],
     outputs: [],
   },
+
+  human_review: {
+    inputs: [{ configField: "display", mode: "additive" }],
+    outputs: [{ key: "scores" }],
+  },
 };

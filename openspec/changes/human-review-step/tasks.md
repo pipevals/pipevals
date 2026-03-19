@@ -9,9 +9,9 @@
 
 ## 2. Step Registry & Ports
 
-- [ ] 2.1 Create `lib/pipeline/steps/human-review.ts` with a placeholder handler that throws if called directly
-- [ ] 2.2 Add `human_review` port declarations to `lib/pipeline/steps/ports.ts` (additive input on `display`, output key `scores`)
-- [ ] 2.3 Register `human_review` in `lib/pipeline/steps/registry.ts`
+- [x] 2.1 Create `lib/pipeline/steps/human-review.ts` with a placeholder handler that throws if called directly
+- [x] 2.2 Add `human_review` port declarations to `lib/pipeline/steps/ports.ts` (additive input on `display`, output key `scores`)
+- [x] 2.3 Register `human_review` in `lib/pipeline/steps/registry.ts`
 
 ## 3. Walker — Workflow-Level HITL Execution
 
