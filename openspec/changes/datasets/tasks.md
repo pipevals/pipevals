@@ -1,9 +1,9 @@
 ## 1. Schema & Migration
 
-- [ ] 1.1 Add `datasets` and `datasetItems` table definitions to `lib/db/pipeline-schema.ts` with all columns, FKs, indexes, and relations
-- [ ] 1.2 Add `evalRuns` table definition to `lib/db/pipeline-schema.ts` with all columns, FKs, indexes, and relations
-- [ ] 1.3 Add nullable `evalRunId` column (FK to evalRuns, cascade delete) and index to `pipelineRuns` table; update pipelineRuns relations
-- [ ] 1.4 Generate and run drizzle migration
+- [x] 1.1 Add `datasets` and `datasetItems` table definitions to `lib/db/pipeline-schema.ts` with all columns, FKs, indexes, and relations
+- [x] 1.2 Add `evalRuns` table definition to `lib/db/pipeline-schema.ts` with all columns, FKs, indexes, and relations
+- [x] 1.3 Add nullable `evalRunId` column (FK to evalRuns, cascade delete) and index to `pipelineRuns` table; update pipelineRuns relations
+- [x] 1.4 Generate and run drizzle migration
 
 ## 2. Dataset API
 

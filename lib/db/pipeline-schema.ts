@@ -165,6 +165,9 @@ export const pipelineRuns = pgTable(
     graphSnapshot: jsonb("graph_snapshot")
       .$type<{ nodes: unknown[]; edges: unknown[] }>()
       .notNull(),
+    evalRunId: text("eval_run_id").references(() => evalRuns.id, {
+      onDelete: "cascade",
+    }),
     workflowRunId: text("workflow_run_id"),
     startedAt: timestamp("started_at"),
     completedAt: timestamp("completed_at"),
@@ -173,6 +176,7 @@ export const pipelineRuns = pgTable(
   (table) => [
     index("pipeline_run_pipeline_idx").on(table.pipelineId),
     index("pipeline_run_status_idx").on(table.status),
+    index("pipeline_run_eval_run_idx").on(table.evalRunId),
   ],
 );
 
@@ -247,6 +251,93 @@ export const tasks = pgTable(
   ],
 );
 
+// --- Datasets ---
+
+export const datasets = pgTable(
+  "dataset",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    description: text("description"),
+    schema: jsonb("schema")
+      .$type<Record<string, string>>()
+      .notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("dataset_org_idx").on(table.organizationId)],
+);
+
+export const datasetItems = pgTable(
+  "dataset_item",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    datasetId: text("dataset_id")
+      .notNull()
+      .references(() => datasets.id, { onDelete: "cascade" }),
+    data: jsonb("data").$type<Record<string, unknown>>().notNull(),
+    index: integer("index").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("dataset_item_dataset_idx").on(table.datasetId),
+    uniqueIndex("dataset_item_dataset_index_uidx").on(
+      table.datasetId,
+      table.index,
+    ),
+  ],
+);
+
+// --- Eval Runs ---
+
+export const evalRunStatusEnum = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+] as const;
+
+export const evalRuns = pgTable(
+  "eval_run",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipelines.id, { onDelete: "cascade" }),
+    datasetId: text("dataset_id")
+      .notNull()
+      .references(() => datasets.id, { onDelete: "cascade" }),
+    status: text("status", { enum: evalRunStatusEnum })
+      .notNull()
+      .default("pending"),
+    totalItems: integer("total_items").notNull(),
+    completedItems: integer("completed_items").notNull().default(0),
+    failedItems: integer("failed_items").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    startedAt: timestamp("started_at"),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => [
+    index("eval_run_pipeline_idx").on(table.pipelineId),
+    index("eval_run_dataset_idx").on(table.datasetId),
+  ],
+);
+
 // --- Relations ---
 
 export const pipelinesRelations = relations(pipelines, ({ one, many }) => ({
@@ -307,12 +398,48 @@ export const pipelineTemplatesRelations = relations(
   }),
 );
 
+export const datasetsRelations = relations(datasets, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [datasets.organizationId],
+    references: [organization.id],
+  }),
+  creator: one(user, {
+    fields: [datasets.createdBy],
+    references: [user.id],
+  }),
+  items: many(datasetItems),
+  evalRuns: many(evalRuns),
+}));
+
+export const datasetItemsRelations = relations(datasetItems, ({ one }) => ({
+  dataset: one(datasets, {
+    fields: [datasetItems.datasetId],
+    references: [datasets.id],
+  }),
+}));
+
+export const evalRunsRelations = relations(evalRuns, ({ one, many }) => ({
+  pipeline: one(pipelines, {
+    fields: [evalRuns.pipelineId],
+    references: [pipelines.id],
+  }),
+  dataset: one(datasets, {
+    fields: [evalRuns.datasetId],
+    references: [datasets.id],
+  }),
+  runs: many(pipelineRuns),
+}));
+
 export const pipelineRunsRelations = relations(
   pipelineRuns,
   ({ one, many }) => ({
     pipeline: one(pipelines, {
       fields: [pipelineRuns.pipelineId],
       references: [pipelines.id],
+    }),
+    evalRun: one(evalRuns, {
+      fields: [pipelineRuns.evalRunId],
+      references: [evalRuns.id],
     }),
     stepResults: many(stepResults),
     tasks: many(tasks),
