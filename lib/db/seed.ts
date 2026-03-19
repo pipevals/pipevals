@@ -2,6 +2,7 @@ import "dotenv/config";
 import { auth } from "../auth";
 import { db } from ".";
 import { isAutoInviteEnabled, DEFAULT_ORG_SLUG } from "../auto-invite";
+import { seedDatasets, seedPipelines } from "./seed-templates";
 
 const SEED_USER_EMAIL = "demo@pipe.evals";
 const SEED_USER_PASSWORD = "pipevals-dev";
@@ -47,8 +48,29 @@ async function seedDemoOrg() {
   console.log(`Demo organization created (id: ${org.id})`);
 }
 
+async function seedDemoDatasets() {
+  if (!isAutoInviteEnabled()) return;
+
+  const org = await db.query.organization.findFirst({
+    where: (o, { eq }) => eq(o.slug, DEFAULT_ORG_SLUG),
+  });
+  if (!org) return;
+
+  const user = await db.query.user.findFirst({
+    where: (u, { eq }) => eq(u.email, SEED_USER_EMAIL),
+  });
+  if (!user) return;
+
+  console.log("Seeding demo pipelines...");
+  await seedPipelines(db, org.id, user.id);
+
+  console.log("Seeding demo datasets...");
+  await seedDatasets(db, org.id, user.id);
+}
+
 async function seed() {
   await seedDemoOrg();
+  await seedDemoDatasets();
 }
 
 seed()

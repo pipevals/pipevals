@@ -4,6 +4,8 @@ import {
   pipelineNodes,
   pipelineEdges,
   pipelineTemplates,
+  datasets,
+  datasetItems,
 } from "./pipeline-schema";
 import type { PipelineNodeType } from "../pipeline/types";
 import type { db as appDb } from ".";
@@ -465,6 +467,93 @@ export async function seedTemplates(db: typeof appDb) {
         .returning({ id: pipelineTemplates.id });
 
       console.log(`  ✔ Created "${def.name}" (${template.id})`);
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Seed Datasets
+// ---------------------------------------------------------------------------
+
+export interface SeedDatasetDefinition {
+  name: string;
+  description: string;
+  schema: Record<string, string>;
+  items: Record<string, unknown>[];
+}
+
+const generalPromptDataset: SeedDatasetDefinition = {
+  name: "General Knowledge Prompts",
+  description:
+    "A diverse set of prompts covering explanation, summarization, creative writing, and reasoning. Compatible with any pipeline that uses a { prompt } trigger schema.",
+  schema: { prompt: "" },
+  items: [
+    { prompt: "Explain quantum computing in simple terms" },
+    { prompt: "Summarize the key ideas of stoic philosophy" },
+    { prompt: "Write a haiku about debugging code" },
+    { prompt: "What are the pros and cons of microservices vs monoliths?" },
+    { prompt: "Explain the difference between TCP and UDP to a 10-year-old" },
+    { prompt: "List three common logical fallacies with examples" },
+    { prompt: "How does photosynthesis work?" },
+    { prompt: "Write a short product description for noise-canceling headphones" },
+    { prompt: "What causes inflation in an economy?" },
+    { prompt: "Compare and contrast REST and GraphQL APIs" },
+  ],
+};
+
+export const seedDatasetDefinitions: SeedDatasetDefinition[] = [
+  generalPromptDataset,
+];
+
+// ---------------------------------------------------------------------------
+// seedDatasets — inserts seed datasets into an org
+// ---------------------------------------------------------------------------
+
+export async function seedDatasets(
+  db: typeof appDb,
+  organizationId: string,
+  createdBy: string,
+) {
+  for (const def of seedDatasetDefinitions) {
+    const existing = await db
+      .select({ id: datasets.id })
+      .from(datasets)
+      .where(
+        and(
+          eq(datasets.name, def.name),
+          eq(datasets.organizationId, organizationId),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      console.log(`  ⏭ Skipped dataset "${def.name}" (already exists)`);
+      continue;
+    }
+
+    await db.transaction(async (tx) => {
+      const [dataset] = await tx
+        .insert(datasets)
+        .values({
+          name: def.name,
+          description: def.description,
+          schema: def.schema,
+          organizationId,
+          createdBy,
+        })
+        .returning({ id: datasets.id });
+
+      if (def.items.length > 0) {
+        await tx.insert(datasetItems).values(
+          def.items.map((data, index) => ({
+            datasetId: dataset.id,
+            data,
+            index,
+          })),
+        );
+      }
+
+      console.log(`  ✔ Created dataset "${def.name}" (${dataset.id}, ${def.items.length} items)`);
     });
   }
 }
