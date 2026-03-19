@@ -40,6 +40,29 @@ export async function recordStepCompleted(
     );
 }
 
+export async function recordStepAwaitingReview(
+  runId: string,
+  nodeId: string,
+  input: Record<string, unknown>,
+) {
+  await db
+    .insert(stepResults)
+    .values({
+      runId,
+      nodeId,
+      status: "awaiting_review",
+      input,
+      startedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [stepResults.runId, stepResults.nodeId],
+      set: {
+        status: "awaiting_review",
+        input,
+      },
+    });
+}
+
 export async function recordStepFailed(
   runId: string,
   nodeId: string,

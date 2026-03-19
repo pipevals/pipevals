@@ -3,6 +3,8 @@ import { loadGraph } from "./graph-loader";
 import { topologicalSort } from "./topological-sort";
 import { resolveInputs } from "./input-resolver";
 import { BranchResolver } from "./branch-resolver";
+import { executeHumanReview } from "./human-review";
+import type { HumanReviewConfig } from "../types";
 import type { WalkerNode } from "./graph-loader";
 
 export async function runPipelineWorkflow(runId: string) {
@@ -33,6 +35,16 @@ export async function runPipelineWorkflow(runId: string) {
     const settled = await Promise.allSettled(
       readyNodes.map((node: WalkerNode) => {
         const input = resolveInputs(node, graph, results, triggerPayload);
+
+        if (node.type === "human_review") {
+          return executeHumanReview(
+            runId,
+            node.id,
+            node.config as unknown as HumanReviewConfig,
+            input,
+          );
+        }
+
         return executeNode(runId, node.id, node.type, node.config, input);
       }),
     );

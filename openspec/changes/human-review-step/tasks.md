@@ -15,10 +15,10 @@
 
 ## 3. Walker — Workflow-Level HITL Execution
 
-- [ ] 3.1 Define the review hook with `defineHook` in the walker module (e.g., `lib/pipeline/walker/review-hook.ts`)
-- [ ] 3.2 Create `executeHumanReview` function in `lib/pipeline/walker/human-review.ts` — a plain async function (NOT `"use step"`) that orchestrates: resolving display data, creating task records (`"use step"`), updating step/run status to `awaiting_review` (`"use step"`), creating N hooks, awaiting `Promise.all(hooks)`, aggregating results, and recording completion (`"use step"`)
-- [ ] 3.3 Update `lib/pipeline/walker/workflow.ts` to detect `human_review` nodes and route them to `executeHumanReview` instead of `executeNode`
-- [ ] 3.4 Update `lib/pipeline/walker/step-recorder.ts` to support the `awaiting_review` status transition
+- [x] 3.1 Define the review hook with `defineHook` in the walker module (e.g., `lib/pipeline/walker/review-hook.ts`)
+- [x] 3.2 Create `executeHumanReview` function in `lib/pipeline/walker/human-review.ts` — a plain async function (NOT `"use step"`) that orchestrates: resolving display data, creating task records (`"use step"`), updating step/run status to `awaiting_review` (`"use step"`), creating N hooks, awaiting `Promise.all(hooks)`, aggregating results, and recording completion (`"use step"`)
+- [x] 3.3 Update `lib/pipeline/walker/workflow.ts` to detect `human_review` nodes and route them to `executeHumanReview` instead of `executeNode`
+- [x] 3.4 Update `lib/pipeline/walker/step-recorder.ts` to support the `awaiting_review` status transition
 
 ## 4. Task APIs
 
