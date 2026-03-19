@@ -33,7 +33,7 @@
 
 ## 6. Save as Template (Editor)
 
-- [ ] 6.1 Add "Save as Template" button to `PipelineToolbar` — disabled when `dirty === true` with tooltip "Deploy your changes before saving as a template"
-- [ ] 6.2 Create save-as-template dialog component with name (pre-filled from pipeline name), description, and live slug preview
-- [ ] 6.3 Wire dialog submission to `POST /api/templates` using current nodes, edges, and triggerSchema from the Zustand store
-- [ ] 6.4 Handle success (close dialog) and error (display in dialog, e.g., 409 duplicate slug)
+- [x] 6.1 Add "Save as Template" button to `PipelineToolbar` — disabled when `dirty === true` with tooltip "Deploy your changes before saving as a template"
+- [x] 6.2 Create save-as-template dialog component with name (pre-filled from pipeline name), description, and live slug preview
+- [x] 6.3 Wire dialog submission to `POST /api/templates` using current nodes, edges, and triggerSchema from the Zustand store
+- [x] 6.4 Handle success (close dialog) and error (display in dialog, e.g., 409 duplicate slug)
