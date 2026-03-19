@@ -12,6 +12,8 @@ import type {
   ConditionConfig,
   TransformConfig,
   MetricCaptureConfig,
+  HumanReviewConfig,
+  RubricField,
 } from "@/lib/pipeline/types";
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -442,6 +444,200 @@ function MetricCaptureFields({
   );
 }
 
+function HumanReviewFields({
+  config,
+  onUpdate,
+}: {
+  config: HumanReviewConfig;
+  onUpdate: (c: Partial<HumanReviewConfig>) => void;
+}) {
+  const rubric = config.rubric ?? [];
+
+  function updateRubricField(index: number, patch: Partial<RubricField>) {
+    const next = [...rubric];
+    next[index] = { ...next[index], ...patch } as RubricField;
+    onUpdate({ rubric: next });
+  }
+
+  function removeRubricField(index: number) {
+    onUpdate({ rubric: rubric.filter((_, i) => i !== index) });
+  }
+
+  function addRubricField() {
+    onUpdate({
+      rubric: [...rubric, { name: "", type: "rating", min: 1, max: 5 }],
+    });
+  }
+
+  return (
+    <>
+      {/* Display Data */}
+      <Field label="Display Data (label → dot-path)">
+        <div className="flex flex-col gap-1">
+          {Object.entries(config.display ?? {}).map(([key, path], i) => (
+            <div key={i} className="flex gap-1">
+              <Input
+                value={key}
+                onChange={(v) =>
+                  onUpdate({ display: renameKey(config.display ?? {}, key, v) })
+                }
+                placeholder="Label"
+              />
+              <Input
+                value={path}
+                onChange={(v) =>
+                  onUpdate({ display: { ...config.display, [key]: v } })
+                }
+                placeholder="steps.llm.text"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const next = { ...config.display };
+                  delete next[key];
+                  onUpdate({ display: next });
+                }}
+                className="shrink-0 rounded-md px-1.5 text-xs text-destructive hover:bg-destructive/10"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              onUpdate({ display: { ...config.display, "": "" } })
+            }
+            disabled={"" in (config.display ?? {})}
+            className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+          >
+            + Add display field
+          </button>
+        </div>
+      </Field>
+
+      {/* Rubric */}
+      <Field label="Rubric">
+        <div className="flex flex-col gap-2">
+          {rubric.map((field, i) => (
+            <div key={i} className="flex flex-col gap-1 rounded-md border border-border p-2">
+              <div className="flex gap-1">
+                <Input
+                  value={field.name}
+                  onChange={(v) => updateRubricField(i, { name: v })}
+                  placeholder="field_name"
+                />
+                <Select
+                  value={field.type}
+                  onChange={(v) => {
+                    const base = { name: field.name };
+                    if (v === "rating")
+                      onUpdate({
+                        rubric: rubric.map((f, j) =>
+                          j === i ? { ...base, type: "rating", min: 1, max: 5 } : f,
+                        ),
+                      });
+                    else if (v === "boolean")
+                      onUpdate({
+                        rubric: rubric.map((f, j) =>
+                          j === i ? { ...base, type: "boolean", label: field.name } : f,
+                        ),
+                      });
+                    else if (v === "text")
+                      onUpdate({
+                        rubric: rubric.map((f, j) =>
+                          j === i ? { ...base, type: "text" } : f,
+                        ),
+                      });
+                    else if (v === "select")
+                      onUpdate({
+                        rubric: rubric.map((f, j) =>
+                          j === i ? { ...base, type: "select", options: [] } : f,
+                        ),
+                      });
+                  }}
+                  options={[
+                    { value: "rating", label: "Rating" },
+                    { value: "boolean", label: "Boolean" },
+                    { value: "text", label: "Text" },
+                    { value: "select", label: "Select" },
+                  ]}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeRubricField(i)}
+                  className="shrink-0 rounded-md px-1.5 text-xs text-destructive hover:bg-destructive/10"
+                >
+                  ×
+                </button>
+              </div>
+              {field.type === "rating" && (
+                <div className="flex gap-1">
+                  <Input
+                    type="number"
+                    value={field.min}
+                    onChange={(v) => updateRubricField(i, { min: parseInt(v) || 1 })}
+                    placeholder="Min"
+                  />
+                  <Input
+                    type="number"
+                    value={field.max}
+                    onChange={(v) => updateRubricField(i, { max: parseInt(v) || 5 })}
+                    placeholder="Max"
+                  />
+                </div>
+              )}
+              {field.type === "select" && (
+                <Input
+                  value={field.options.join(", ")}
+                  onChange={(v) =>
+                    updateRubricField(i, {
+                      options: v.split(",").map((s) => s.trim()).filter(Boolean),
+                    })
+                  }
+                  placeholder="option1, option2, option3"
+                />
+              )}
+              {field.type === "text" && (
+                <Input
+                  value={field.placeholder ?? ""}
+                  onChange={(v) => updateRubricField(i, { placeholder: v || undefined })}
+                  placeholder="Placeholder text (optional)"
+                />
+              )}
+              {field.type === "boolean" && (
+                <Input
+                  value={field.label}
+                  onChange={(v) => updateRubricField(i, { label: v })}
+                  placeholder="Question label"
+                />
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addRubricField}
+            className="h-7 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+          >
+            + Add rubric field
+          </button>
+        </div>
+      </Field>
+
+      {/* Required Reviewers */}
+      <Field label="Required Reviewers">
+        <Input
+          type="number"
+          value={config.requiredReviewers ?? 1}
+          onChange={(v) =>
+            onUpdate({ requiredReviewers: Math.max(1, parseInt(v) || 1) })
+          }
+        />
+      </Field>
+    </>
+  );
+}
+
 export function ConfigPanel() {
   const selectedNodeId = usePipelineBuilderStore((s) => s.selectedNodeId);
   const nodes = usePipelineBuilderStore((s) => s.nodes);
@@ -499,6 +695,9 @@ export function ConfigPanel() {
         )}
         {type === "metric_capture" && (
           <MetricCaptureFields config={config as unknown as MetricCaptureConfig} onUpdate={onUpdate} />
+        )}
+        {type === "human_review" && (
+          <HumanReviewFields config={config as unknown as HumanReviewConfig} onUpdate={onUpdate} />
         )}
       </div>
     </aside>

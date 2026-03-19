@@ -73,6 +73,7 @@ const STEP_LABELS: Record<StepType, string> = {
   condition: "Condition",
   transform: "Transform",
   metric_capture: "Metric Capture",
+  human_review: "Human Review",
 };
 
 function makeTriggerNode(position = TRIGGER_NODE_DEFAULT_POSITION): PipelineNode {

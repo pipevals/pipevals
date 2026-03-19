@@ -29,10 +29,10 @@
 
 ## 5. Pipeline Builder UI
 
-- [ ] 5.1 Update the node palette to organize step types into categories (Execute, Flow, Measure, Review) with the `human_review` step in the Review category
-- [ ] 5.2 Create the `human_review` config panel section: display data key-value editor (label + dot-path)
-- [ ] 5.3 Create the rubric editor in the config panel: add/remove fields, type selector, type-specific options (min/max for rating, options for select, placeholder for text)
-- [ ] 5.4 Add the required reviewers number input to the config panel
+- [x] 5.1 Update the node palette to organize step types into categories (Execute, Flow, Measure, Review) with the `human_review` step in the Review category
+- [x] 5.2 Create the `human_review` config panel section: display data key-value editor (label + dot-path)
+- [x] 5.3 Create the rubric editor in the config panel: add/remove fields, type selector, type-specific options (min/max for rating, options for select, placeholder for text)
+- [x] 5.4 Add the required reviewers number input to the config panel
 
 ## 6. Tasks Page — Layout & Queue
 
