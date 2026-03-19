@@ -57,13 +57,30 @@ export interface MetricCaptureConfig {
   metrics: Record<string, string>;
 }
 
+export type RubricField =
+  | { name: string; type: "rating"; min: number; max: number; label?: string }
+  | { name: string; type: "boolean"; label: string }
+  | { name: string; type: "text"; label?: string; placeholder?: string }
+  | { name: string; type: "select"; label?: string; options: string[] };
+
+export interface HumanReviewConfig {
+  type: "human_review";
+  /** Upstream data to display to reviewer: label → dot-path */
+  display: Record<string, string>;
+  /** The scoring rubric definition */
+  rubric: RubricField[];
+  /** Number of reviewers required (default 1) */
+  requiredReviewers: number;
+}
+
 export type NodeConfig =
   | ApiRequestConfig
   | AiSdkConfig
   | SandboxConfig
   | ConditionConfig
   | TransformConfig
-  | MetricCaptureConfig;
+  | MetricCaptureConfig
+  | HumanReviewConfig;
 
 // --- Execution types ---
 
@@ -149,5 +166,11 @@ export const defaultConfigs: Record<StepType, NodeConfig> = {
   metric_capture: {
     type: "metric_capture",
     metrics: {},
+  },
+  human_review: {
+    type: "human_review",
+    display: {},
+    rubric: [],
+    requiredReviewers: 1,
   },
 };

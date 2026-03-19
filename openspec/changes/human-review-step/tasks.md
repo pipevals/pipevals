@@ -1,11 +1,11 @@
 ## 1. Database Schema & Types
 
-- [ ] 1.1 Add `"human_review"` to `stepTypeEnum` and `pipelineNodeTypeEnum` in `lib/db/pipeline-schema.ts`
-- [ ] 1.2 Add `"awaiting_review"` to `stepResultStatusEnum` and the run status enum in `lib/db/pipeline-schema.ts`
-- [ ] 1.3 Create the `tasks` table in `lib/db/pipeline-schema.ts` with all columns (id, pipelineId, runId, nodeId, hookToken, status, rubric, displayData, response, reviewerIndex, reviewedBy, createdAt, completedAt), foreign keys, and indexes
-- [ ] 1.4 Export tasks table relations in the Drizzle schema
-- [ ] 1.5 Generate and run the database migration
-- [ ] 1.6 Add `HumanReviewConfig` and `RubricField` types to `lib/pipeline/types.ts`, add `HumanReviewConfig` to the `NodeConfig` union, and add the default config entry
+- [x] 1.1 Add `"human_review"` to `stepTypeEnum` and `pipelineNodeTypeEnum` in `lib/db/pipeline-schema.ts`
+- [x] 1.2 Add `"awaiting_review"` to `stepResultStatusEnum` and the run status enum in `lib/db/pipeline-schema.ts`
+- [x] 1.3 Create the `tasks` table in `lib/db/pipeline-schema.ts` with all columns (id, pipelineId, runId, nodeId, hookToken, status, rubric, displayData, response, reviewerIndex, reviewedBy, createdAt, completedAt), foreign keys, and indexes
+- [x] 1.4 Export tasks table relations in the Drizzle schema
+- [x] 1.5 Generate and run the database migration
+- [x] 1.6 Add `HumanReviewConfig` and `RubricField` types to `lib/pipeline/types.ts`, add `HumanReviewConfig` to the `NodeConfig` union, and add the default config entry
 
 ## 2. Step Registry & Ports
 

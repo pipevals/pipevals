@@ -15,6 +15,13 @@
       "when": 1773758585696,
       "tag": "0001_gifted_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773916486373,
+      "tag": "0002_cloudy_enchantress",
+      "breakpoints": true
     }
   ]
 }

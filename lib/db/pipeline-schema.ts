@@ -18,6 +18,7 @@ export const stepTypeEnum = [
   "condition",
   "transform",
   "metric_capture",
+  "human_review",
 ] as const;
 
 // Includes all step types plus the UI-only trigger node type.
@@ -106,6 +107,7 @@ export const runStatusEnum = [
   "completed",
   "failed",
   "cancelled",
+  "awaiting_review",
 ] as const;
 
 export const pipelineRuns = pgTable(
@@ -141,6 +143,7 @@ export const stepResultStatusEnum = [
   "completed",
   "failed",
   "skipped",
+  "awaiting_review",
 ] as const;
 
 export const stepResults = pgTable(
@@ -169,6 +172,42 @@ export const stepResults = pgTable(
   ],
 );
 
+export const taskStatusEnum = ["pending", "completed"] as const;
+
+export const tasks = pgTable(
+  "task",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipelines.id, { onDelete: "cascade" }),
+    runId: text("run_id")
+      .notNull()
+      .references(() => pipelineRuns.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    hookToken: text("hook_token").notNull(),
+    status: text("status", { enum: taskStatusEnum })
+      .notNull()
+      .default("pending"),
+    rubric: jsonb("rubric").$type<Record<string, unknown>[]>().notNull(),
+    displayData: jsonb("display_data")
+      .$type<Record<string, unknown>>()
+      .notNull(),
+    response: jsonb("response").$type<Record<string, unknown>>(),
+    reviewerIndex: integer("reviewer_index").notNull().default(0),
+    reviewedBy: text("reviewed_by").references(() => user.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => [
+    uniqueIndex("task_hook_token_uidx").on(table.hookToken),
+    index("task_run_idx").on(table.runId),
+    index("task_pipeline_idx").on(table.pipelineId),
+  ],
+);
+
 // --- Relations ---
 
 export const pipelinesRelations = relations(pipelines, ({ one, many }) => ({
@@ -183,6 +222,7 @@ export const pipelinesRelations = relations(pipelines, ({ one, many }) => ({
   nodes: many(pipelineNodes),
   edges: many(pipelineEdges),
   runs: many(pipelineRuns),
+  tasks: many(tasks),
 }));
 
 export const pipelineNodesRelations = relations(
@@ -222,6 +262,7 @@ export const pipelineRunsRelations = relations(
       references: [pipelines.id],
     }),
     stepResults: many(stepResults),
+    tasks: many(tasks),
   }),
 );
 
@@ -229,5 +270,20 @@ export const stepResultsRelations = relations(stepResults, ({ one }) => ({
   run: one(pipelineRuns, {
     fields: [stepResults.runId],
     references: [pipelineRuns.id],
+  }),
+}));
+
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  pipeline: one(pipelines, {
+    fields: [tasks.pipelineId],
+    references: [pipelines.id],
+  }),
+  run: one(pipelineRuns, {
+    fields: [tasks.runId],
+    references: [pipelineRuns.id],
+  }),
+  reviewer: one(user, {
+    fields: [tasks.reviewedBy],
+    references: [user.id],
   }),
 }));
