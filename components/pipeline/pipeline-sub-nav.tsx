@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { shortId } from "@/lib/format";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
 
 const NAV_ITEMS = [
   { label: "Editor", segment: "" },
@@ -27,12 +29,21 @@ export function PipelineSubNav({
     <div className="border-b border-border bg-background">
       <div className="flex h-12 shrink-0 items-center justify-between px-8">
         <div className="flex items-center gap-4">
-          <Link
-            href={basePath}
-            className="max-w-[200px] truncate text-sm font-medium text-foreground hover:opacity-80 transition-opacity"
-          >
-            {pipelineSlug ?? shortId(pipelineId)}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/pipelines"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Back to pipelines"
+            >
+              <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
+            </Link>
+            <Link
+              href={basePath}
+              className="max-w-[200px] truncate text-sm font-medium text-foreground hover:opacity-80 transition-opacity"
+            >
+              {pipelineSlug ?? shortId(pipelineId)}
+            </Link>
+          </div>
           <span className="h-4 w-px bg-border" />
           <nav className="flex h-full items-stretch gap-4">
             {NAV_ITEMS.map(({ label, segment }) => {

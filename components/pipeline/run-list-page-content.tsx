@@ -16,9 +16,6 @@ import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
-/**
- * Return the triggerSchema as a sample payload if it has fields, else null.
- */
 function sampleFromSchema(
   schema: Record<string, unknown>,
 ): Record<string, unknown> | null {
@@ -45,52 +42,16 @@ async function triggerRun(
 
 export function RunListPageContent({
   pipelineId,
-  triggerSchema = {},
 }: {
   pipelineId: string;
-  triggerSchema?: Record<string, unknown>;
 }) {
-  const apiUrl = `/api/pipelines/${pipelineId}/runs`;
-  const [triggerError, setTriggerError] = useState<string | null>(null);
-  const [payloadDialogOpen, setPayloadDialogOpen] = useState(false);
-  const samplePayload = sampleFromSchema(triggerSchema);
-  const hasRequiredFields = samplePayload !== null;
-
-  const { trigger, isMutating } = useSWRMutation(apiUrl, triggerRun, {
-    onSuccess: () => {
-      setTriggerError(null);
-      mutate(apiUrl);
-    },
-    onError: (err) => {
-      setTriggerError(
-        err instanceof Error ? err.message : "Failed to trigger run",
-      );
-      handleApiError(err);
-    },
-  });
-
   return (
-    <>
-      <TriggerWithPayloadDialog
-        open={payloadDialogOpen}
-        onOpenChange={setPayloadDialogOpen}
-        onTrigger={(payload) => trigger(payload)}
-        defaultPayload={samplePayload ?? undefined}
-        pipelineId={pipelineId}
-      />
-      <main className="px-8 py-10">
-        {triggerError && (
-          <p className="mb-4 text-xs text-destructive">{triggerError}</p>
-        )}
-        <RunList pipelineId={pipelineId} />
-      </main>
-    </>
+    <main className="px-8 py-10">
+      <RunList pipelineId={pipelineId} />
+    </main>
   );
 }
 
-/**
- * Trigger button extracted so the page can pass it into PipelineSubNav actions.
- */
 export function TriggerRunButton({
   pipelineId,
   triggerSchema = {},

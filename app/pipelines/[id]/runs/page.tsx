@@ -32,10 +32,7 @@ export default async function RunListPage({
           />
         }
       />
-      <RunListPageContent
-        pipelineId={id}
-        triggerSchema={pipeline.triggerSchema ?? {}}
-      />
+      <RunListPageContent pipelineId={id} />
     </div>
   );
 }

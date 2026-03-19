@@ -16,18 +16,12 @@ import { ScoreDistributionChart } from "./charts/score-distribution-chart";
 import { StepDurationChart } from "./charts/step-duration-chart";
 import { RecentRunsTable } from "./charts/recent-runs-table";
 
-export interface MetricRunEntry {
-  id: string;
-  status: string;
-  createdAt: string;
-  durationMs: number | null;
-  metrics: Record<string, unknown>;
-  steps: { label: string; durationMs: number | null }[];
-}
+import type {
+  MetricRunEntry,
+  MetricsResponse,
+} from "@/lib/pipeline/types/metrics";
 
-interface MetricsResponse {
-  runs: MetricRunEntry[];
-}
+export type { MetricRunEntry };
 
 export interface MetricsAggregate {
   totalRuns: number;
@@ -142,7 +136,7 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
       {agg.metricNames.length > 0 && (
         <MetricTrendsChart runs={agg.runs} metricNames={agg.metricNames} />
       )}
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
         <StepDurationChart runs={agg.runs} />
       </div>
@@ -157,7 +151,7 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
 
 function MetricsStatCards({ agg }: { agg: MetricsAggregate }) {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       <StatCard label="Total Runs" value={String(agg.totalRuns)} />
       <StatCard
         label="Pass Rate"

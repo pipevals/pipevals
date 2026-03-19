@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { pipelineRuns, stepResults } from "@/lib/db/pipeline-schema";
+import { pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
+import type { MetricRunEntry } from "@/lib/pipeline/types/metrics";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -12,20 +13,13 @@ interface SnapshotNode {
   label: string | null;
 }
 
-interface MetricRunEntry {
-  id: string;
-  status: string;
-  createdAt: string;
-  durationMs: number | null;
-  metrics: Record<string, unknown>;
-  steps: { label: string; durationMs: number | null }[];
-}
-
 export async function GET(_request: Request, { params }: RouteParams) {
   const { id } = await params;
   const result = await requirePipeline(id);
   if ("error" in result) return result.error;
 
+  // TODO: Add limit (default 200) + optional ?limit=N query param.
+  // Loading all runs with step results will be slow for large pipelines.
   const runs = await db.query.pipelineRuns.findMany({
     where: eq(pipelineRuns.pipelineId, id),
     orderBy: asc(pipelineRuns.createdAt),
@@ -33,9 +27,10 @@ export async function GET(_request: Request, { params }: RouteParams) {
   });
 
   const entries: MetricRunEntry[] = runs.map((run) => {
-    const snapshotNodes = (
-      run.graphSnapshot as { nodes: SnapshotNode[] }
-    ).nodes;
+    const snapshot = run.graphSnapshot as { nodes?: unknown } | null;
+    const snapshotNodes: SnapshotNode[] = Array.isArray(snapshot?.nodes)
+      ? (snapshot.nodes as SnapshotNode[])
+      : [];
 
     const metricNodeIds = new Set(
       snapshotNodes
@@ -43,6 +38,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
         .map((n) => n.id),
     );
 
+    // Metrics from multiple metric_capture nodes are merged; last-wins on key collisions.
     const metrics: Record<string, unknown> = {};
     for (const sr of run.stepResults) {
       if (metricNodeIds.has(sr.nodeId) && sr.status === "completed") {

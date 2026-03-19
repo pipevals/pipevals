@@ -32,6 +32,7 @@ import {
   CheckmarkCircle01Icon,
   Copy01Icon,
   Search01Icon,
+  WorkflowSquare05Icon,
 } from "@hugeicons/core-free-icons";
 import type { PipelineSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
@@ -140,7 +141,10 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
     <>
       <div className="border-b border-border bg-background">
         <div className="flex h-12 shrink-0 items-center justify-between px-8">
-          <h1 className="text-sm font-semibold text-foreground">Pipelines</h1>
+          <h1 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
+            Pipelines
+          </h1>
           <Button onClick={() => setCreating(true)} size="sm">
             New Pipeline
           </Button>
