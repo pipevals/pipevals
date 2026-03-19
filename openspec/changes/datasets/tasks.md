@@ -15,10 +15,10 @@
 
 ## 3. Eval Run API
 
-- [ ] 3.1 Create `app/api/pipelines/[id]/eval-runs/route.ts` with POST (trigger eval run) and GET (list eval runs) handlers
-- [ ] 3.2 Create `app/api/pipelines/[id]/eval-runs/[evalRunId]/route.ts` with GET (eval run detail + child runs) handler
-- [ ] 3.3 Create `app/api/pipelines/[id]/eval-runs/[evalRunId]/metrics/route.ts` with GET (aggregate metrics) handler
-- [ ] 3.4 Implement eval run status derivation logic (derive status from child pipeline run statuses)
+- [x] 3.1 Create `app/api/pipelines/[id]/eval-runs/route.ts` with POST (trigger eval run) and GET (list eval runs) handlers
+- [x] 3.2 Create `app/api/pipelines/[id]/eval-runs/[evalRunId]/route.ts` with GET (eval run detail + child runs) handler
+- [x] 3.3 Create `app/api/pipelines/[id]/eval-runs/[evalRunId]/metrics/route.ts` with GET (aggregate metrics) handler
+- [x] 3.4 Implement eval run status derivation logic (derive status from child pipeline run statuses)
 
 ## 4. Modified Pipeline APIs
 
