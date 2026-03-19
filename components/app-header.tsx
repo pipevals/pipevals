@@ -78,6 +78,25 @@ export function AppHeader({ user }: AppHeaderProps) {
       </Link>
 
       <div className="flex items-center gap-7">
+        <nav className="flex items-center gap-5">
+          {[
+            { href: "/pipelines", label: "Pipelines" },
+            { href: "/datasets", label: "Datasets" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "text-xs font-medium transition-colors",
+                pathname.startsWith(href)
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
