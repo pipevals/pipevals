@@ -66,15 +66,7 @@ async function createReviewTasks(
   "use step";
 
   // Resolve display data from dot-paths
-  const context = { steps: input.steps, trigger: input.trigger };
-  const displayData: Record<string, unknown> = {};
-  for (const [label, dotPath] of Object.entries(config.display)) {
-    try {
-      displayData[label] = resolveDotPath(context, dotPath);
-    } catch {
-      displayData[label] = null;
-    }
-  }
+  const displayData = resolveDisplayData(config.display, input);
 
   // Look up pipelineId from the run
   const run = await db.query.pipelineRuns.findFirst({
@@ -144,9 +136,31 @@ async function recordHumanReviewCompleted(
     .where(eq(pipelineRuns.id, runId));
 }
 
+// --- Pure helper functions ---
+
+/**
+ * Resolves display config dot-paths against the step input context.
+ * Returns null for any paths that fail to resolve.
+ */
+export function resolveDisplayData(
+  display: Record<string, string>,
+  input: StepInput,
+): Record<string, unknown> {
+  const context = { steps: input.steps, trigger: input.trigger };
+  const result: Record<string, unknown> = {};
+  for (const [label, dotPath] of Object.entries(display)) {
+    try {
+      result[label] = resolveDotPath(context, dotPath);
+    } catch {
+      result[label] = null;
+    }
+  }
+  return result;
+}
+
 // --- Pure aggregation logic ---
 
-function aggregateReviews(
+export function aggregateReviews(
   reviews: ReviewHookPayload[],
   config: HumanReviewConfig,
 ): Record<string, unknown> {

@@ -58,7 +58,7 @@
 
 ## 9. Testing
 
-- [ ] 9.1 Unit tests for rubric validation logic (valid ratings, out-of-range, missing fields, invalid types)
-- [ ] 9.2 Unit tests for score aggregation (single reviewer, multiple reviewers, mean calculation)
-- [ ] 9.3 Unit tests for display data resolution from step inputs
-- [ ] 9.4 Integration tests for task submission API (valid submit, duplicate submit, invalid scores)
+- [x] 9.1 Unit tests for rubric validation logic (valid ratings, out-of-range, missing fields, invalid types)
+- [x] 9.2 Unit tests for score aggregation (single reviewer, multiple reviewers, mean calculation)
+- [x] 9.3 Unit tests for display data resolution from step inputs
+- [x] 9.4 Integration tests for task submission API (valid submit, duplicate submit, invalid scores)

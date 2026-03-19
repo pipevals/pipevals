@@ -145,12 +145,29 @@ export async function setupMocks() {
   const mockWorkflowStart = mock(() =>
     Promise.resolve({ runId: `wf-${crypto.randomUUID()}` }),
   );
-  mock.module("workflow/api", () => ({ start: mockWorkflowStart }));
+  const mockResumeHook = mock(() => Promise.resolve());
+  mock.module("workflow/api", () => ({
+    start: mockWorkflowStart,
+    resumeHook: mockResumeHook,
+  }));
   mock.module("@/lib/pipeline/walker/workflow", () => ({
     runPipelineWorkflow: () => {},
   }));
 
-  return { db: testDb, auth: testAuth, mockWorkflowStart };
+  // Mock the AI SDK to prevent ESM resolution failures when other test files
+  // in the same Bun process trigger transitive imports of the "ai" package.
+  mock.module("ai", () => ({
+    generateText: mock(() =>
+      Promise.resolve({ text: "", usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 } }),
+    ),
+    generateObject: mock(() =>
+      Promise.resolve({ object: {}, usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 } }),
+    ),
+    gateway: mock(() => "mock-model"),
+    jsonSchema: (s: unknown) => s,
+  }));
+
+  return { db: testDb, auth: testAuth, mockWorkflowStart, mockResumeHook };
 }
 
 /**
