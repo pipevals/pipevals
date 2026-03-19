@@ -36,10 +36,10 @@
 
 ## 6. Tasks Page — Layout & Queue
 
-- [ ] 6.1 Add "Tasks" link to the pipeline sub-navigation with pending task count badge
-- [ ] 6.2 Create the tasks page route at `/pipelines/[id]/tasks` with the sidebar + main panel layout
-- [ ] 6.3 Build the task queue sidebar component: task list items with run reference, node label, progress indicator (N/M reviewed), reviewer avatars, status filter (all/pending/completed)
-- [ ] 6.4 Wire up SWR data fetching for the task list from `GET /api/pipelines/[id]/tasks`
+- [x] 6.1 Add "Tasks" link to the pipeline sub-navigation with pending task count badge
+- [x] 6.2 Create the tasks page route at `/pipelines/[id]/tasks` with the sidebar + main panel layout
+- [x] 6.3 Build the task queue sidebar component: task list items with run reference, node label, progress indicator (N/M reviewed), reviewer avatars, status filter (all/pending/completed)
+- [x] 6.4 Wire up SWR data fetching for the task list from `GET /api/pipelines/[id]/tasks`
 
 ## 7. Tasks Page — Review Form
 

@@ -1,0 +1,63 @@
+"use client";
+
+import { useState } from "react";
+import useSWR from "swr";
+import { TaskQueueSidebar } from "./task-queue-sidebar";
+import { TaskReviewPanel } from "./task-review-panel";
+
+export interface TaskListItem {
+  id: string;
+  runId: string;
+  nodeId: string;
+  status: "pending" | "completed";
+  reviewerIndex: number;
+  reviewedBy: string | null;
+  createdAt: string;
+  completedAt: string | null;
+  reviewerName: string | null;
+}
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+export function TasksPageContent({ pipelineId }: { pipelineId: string }) {
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "completed"
+  >("all");
+
+  const { data: tasks, mutate } = useSWR<TaskListItem[]>(
+    `/api/pipelines/${pipelineId}/tasks`,
+    fetcher,
+    { refreshInterval: 5000 },
+  );
+
+  const filteredTasks = (tasks ?? []).filter((t) =>
+    statusFilter === "all" ? true : t.status === statusFilter,
+  );
+
+  return (
+    <div className="flex flex-1 overflow-hidden">
+      <TaskQueueSidebar
+        tasks={filteredTasks}
+        allTasks={tasks ?? []}
+        selectedTaskId={selectedTaskId}
+        onSelect={setSelectedTaskId}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+      />
+      <main className="flex flex-1 flex-col overflow-y-auto bg-muted/30">
+        {selectedTaskId ? (
+          <TaskReviewPanel
+            taskId={selectedTaskId}
+            allTasks={tasks ?? []}
+            onSubmitted={() => mutate()}
+          />
+        ) : (
+          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+            Select a task from the sidebar to review
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

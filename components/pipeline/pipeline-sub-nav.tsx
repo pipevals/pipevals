@@ -11,16 +11,19 @@ const NAV_ITEMS = [
   { label: "Editor", segment: "" },
   { label: "Runs", segment: "/runs" },
   { label: "Metrics", segment: "/metrics" },
+  { label: "Tasks", segment: "/tasks" },
 ] as const;
 
 export function PipelineSubNav({
   pipelineId,
   pipelineSlug,
   actions,
+  pendingTaskCount,
 }: {
   pipelineId: string;
   pipelineSlug?: string | null;
   actions?: React.ReactNode;
+  pendingTaskCount?: number;
 }) {
   const pathname = usePathname();
   const basePath = `/pipelines/${pipelineId}`;
@@ -65,6 +68,11 @@ export function PipelineSubNav({
                   )}
                 >
                   {label}
+                  {label === "Tasks" && pendingTaskCount != null && pendingTaskCount > 0 && (
+                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold text-background">
+                      {pendingTaskCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
