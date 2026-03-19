@@ -27,12 +27,12 @@
 
 ## 5. Dataset UI
 
-- [ ] 5.1 Add "Datasets" link to `components/app-header.tsx` with active state
-- [ ] 5.2 Create dataset list page at `app/datasets/page.tsx` with server-side data fetching
-- [ ] 5.3 Create dataset list client component (`components/dataset/dataset-list.tsx`) with search filter, delete confirmation, and empty state
-- [ ] 5.4 Create dataset creation dialog component with name, description, and schema key builder
-- [ ] 5.5 Create dataset detail page at `app/datasets/[id]/page.tsx` with server-side data fetching
-- [ ] 5.6 Create dataset detail client component (`components/dataset/dataset-detail.tsx`) with items table, add-items JSON input, and per-item delete
+- [x] 5.1 Add "Datasets" link to `components/app-header.tsx` with active state
+- [x] 5.2 Create dataset list page at `app/datasets/page.tsx` with server-side data fetching
+- [x] 5.3 Create dataset list client component (`components/dataset/dataset-list.tsx`) with search filter, delete confirmation, and empty state
+- [x] 5.4 Create dataset creation dialog component with name, description, and schema key builder
+- [x] 5.5 Create dataset detail page at `app/datasets/[id]/page.tsx` with server-side data fetching
+- [x] 5.6 Create dataset detail client component (`components/dataset/dataset-detail.tsx`) with items table, add-items JSON input, and per-item delete
 
 ## 6. Eval Run UI
 

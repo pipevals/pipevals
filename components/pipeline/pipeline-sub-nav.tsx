@@ -34,14 +34,7 @@ export function PipelineSubNav({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Link
-              href="/pipelines"
-              className="rounded-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Back to pipelines"
-            >
-              <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
-            </Link>
-            <Link
-              href="/pipelines"
+              href={basePath}
               className="max-w-[200px] truncate rounded-sm text-sm font-medium text-foreground hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {pipelineSlug ?? shortId(pipelineId)}
@@ -68,11 +61,13 @@ export function PipelineSubNav({
                   )}
                 >
                   {label}
-                  {label === "Tasks" && pendingTaskCount != null && pendingTaskCount > 0 && (
-                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold text-background">
-                      {pendingTaskCount}
-                    </span>
-                  )}
+                  {label === "Tasks" &&
+                    pendingTaskCount != null &&
+                    pendingTaskCount > 0 && (
+                      <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold text-background">
+                        {pendingTaskCount}
+                      </span>
+                    )}
                 </Link>
               );
             })}

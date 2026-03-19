@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { member } from "@/lib/db/schema";
 import {
   pipelines,
   pipelineNodes,
@@ -9,6 +11,7 @@ import {
   datasets,
 } from "@/lib/db/pipeline-schema";
 import { headers } from "next/headers";
+import { isAutoInviteEnabled } from "@/lib/auto-invite";
 
 type AuthError = { error: NextResponse };
 type AuthSuccess = {
@@ -45,6 +48,34 @@ export async function requireAuth(): Promise<AuthError | AuthSuccess> {
     userId: session.user.id,
     organizationId,
   };
+}
+
+/**
+ * Page-level auth: returns session + organizationId or redirects to sign-in.
+ * Handles auto-invite for demo orgs.
+ */
+export async function requireSessionWithOrg() {
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session) redirect("/sign-in");
+
+  let organizationId = session.session.activeOrganizationId;
+  if (!organizationId && isAutoInviteEnabled()) {
+    const membership = await db.query.member.findFirst({
+      where: eq(member.userId, session.user.id),
+    });
+    if (!membership) redirect("/sign-in");
+
+    organizationId = membership.organizationId;
+    await auth.api.setActiveOrganization({
+      headers: reqHeaders,
+      body: { organizationId },
+    });
+  }
+
+  if (!organizationId) redirect("/sign-in");
+
+  return { session, user: session.user, organizationId };
 }
 
 type PipelineRow = typeof pipelines.$inferSelect;
