@@ -33,19 +33,84 @@ interface RunSummary {
   createdAt: string;
 }
 
-export function RunList({ pipelineId }: { pipelineId: string }) {
-  const apiUrl = `/api/pipelines/${pipelineId}/runs`;
+interface EvalRunSummary {
+  id: string;
+  pipelineId: string;
+  datasetId: string;
+  status: string;
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  createdAt: string;
+}
 
-  const { data: runs, error, isLoading } = useSWR<RunSummary[]>(apiUrl, fetcher, {
-    refreshInterval: (latestData) => {
-      if (!latestData) return 0;
-      const hasActive = latestData.some(
-        (r) => !isTerminalRunStatus(r.status),
-      );
-      return hasActive ? 3000 : 0;
+interface DatasetInfo {
+  id: string;
+  name: string;
+}
+
+type TimelineEntry =
+  | { type: "adhoc"; data: RunSummary }
+  | { type: "eval"; data: EvalRunSummary; datasetName: string };
+
+export function RunList({ pipelineId }: { pipelineId: string }) {
+  const runsUrl = `/api/pipelines/${pipelineId}/runs`;
+  const evalRunsUrl = `/api/pipelines/${pipelineId}/eval-runs`;
+
+  const { data: runs, error: runsError, isLoading: runsLoading } = useSWR<RunSummary[]>(
+    runsUrl,
+    fetcher,
+    {
+      refreshInterval: (latestData) => {
+        if (!latestData) return 0;
+        const hasActive = latestData.some((r) => !isTerminalRunStatus(r.status));
+        return hasActive ? 3000 : 0;
+      },
+      revalidateOnFocus: false,
     },
-    revalidateOnFocus: false,
-  });
+  );
+
+  const { data: evalRuns, error: evalError, isLoading: evalLoading } = useSWR<EvalRunSummary[]>(
+    evalRunsUrl,
+    fetcher,
+    {
+      refreshInterval: (latestData) => {
+        if (!latestData) return 0;
+        const hasActive = latestData.some(
+          (r) => r.status === "pending" || r.status === "running",
+        );
+        return hasActive ? 5000 : 0;
+      },
+      revalidateOnFocus: false,
+    },
+  );
+
+  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets", fetcher);
+  const datasetMap = new Map((datasets ?? []).map((d) => [d.id, d.name]));
+
+  const isLoading = runsLoading || evalLoading;
+  const error = runsError || evalError;
+
+  // Build unified timeline sorted by createdAt desc
+  const timeline: TimelineEntry[] = [];
+  if (runs) {
+    for (const r of runs) {
+      timeline.push({ type: "adhoc", data: r });
+    }
+  }
+  if (evalRuns) {
+    for (const er of evalRuns) {
+      timeline.push({
+        type: "eval",
+        data: er,
+        datasetName: datasetMap.get(er.datasetId) ?? shortId(er.datasetId),
+      });
+    }
+  }
+  timeline.sort(
+    (a, b) =>
+      new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime(),
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -65,7 +130,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
 
       {!isLoading && !error && (
         <>
-          {!runs || runs.length === 0 ? (
+          {timeline.length === 0 ? (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -73,7 +138,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
                 </EmptyMedia>
                 <EmptyTitle>No runs yet</EmptyTitle>
                 <EmptyDescription>
-                  Trigger a run to execute this pipeline
+                  Trigger a run or run against a dataset to get started
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -81,56 +146,109 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">
-                    Run ID
+                  <TableHead className="w-[12%] font-mono text-[11px] uppercase tracking-wider">
+                    Type
                   </TableHead>
-                  <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider">
+                  <TableHead className="w-[30%] font-mono text-[11px] uppercase tracking-wider">
+                    Trigger / Dataset
+                  </TableHead>
+                  <TableHead className="w-[22%] font-mono text-[11px] uppercase tracking-wider">
                     Status
-                  </TableHead>
-                  <TableHead className="w-[25%] font-mono text-[11px] uppercase tracking-wider">
-                    Trigger
                   </TableHead>
                   <TableHead className="w-[17%] font-mono text-[11px] uppercase tracking-wider text-right">
                     Duration
                   </TableHead>
-                  <TableHead className="w-[16%] font-mono text-[11px] uppercase tracking-wider text-right">
+                  <TableHead className="w-[19%] font-mono text-[11px] uppercase tracking-wider text-right">
                     Created
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runs.map((run) => (
-                  <TableRow
-                    key={run.id}
-                    className="group relative cursor-pointer"
-                  >
-                    <TableCell className="font-mono text-xs text-foreground group-hover:text-primary transition-colors truncate">
-                      <Link
-                        href={`/pipelines/${pipelineId}/runs/${run.id}`}
-                        className="absolute inset-0"
-                        aria-label={`View run ${shortId(run.id)}`}
-                      />
-                      {shortId(run.id)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusDot status={run.status} />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors">
-                      {(run.triggerPayload as Record<string, string> | null)
-                        ?.source ?? "api"}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      {computeDuration(
-                        run.startedAt,
-                        run.completedAt,
-                        run.status === "running",
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      {formatDateTime(run.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {timeline.map((entry) => {
+                  if (entry.type === "eval") {
+                    const er = entry.data;
+                    return (
+                      <TableRow
+                        key={`eval-${er.id}`}
+                        className="group relative cursor-pointer"
+                      >
+                        <TableCell>
+                          <Link
+                            href={`/pipelines/${pipelineId}/eval-runs/${er.id}`}
+                            className="absolute inset-0"
+                            aria-label={`View eval run ${entry.datasetName}`}
+                          />
+                          <span className="inline-flex items-center rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            Dataset
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                            {entry.datasetName}
+                          </span>
+                          <span className="text-muted-foreground ml-1.5">
+                            ({er.totalItems} items)
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <StatusDot status={er.status} />
+                            <span className="text-xs text-muted-foreground">
+                              {er.completedItems}/{er.totalItems}
+                              {er.failedItems > 0 && (
+                                <span className="text-fail ml-1">
+                                  ({er.failedItems} failed)
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                          —
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                          {formatDateTime(er.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  } else {
+                    const run = entry.data;
+                    return (
+                      <TableRow
+                        key={`run-${run.id}`}
+                        className="group relative cursor-pointer"
+                      >
+                        <TableCell>
+                          <Link
+                            href={`/pipelines/${pipelineId}/runs/${run.id}`}
+                            className="absolute inset-0"
+                            aria-label={`View run ${shortId(run.id)}`}
+                          />
+                          <span className="inline-flex items-center rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            Ad-hoc
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors">
+                          {(run.triggerPayload as Record<string, string> | null)
+                            ?.source ?? shortId(run.id)}
+                        </TableCell>
+                        <TableCell>
+                          <StatusDot status={run.status} />
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                          {computeDuration(
+                            run.startedAt,
+                            run.completedAt,
+                            run.status === "running",
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                          {formatDateTime(run.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                })}
               </TableBody>
             </Table>
           )}

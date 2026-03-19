@@ -9,7 +9,6 @@ import { shortId } from "@/lib/format";
 const NAV_ITEMS = [
   { label: "Editor", segment: "" },
   { label: "Runs", segment: "/runs" },
-  { label: "Eval Runs", segment: "/eval-runs" },
   { label: "Tasks", segment: "/tasks" },
   { label: "Metrics", segment: "/metrics" },
 ] as const;
