@@ -43,11 +43,11 @@
 
 ## 7. Tasks Page — Review Form
 
-- [ ] 7.1 Build the display data panel component: renders resolved display data with labels, handles side-by-side layout for 2 entries, JSON viewer for object values
-- [ ] 7.2 Build the scoring form component: renders rubric fields as interactive inputs (rating buttons, boolean toggle, text area, select dropdown)
-- [ ] 7.3 Add form validation (all fields required, rating within range) and submit handler calling `POST /api/tasks/[id]/submit`
-- [ ] 7.4 Build the submitted reviews display: read-only view of sibling task responses with reviewer names and timestamps
-- [ ] 7.5 Add submission success feedback and sidebar status update
+- [x] 7.1 Build the display data panel component: renders resolved display data with labels, handles side-by-side layout for 2 entries, JSON viewer for object values
+- [x] 7.2 Build the scoring form component: renders rubric fields as interactive inputs (rating buttons, boolean toggle, text area, select dropdown)
+- [x] 7.3 Add form validation (all fields required, rating within range) and submit handler calling `POST /api/tasks/[id]/submit`
+- [x] 7.4 Build the submitted reviews display: read-only view of sibling task responses with reviewer names and timestamps
+- [x] 7.5 Add submission success feedback and sidebar status update
 
 ## 8. Run Viewer Updates
 
