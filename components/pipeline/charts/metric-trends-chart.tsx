@@ -10,6 +10,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { formatShortDate, formatDateTime } from "@/lib/format";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -103,10 +104,7 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
             tickMargin={8}
             tickFormatter={
               xAxisMode === "time"
-                ? (val: string) => {
-                    const d = new Date(val);
-                    return `${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getDate().toString().padStart(2, "0")}`;
-                  }
+                ? (val: string) => formatShortDate(val)
                 : undefined
             }
           />
@@ -123,7 +121,7 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
                   if (!payload?.[0]?.payload) return "";
                   const p = payload[0].payload as Record<string, unknown>;
                   if (xAxisMode === "time" && typeof p.createdAt === "string") {
-                    return new Date(p.createdAt).toLocaleString();
+                    return formatDateTime(p.createdAt);
                   }
                   return `Run #${p.runIndex}`;
                 }}

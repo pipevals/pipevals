@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import {
   useRunViewerStore,
   snapshotToFlow,
@@ -8,12 +9,6 @@ import {
 } from "@/lib/stores/run-viewer";
 
 const POLL_INTERVAL_MS = 2000;
-
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to load run");
-    return res.json() as Promise<RunData>;
-  });
 
 function isTerminal(status: string | undefined): boolean {
   return status === "completed" || status === "failed";

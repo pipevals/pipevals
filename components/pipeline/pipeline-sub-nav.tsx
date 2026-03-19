@@ -32,14 +32,14 @@ export function PipelineSubNav({
           <div className="flex items-center gap-2">
             <Link
               href="/pipelines"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="rounded-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Back to pipelines"
             >
               <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
             </Link>
             <Link
               href={basePath}
-              className="max-w-[200px] truncate text-sm font-medium text-foreground hover:opacity-80 transition-opacity"
+              className="max-w-[200px] truncate rounded-sm text-sm font-medium text-foreground hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {pipelineSlug ?? shortId(pipelineId)}
             </Link>
@@ -58,7 +58,7 @@ export function PipelineSubNav({
                   key={segment}
                   href={href}
                   className={cn(
-                    "flex items-center border-b text-xs font-medium transition-colors",
+                    "flex items-center border-b text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                     isActive
                       ? "border-foreground text-foreground"
                       : "border-transparent text-muted-foreground hover:text-foreground",

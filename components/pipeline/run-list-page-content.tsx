@@ -16,6 +16,8 @@ import { handleApiError } from "@/lib/handle-api-error";
 import { RunList } from "./run-list";
 import { TriggerWithPayloadDialog } from "./trigger-with-payload-dialog";
 
+const EMPTY_SCHEMA: Record<string, unknown> = {};
+
 function sampleFromSchema(
   schema: Record<string, unknown>,
 ): Record<string, unknown> | null {
@@ -54,7 +56,7 @@ export function RunListPageContent({
 
 export function TriggerRunButton({
   pipelineId,
-  triggerSchema = {},
+  triggerSchema = EMPTY_SCHEMA,
 }: {
   pipelineId: string;
   triggerSchema?: Record<string, unknown>;

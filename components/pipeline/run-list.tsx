@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import {
@@ -32,16 +33,10 @@ interface RunSummary {
   createdAt: string;
 }
 
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to load runs");
-    return res.json() as Promise<RunSummary[]>;
-  });
-
 export function RunList({ pipelineId }: { pipelineId: string }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
 
-  const { data: runs, error, isLoading } = useSWR(apiUrl, fetcher, {
+  const { data: runs, error, isLoading } = useSWR<RunSummary[]>(apiUrl, fetcher, {
     refreshInterval: (latestData) => {
       if (!latestData) return 0;
       const hasActive = latestData.some(

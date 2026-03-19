@@ -20,6 +20,13 @@ export function formatTimestamp(ts: string | null): string {
   return dt.toFormat("HH:mm:ss.SSS");
 }
 
+export function formatShortDate(ts: string | null): string {
+  if (!ts) return "—";
+  const dt = DateTime.fromISO(ts);
+  if (!dt.isValid) return "—";
+  return dt.toFormat("MM/dd");
+}
+
 export function formatDateTime(ts: string | null): string {
   if (!ts) return "—";
   const dt = DateTime.fromISO(ts);

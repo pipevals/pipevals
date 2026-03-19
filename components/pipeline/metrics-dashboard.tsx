@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import {
   Empty,
   EmptyDescription,
@@ -9,12 +10,24 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Card, CardContent } from "@/components/ui/card";
+import dynamic from "next/dynamic";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
-import { MetricTrendsChart } from "./charts/metric-trends-chart";
-import { ScoreDistributionChart } from "./charts/score-distribution-chart";
-import { StepDurationChart } from "./charts/step-duration-chart";
-import { RecentRunsTable } from "./charts/recent-runs-table";
+
+const MetricTrendsChart = dynamic(() =>
+  import("./charts/metric-trends-chart").then((m) => m.MetricTrendsChart),
+);
+const ScoreDistributionChart = dynamic(() =>
+  import("./charts/score-distribution-chart").then(
+    (m) => m.ScoreDistributionChart,
+  ),
+);
+const StepDurationChart = dynamic(() =>
+  import("./charts/step-duration-chart").then((m) => m.StepDurationChart),
+);
+const RecentRunsTable = dynamic(() =>
+  import("./charts/recent-runs-table").then((m) => m.RecentRunsTable),
+);
 
 import type {
   MetricRunEntry,
@@ -81,14 +94,8 @@ function computeAggregates(data: MetricsResponse): MetricsAggregate {
   };
 }
 
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to load metrics");
-    return res.json() as Promise<MetricsResponse>;
-  });
-
 export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading } = useSWR<MetricsResponse>(
     `/api/pipelines/${pipelineId}/runs/metrics`,
     fetcher,
     { revalidateOnFocus: false },
@@ -136,7 +143,7 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
       {agg.metricNames.length > 0 && (
         <MetricTrendsChart runs={agg.runs} metricNames={agg.metricNames} />
       )}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 [&>*]:min-w-0">
         <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
         <StepDurationChart runs={agg.runs} />
       </div>

@@ -54,7 +54,7 @@ export function RecentRunsTable({ runs, metricNames, pipelineId }: Props) {
           View all
         </Link>
       </div>
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-[15%] font-mono text-[11px] uppercase tracking-wider">
