@@ -5,14 +5,11 @@ import { fetcher } from "@/lib/fetcher";
 import {
   useRunViewerStore,
   snapshotToFlow,
+  isTerminalRunStatus,
   type RunData,
 } from "@/lib/stores/run-viewer";
 
 const POLL_INTERVAL_MS = 2000;
-
-function isTerminal(status: string | undefined): boolean {
-  return status === "completed" || status === "failed" || status === "cancelled";
-}
 
 export function useRunLoader(pipelineId: string, runId: string) {
   const setRun = useRunViewerStore((s) => s.setRun);
@@ -22,7 +19,7 @@ export function useRunLoader(pipelineId: string, runId: string) {
     fetcher,
     {
       refreshInterval: (latestData) =>
-        isTerminal(latestData?.status) ? 0 : POLL_INTERVAL_MS,
+        isTerminalRunStatus(latestData?.status) ? 0 : POLL_INTERVAL_MS,
       revalidateOnFocus: false,
       onSuccess: (run) => {
         const store = useRunViewerStore.getState();
@@ -42,6 +39,6 @@ export function useRunLoader(pipelineId: string, runId: string) {
   return {
     loading: isLoading,
     error: error instanceof Error ? error.message : error ? String(error) : null,
-    isPolling: !!data && !isTerminal(data.status),
+    isPolling: !!data && !isTerminalRunStatus(data.status),
   };
 }

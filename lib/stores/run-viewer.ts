@@ -2,17 +2,35 @@ import type React from "react";
 import { create } from "zustand";
 import type { Node, Edge } from "@xyflow/react";
 import type { PipelineNodeData } from "./pipeline-builder";
+import {
+  runStatusEnum,
+  stepResultStatusEnum,
+} from "@/lib/db/pipeline-schema";
 
 export type RunNode = Node<PipelineNodeData>;
 export type RunEdge = Edge;
 
-export type RunStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
-export type StepResultStatus =
-  | "pending"
-  | "running"
-  | "completed"
-  | "failed"
-  | "skipped";
+export type RunStatus = (typeof runStatusEnum)[number];
+export type StepResultStatus = (typeof stepResultStatusEnum)[number];
+
+const TERMINAL_RUN_STATUSES: ReadonlySet<RunStatus> = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
+const CANCELLABLE_RUN_STATUSES: ReadonlySet<RunStatus> = new Set([
+  "pending",
+  "running",
+]);
+
+export function isTerminalRunStatus(status: string | undefined): boolean {
+  return TERMINAL_RUN_STATUSES.has(status as RunStatus);
+}
+
+export function isCancellableRunStatus(status: string | undefined): boolean {
+  return CANCELLABLE_RUN_STATUSES.has(status as RunStatus);
+}
 
 export interface StepResult {
   id: string;

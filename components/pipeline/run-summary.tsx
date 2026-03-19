@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   useRunViewerStore,
+  isCancellableRunStatus,
   type RunStatus,
   type StepResultStatus,
 } from "@/lib/stores/run-viewer";
@@ -110,7 +111,7 @@ export function RunSummary() {
   const run = useRunViewerStore((s) => s.run);
   if (!run) return null;
 
-  const isCancellable = run.status === "pending" || run.status === "running";
+  const isCancellable = isCancellableRunStatus(run.status);
   const statusDisplay = STATUS_DISPLAY[run.status];
   const duration = computeDuration(run.startedAt, run.completedAt, run.status === "running");
 

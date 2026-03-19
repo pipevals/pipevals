@@ -4,6 +4,7 @@ import { getRun } from "workflow/api";
 import { db } from "@/lib/db";
 import { pipelineRuns, stepResults } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
+import { isCancellableRunStatus } from "@/lib/stores/run-viewer";
 
 type RouteParams = { params: Promise<{ id: string; runId: string }> };
 
@@ -23,7 +24,7 @@ export async function POST(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }
 
-  if (run.status !== "pending" && run.status !== "running") {
+  if (!isCancellableRunStatus(run.status)) {
     return NextResponse.json(
       { error: "Run is not cancellable" },
       { status: 409 },

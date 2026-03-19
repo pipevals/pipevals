@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { computeDuration, formatDateTime, shortId } from "@/lib/format";
-import type { RunStatus } from "@/lib/stores/run-viewer";
+import { isTerminalRunStatus, type RunStatus } from "@/lib/stores/run-viewer";
 import { StatusDot } from "./run-status";
 
 interface RunSummary {
@@ -40,7 +40,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
     refreshInterval: (latestData) => {
       if (!latestData) return 0;
       const hasActive = latestData.some(
-        (r) => r.status === "pending" || r.status === "running",
+        (r) => !isTerminalRunStatus(r.status),
       );
       return hasActive ? 3000 : 0;
     },
