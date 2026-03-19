@@ -1,9 +1,9 @@
 ## 1. Database Schema & Migration
 
-- [ ] 1.1 Add `pipelineTemplates` table definition to `lib/db/pipeline-schema.ts` with all columns, partial unique indexes, and FK constraints
-- [ ] 1.2 Add Drizzle relations for `pipelineTemplates` (organization, creator)
-- [ ] 1.3 Export the new table from `lib/db/schema.ts`
-- [ ] 1.4 Generate and apply the Drizzle migration (`bun drizzle-kit generate` + `bun drizzle-kit migrate`)
+- [x] 1.1 Add `pipelineTemplates` table definition to `lib/db/pipeline-schema.ts` with all columns, partial unique indexes, and FK constraints
+- [x] 1.2 Add Drizzle relations for `pipelineTemplates` (organization, creator)
+- [x] 1.3 Export the new table from `lib/db/schema.ts`
+- [x] 1.4 Generate and apply the Drizzle migration (`bun drizzle-kit generate` + `bun drizzle-kit migrate`)
 
 ## 2. Seed Templates
 

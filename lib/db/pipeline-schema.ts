@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -98,6 +98,45 @@ export const pipelineEdges = pgTable(
     index("pipeline_edge_pipeline_idx").on(table.pipelineId),
     index("pipeline_edge_source_idx").on(table.sourceNodeId),
     index("pipeline_edge_target_idx").on(table.targetNodeId),
+  ],
+);
+
+export const pipelineTemplates = pgTable(
+  "pipeline_template",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    triggerSchema: jsonb("trigger_schema")
+      .$type<Record<string, unknown>>()
+      .default({}),
+    graphSnapshot: jsonb("graph_snapshot")
+      .$type<{ nodes: unknown[]; edges: unknown[] }>()
+      .notNull(),
+    organizationId: text("organization_id").references(
+      () => organization.id,
+      { onDelete: "cascade" },
+    ),
+    createdBy: text("created_by").references(() => user.id, {
+      onDelete: "cascade",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("tmpl_slug_org_uidx")
+      .on(table.slug, table.organizationId)
+      .where(sql`${table.organizationId} IS NOT NULL`),
+    uniqueIndex("tmpl_slug_builtin_uidx")
+      .on(table.slug)
+      .where(sql`${table.organizationId} IS NULL`),
+    index("tmpl_org_idx").on(table.organizationId),
   ],
 );
 
@@ -253,6 +292,20 @@ export const pipelineEdgesRelations = relations(pipelineEdges, ({ one }) => ({
     relationName: "targetNode",
   }),
 }));
+
+export const pipelineTemplatesRelations = relations(
+  pipelineTemplates,
+  ({ one }) => ({
+    organization: one(organization, {
+      fields: [pipelineTemplates.organizationId],
+      references: [organization.id],
+    }),
+    creator: one(user, {
+      fields: [pipelineTemplates.createdBy],
+      references: [user.id],
+    }),
+  }),
+);
 
 export const pipelineRunsRelations = relations(
   pipelineRuns,
