@@ -37,8 +37,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete01Icon } from "@hugeicons/core-free-icons";
+import { CheckmarkCircle01Icon, Copy01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import type { DatasetWithItems, DatasetItem } from "@/lib/api/datasets";
 import { handleApiError } from "@/lib/handle-api-error";
 
@@ -49,6 +54,7 @@ interface DatasetDetailProps {
 export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
   const [items, setItems] = useState<DatasetItem[]>(initial.items);
   const [addingItems, setAddingItems] = useState(false);
+  const [idCopied, setIdCopied] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -131,7 +137,33 @@ export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{initial.name}</BreadcrumbPage>
+                <BreadcrumbPage className="flex items-center gap-1.5">
+                  {initial.name}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-5 w-5 p-0"
+                        aria-label="Copy dataset ID"
+                        onClick={() => {
+                          navigator.clipboard.writeText(initial.id);
+                          setIdCopied(true);
+                          setTimeout(() => setIdCopied(false), 2000);
+                        }}
+                      >
+                        {idCopied ? (
+                          <HugeiconsIcon icon={CheckmarkCircle01Icon} size={12} />
+                        ) : (
+                          <HugeiconsIcon icon={Copy01Icon} size={12} />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {idCopied ? "Copied!" : `Copy ID: ${initial.id}`}
+                    </TooltipContent>
+                  </Tooltip>
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

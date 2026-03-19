@@ -14,6 +14,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -93,14 +99,21 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
   const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const copyCurl = useCallback(
-    (id: string) => {
+    (id: string, type: "run" | "eval-run" = "run") => {
       const pipeline = pipelines.find((p) => p.id === id);
-      const schema = pipeline?.triggerSchema;
-      const hasSchema =
-        schema && typeof schema === "object" && Object.keys(schema).length > 0;
-      const body = hasSchema ? JSON.stringify(schema) : "{}";
-      const escaped = body.replace(/'/g, "'\\''");
-      const cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
+      let cmd: string;
+
+      if (type === "eval-run") {
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/eval-runs \\\n  -H "Content-Type: application/json" \\\n  -d '{"datasetId": "<DATASET_ID>"}'`;
+      } else {
+        const schema = pipeline?.triggerSchema;
+        const hasSchema =
+          schema && typeof schema === "object" && Object.keys(schema).length > 0;
+        const body = hasSchema ? JSON.stringify(schema) : "{}";
+        const escaped = body.replace(/'/g, "'\\''");
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
+      }
+
       navigator.clipboard.writeText(cmd);
       setCopiedId(id);
       clearTimeout(copyTimerRef.current);
@@ -385,26 +398,37 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
                 </Link>
 
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyCurl(p.id)}
-                        aria-label="Copy curl command"
-                      >
-                        {copiedId === p.id ? (
-                          <HugeiconsIcon
-                            icon={CheckmarkCircle01Icon}
-                            size={14}
-                          />
-                        ) : (
-                          <HugeiconsIcon icon={Copy01Icon} size={14} />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy cURL command</TooltipContent>
-                  </Tooltip>
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            aria-label="Copy curl command"
+                          >
+                            {copiedId === p.id ? (
+                              <HugeiconsIcon
+                                icon={CheckmarkCircle01Icon}
+                                size={14}
+                              />
+                            ) : (
+                              <HugeiconsIcon icon={Copy01Icon} size={14} />
+                            )}
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy cURL command</TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => copyCurl(p.id, "run")}>
+                        Copy run cURL
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => copyCurl(p.id, "eval-run")}>
+                        Copy eval run cURL
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/pipelines/${p.id}/runs`}>Runs</Link>
                   </Button>
