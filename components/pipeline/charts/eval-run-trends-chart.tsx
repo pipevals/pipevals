@@ -12,14 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import type { EvalRunDataPoint } from "../metrics-dashboard";
-
-const COLORS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-];
+import { CHART_COLORS, TOOLTIP_CONTENT_STYLE } from "./chart-constants";
 
 interface Props {
   dataPoints: EvalRunDataPoint[];
@@ -54,29 +47,22 @@ export function EvalRunTrendsChart({ dataPoints, metricNames }: Props) {
               axisLine={false}
             />
             <YAxis
-              domain={[1, 5]}
+              domain={["auto", "auto"]}
               className="text-[10px] fill-muted-foreground"
               tickLine={false}
               axisLine={false}
               width={30}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "0.375rem",
-                fontSize: "12px",
-              }}
-            />
+            <Tooltip contentStyle={TOOLTIP_CONTENT_STYLE} />
             <Legend wrapperStyle={{ fontSize: "11px" }} />
             {displayMetrics.map((key, i) => (
               <Line
                 key={key}
                 type="monotone"
                 dataKey={key}
-                stroke={COLORS[i % COLORS.length]}
+                stroke={CHART_COLORS[i % CHART_COLORS.length]}
                 strokeWidth={2}
-                dot={{ r: 4, fill: COLORS[i % COLORS.length] }}
+                dot={{ r: 4, fill: CHART_COLORS[i % CHART_COLORS.length] }}
                 activeDot={{ r: 6 }}
               />
             ))}

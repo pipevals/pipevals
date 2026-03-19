@@ -8,14 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EvalRunDataPoint } from "../metrics-dashboard";
-
-const COLORS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-];
+import { CHART_COLORS } from "./chart-constants";
 
 function Sparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
   const points = data.map((v, i) => ({ i, v }));
@@ -50,19 +43,23 @@ interface Props {
 }
 
 export function EvalRunSparklineCards({ dataPoints, metricNames }: Props) {
-  const displayMetrics = metricNames.slice(0, 4);
+  const displayMetrics = metricNames.slice(0, 5);
 
   return (
     <div className={cn(
       "grid gap-4",
-      displayMetrics.length <= 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-4",
+      displayMetrics.length <= 3
+        ? "grid-cols-1 sm:grid-cols-3"
+        : displayMetrics.length === 4
+          ? "grid-cols-2 sm:grid-cols-4"
+          : "grid-cols-2 sm:grid-cols-5",
     )}>
       {displayMetrics.map((name, idx) => {
         const values = dataPoints.map((p) => p.metrics[name] ?? 0);
         const current = values[values.length - 1];
         const previous = values[values.length - 2];
         const delta = current - previous;
-        const color = COLORS[idx % COLORS.length];
+        const color = CHART_COLORS[idx % CHART_COLORS.length];
 
         return (
           <Card key={name} size="sm">

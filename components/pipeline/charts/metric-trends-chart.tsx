@@ -17,14 +17,7 @@ import {
 } from "@/components/ui/toggle-group";
 import { formatShortDate, formatDateTime } from "@/lib/format";
 import type { MetricRunEntry } from "../metrics-dashboard";
-
-const COLORS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-];
+import { CHART_COLORS, TOOLTIP_CONTENT_STYLE } from "./chart-constants";
 
 interface Props {
   runs: MetricRunEntry[];
@@ -117,7 +110,9 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
     }
 
     // Sort chronologically
-    points.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    points.sort((a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
 
     return points;
   }, [runs, numericMetrics]);
@@ -169,15 +164,14 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
               width={30}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "0.375rem",
-                fontSize: "12px",
-              }}
-              labelFormatter={(label) => {
+              contentStyle={TOOLTIP_CONTENT_STYLE}
+              labelFormatter={(label, payload) => {
                 if (xAxisMode === "time") {
-                  return formatDateTime(String(label));
+                  const point = payload?.[0]?.payload as
+                    | { label?: string; createdAt?: string }
+                    | undefined;
+                  const timeStr = formatDateTime(String(label));
+                  return point?.label ? `${point.label} — ${timeStr}` : timeStr;
                 }
                 return `Run #${label}`;
               }}
@@ -188,9 +182,9 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
                 key={name}
                 type="monotone"
                 dataKey={name}
-                stroke={COLORS[i % COLORS.length]}
+                stroke={CHART_COLORS[i % CHART_COLORS.length]}
                 strokeWidth={2}
-                dot={{ r: 3, fill: COLORS[i % COLORS.length] }}
+                dot={{ r: 3, fill: CHART_COLORS[i % CHART_COLORS.length] }}
                 activeDot={{ r: 5 }}
                 connectNulls
               />

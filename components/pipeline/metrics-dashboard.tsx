@@ -28,6 +28,7 @@ import type {
   MetricRunEntry,
   MetricsResponse,
 } from "@/lib/pipeline/types/metrics";
+import type { EvalRunSummary, DatasetInfo } from "@/lib/pipeline/types/shared";
 
 export type { MetricRunEntry };
 
@@ -38,21 +39,6 @@ export interface MetricsAggregate {
   avgPrimaryMetric: { name: string; value: number } | null;
   metricNames: string[];
   runs: MetricRunEntry[];
-}
-
-interface EvalRunSummary {
-  id: string;
-  datasetId: string;
-  status: string;
-  totalItems: number;
-  completedItems: number;
-  failedItems: number;
-  createdAt: string;
-}
-
-interface DatasetInfo {
-  id: string;
-  name: string;
 }
 
 export interface EvalRunDataPoint {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
@@ -23,6 +24,7 @@ import {
 import { computeDuration, formatDateTime, shortId } from "@/lib/format";
 import { isTerminalRunStatus, type RunStatus } from "@/lib/stores/run-viewer";
 import { StatusDot } from "./run-status";
+import type { EvalRunSummary, DatasetInfo } from "@/lib/pipeline/types/shared";
 
 interface RunSummary {
   id: string;
@@ -31,22 +33,6 @@ interface RunSummary {
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;
-}
-
-interface EvalRunSummary {
-  id: string;
-  pipelineId: string;
-  datasetId: string;
-  status: string;
-  totalItems: number;
-  completedItems: number;
-  failedItems: number;
-  createdAt: string;
-}
-
-interface DatasetInfo {
-  id: string;
-  name: string;
 }
 
 type TimelineEntry =
@@ -86,31 +72,37 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
   );
 
   const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets", fetcher);
-  const datasetMap = new Map((datasets ?? []).map((d) => [d.id, d.name]));
+  const datasetMap = useMemo(
+    () => new Map((datasets ?? []).map((d) => [d.id, d.name])),
+    [datasets],
+  );
 
   const isLoading = runsLoading || evalLoading;
   const error = runsError || evalError;
 
   // Build unified timeline sorted by createdAt desc
-  const timeline: TimelineEntry[] = [];
-  if (runs) {
-    for (const r of runs) {
-      timeline.push({ type: "adhoc", data: r });
+  const timeline = useMemo(() => {
+    const entries: TimelineEntry[] = [];
+    if (runs) {
+      for (const r of runs) {
+        entries.push({ type: "adhoc", data: r });
+      }
     }
-  }
-  if (evalRuns) {
-    for (const er of evalRuns) {
-      timeline.push({
-        type: "eval",
-        data: er,
-        datasetName: datasetMap.get(er.datasetId) ?? shortId(er.datasetId),
-      });
+    if (evalRuns) {
+      for (const er of evalRuns) {
+        entries.push({
+          type: "eval",
+          data: er,
+          datasetName: datasetMap.get(er.datasetId) ?? shortId(er.datasetId),
+        });
+      }
     }
-  }
-  timeline.sort(
-    (a, b) =>
-      new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime(),
-  );
+    entries.sort(
+      (a, b) =>
+        new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime(),
+    );
+    return entries;
+  }, [runs, evalRuns, datasetMap]);
 
   return (
     <div className="flex flex-col gap-8">
