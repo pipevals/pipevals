@@ -82,7 +82,15 @@ export function TaskQueueSidebar({
               return (
                 <li
                   key={task.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelect(task.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect(task.id);
+                    }
+                  }}
                   className={cn(
                     "cursor-pointer border-b border-border border-l-2 transition-colors",
                     isSelected

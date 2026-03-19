@@ -35,10 +35,10 @@ export function TasksPageContent({ pipelineId }: { pipelineId: string }) {
     statusFilter === "all" ? true : t.status === statusFilter,
   );
 
-  // Auto-select the first task once data arrives
+  // Auto-select first task on load, or re-select when the current selection is filtered out
   useEffect(() => {
-    if (selectedTaskId === null && filteredTasks.length > 0) {
-      setSelectedTaskId(filteredTasks[0].id);
+    if (selectedTaskId === null || !filteredTasks.some((t) => t.id === selectedTaskId)) {
+      setSelectedTaskId(filteredTasks[0]?.id ?? null);
     }
   }, [filteredTasks, selectedTaskId]);
 
@@ -55,6 +55,7 @@ export function TasksPageContent({ pipelineId }: { pipelineId: string }) {
       <main className="flex flex-1 flex-col overflow-y-auto bg-muted/30">
         {selectedTaskId ? (
           <TaskReviewPanel
+            key={selectedTaskId}
             taskId={selectedTaskId}
             allTasks={tasks ?? []}
             onSubmitted={() => mutate()}

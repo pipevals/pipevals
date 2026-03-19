@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns, stepResults, tasks } from "@/lib/db/pipeline-schema";
 import { resolveDotPath } from "../dot-path";
@@ -34,11 +34,7 @@ export async function executeHumanReview(
 
   // Step 2: Create hooks and suspend workflow (workflow-level, NOT a step)
   const hooks = hookTokens.map((token) => reviewHook.create({ token }));
-  const reviews = await Promise.all(
-    hooks.map((hook) =>
-      hook.then((payload: ReviewHookPayload) => payload),
-    ),
-  );
+  const reviews: ReviewHookPayload[] = await Promise.all(hooks);
 
   // Step 3: Aggregate and record completion
   const durationMs = Date.now() - start;
@@ -78,21 +74,26 @@ async function createReviewTasks(
   const n = config.requiredReviewers ?? 1;
   const hookTokens: string[] = [];
 
-  // Create N task records
+  // Create N task records. Tokens are deterministic so the workflow runtime
+  // can match hooks on replay. onConflictDoNothing makes re-execution safe
+  // if the step retries after tasks were already created.
   for (let i = 0; i < n; i++) {
     const hookToken = `review:${runId}:${nodeId}:${i}`;
     hookTokens.push(hookToken);
 
-    await db.insert(tasks).values({
-      pipelineId: run.pipelineId,
-      runId,
-      nodeId,
-      hookToken,
-      status: "pending",
-      rubric: config.rubric as Record<string, unknown>[],
-      displayData,
-      reviewerIndex: i,
-    });
+    await db
+      .insert(tasks)
+      .values({
+        pipelineId: run.pipelineId,
+        runId,
+        nodeId,
+        hookToken,
+        status: "pending",
+        rubric: config.rubric as Record<string, unknown>[],
+        displayData,
+        reviewerIndex: i,
+      })
+      .onConflictDoNothing({ target: [tasks.hookToken] });
   }
 
   // Mark step as awaiting_review
@@ -115,8 +116,6 @@ async function recordHumanReviewCompleted(
   durationMs: number,
 ): Promise<void> {
   "use step";
-
-  const { and } = await import("drizzle-orm");
 
   await db
     .update(stepResults)

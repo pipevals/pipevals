@@ -31,13 +31,6 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  if (task.task.status === "completed") {
-    return NextResponse.json(
-      { error: "Task already completed" },
-      { status: 409 },
-    );
-  }
-
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json(
@@ -53,9 +46,10 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Validation failed", details: errors }, { status: 400 });
   }
 
-  // Update the task record
+  // Atomic conditional update — only succeeds if task is still pending.
+  // Eliminates the TOCTOU race between two concurrent submissions.
   const now = new Date();
-  await db
+  const [updated] = await db
     .update(tasks)
     .set({
       status: "completed",
@@ -63,7 +57,15 @@ export async function POST(request: Request, { params }: RouteParams) {
       reviewedBy: authResult.userId,
       completedAt: now,
     })
-    .where(eq(tasks.id, id));
+    .where(and(eq(tasks.id, id), eq(tasks.status, "pending")))
+    .returning({ id: tasks.id });
+
+  if (!updated) {
+    return NextResponse.json(
+      { error: "Task already completed" },
+      { status: 409 },
+    );
+  }
 
   // Resume the workflow hook with the reviewer's data
   await resumeHook(task.task.hookToken, {
