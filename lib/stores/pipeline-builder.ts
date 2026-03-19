@@ -104,10 +104,14 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       const safeChanges = changes.filter(
         (c) => !(c.type === "remove" && c.id === TRIGGER_NODE_ID),
       );
+      // Dimension changes are internal ReactFlow measurements, not user edits
+      const userChanges = safeChanges.filter(
+        (c) => c.type !== "dimensions",
+      );
       set((state) => ({
         nodes: applyNodeChanges(safeChanges, state.nodes),
-        dirty: state.dirty || safeChanges.length > 0,
-        saveError: safeChanges.length > 0 ? null : state.saveError,
+        dirty: state.dirty || userChanges.length > 0,
+        saveError: userChanges.length > 0 ? null : state.saveError,
       }));
     },
 

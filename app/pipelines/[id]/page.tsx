@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { pipelines } from "@/lib/db/pipeline-schema";
+import { requirePipeline } from "@/lib/api/auth";
 import { AppHeader } from "@/components/app-header";
 import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
+import { PipelineToolbar } from "@/components/pipeline/toolbar";
 import { PipelineEditor } from "@/components/pipeline/pipeline-editor";
 
 type Props = { params: Promise<{ id: string }> };
@@ -23,14 +23,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PipelineEditorPage({ params }: Props) {
   const { id } = await params;
 
-  const reqHeaders = await headers();
-  const session = await auth.api.getSession({ headers: reqHeaders });
-  if (!session) redirect("/sign-in");
+  const result = await requirePipeline(id);
+  if ("error" in result) redirect("/pipelines");
 
+  const { pipeline, session } = result;
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <AppHeader user={session.user} />
-      <PipelineSubNav pipelineId={id} />
+      <PipelineSubNav
+        pipelineId={id}
+        pipelineSlug={pipeline.slug}
+        actions={<PipelineToolbar />}
+      />
       <PipelineEditor pipelineId={id} />
     </div>
   );

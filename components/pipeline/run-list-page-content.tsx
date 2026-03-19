@@ -1,19 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { shortId } from "@/lib/format";
-import Link from "next/link";
 import useSWRMutation from "swr/mutation";
 import { mutate } from "swr";
 import { Button } from "@/components/ui/button";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,11 +45,9 @@ async function triggerRun(
 
 export function RunListPageContent({
   pipelineId,
-  pipelineSlug,
   triggerSchema = {},
 }: {
   pipelineId: string;
-  pipelineSlug: string | null;
   triggerSchema?: Record<string, unknown>;
 }) {
   const apiUrl = `/api/pipelines/${pipelineId}/runs`;
@@ -83,91 +71,94 @@ export function RunListPageContent({
 
   return (
     <>
-      <div className="border-b border-border bg-background">
-        <div className="flex h-12 shrink-0 items-center justify-between px-8">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/pipelines">Pipelines</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    href={`/pipelines/${pipelineId}`}
-                    className="truncate max-w-[200px]"
-                  >
-                    {pipelineSlug ?? shortId(pipelineId)}
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Runs</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="flex items-center gap-3">
-            {triggerError && (
-              <p className="text-xs text-destructive">{triggerError}</p>
-            )}
-            <TriggerWithPayloadDialog
-              open={payloadDialogOpen}
-              onOpenChange={setPayloadDialogOpen}
-              onTrigger={(payload) => trigger(payload)}
-              defaultPayload={samplePayload ?? undefined}
-              pipelineId={pipelineId}
-            />
-            <div className="flex rounded-md overflow-hidden">
-              <Button
-                size="sm"
-                onClick={() =>
-                  hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
-                }
-                disabled={isMutating}
-                className="rounded-none border-0 ring-0"
-              >
-                {isMutating ? "Triggering…" : "Trigger Run"}
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="rounded-none border-0 border-l border-primary-foreground/20 px-2 ring-0"
-                    disabled={isMutating}
-                    aria-label="More trigger options"
-                  >
-                    <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() =>
-                      hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
-                    }
-                    disabled={isMutating}
-                  >
-                    Trigger Run
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      setPayloadDialogOpen(true);
-                    }}
-                  >
-                    Trigger with payload…
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TriggerWithPayloadDialog
+        open={payloadDialogOpen}
+        onOpenChange={setPayloadDialogOpen}
+        onTrigger={(payload) => trigger(payload)}
+        defaultPayload={samplePayload ?? undefined}
+        pipelineId={pipelineId}
+      />
       <main className="px-8 py-10">
+        {triggerError && (
+          <p className="mb-4 text-xs text-destructive">{triggerError}</p>
+        )}
         <RunList pipelineId={pipelineId} />
       </main>
+    </>
+  );
+}
+
+/**
+ * Trigger button extracted so the page can pass it into PipelineSubNav actions.
+ */
+export function TriggerRunButton({
+  pipelineId,
+  triggerSchema = {},
+}: {
+  pipelineId: string;
+  triggerSchema?: Record<string, unknown>;
+}) {
+  const apiUrl = `/api/pipelines/${pipelineId}/runs`;
+  const [payloadDialogOpen, setPayloadDialogOpen] = useState(false);
+  const samplePayload = sampleFromSchema(triggerSchema);
+  const hasRequiredFields = samplePayload !== null;
+
+  const { trigger, isMutating } = useSWRMutation(apiUrl, triggerRun, {
+    onSuccess: () => mutate(apiUrl),
+    onError: (err) => handleApiError(err),
+  });
+
+  return (
+    <>
+      <TriggerWithPayloadDialog
+        open={payloadDialogOpen}
+        onOpenChange={setPayloadDialogOpen}
+        onTrigger={(payload) => trigger(payload)}
+        defaultPayload={samplePayload ?? undefined}
+        pipelineId={pipelineId}
+      />
+      <div className="flex rounded-md overflow-hidden">
+        <Button
+          size="sm"
+          onClick={() =>
+            hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
+          }
+          disabled={isMutating}
+          className="rounded-none border-0 ring-0"
+        >
+          {isMutating ? "Triggering…" : "Trigger Run"}
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              className="rounded-none border-0 border-l border-primary-foreground/20 px-2 ring-0"
+              disabled={isMutating}
+              aria-label="More trigger options"
+            >
+              <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() =>
+                hasRequiredFields ? setPayloadDialogOpen(true) : trigger()
+              }
+              disabled={isMutating}
+            >
+              Trigger Run
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setPayloadDialogOpen(true);
+              }}
+            >
+              Trigger with payload…
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </>
   );
 }

@@ -3,46 +3,64 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { shortId } from "@/lib/format";
 
 const NAV_ITEMS = [
   { label: "Editor", segment: "" },
-  { label: "Metrics", segment: "/metrics" },
   { label: "Runs", segment: "/runs" },
+  { label: "Metrics", segment: "/metrics" },
 ] as const;
 
-export function PipelineSubNav({ pipelineId }: { pipelineId: string }) {
+export function PipelineSubNav({
+  pipelineId,
+  pipelineSlug,
+  actions,
+}: {
+  pipelineId: string;
+  pipelineSlug?: string | null;
+  actions?: React.ReactNode;
+}) {
   const pathname = usePathname();
   const basePath = `/pipelines/${pipelineId}`;
 
   return (
-    <nav className="border-b border-border bg-background">
-      <div className="flex h-10 items-center gap-4 px-8">
-        {NAV_ITEMS.map(({ label, segment }) => {
-          const href = `${basePath}${segment}`;
-          const isActive =
-            segment === ""
-              ? pathname === basePath
-              : pathname.startsWith(href);
+    <div className="border-b border-border bg-background">
+      <div className="flex h-12 shrink-0 items-center justify-between px-8">
+        <div className="flex items-center gap-4">
+          <Link
+            href={basePath}
+            className="max-w-[200px] truncate text-sm font-medium text-foreground hover:opacity-80 transition-opacity"
+          >
+            {pipelineSlug ?? shortId(pipelineId)}
+          </Link>
+          <span className="h-4 w-px bg-border" />
+          <nav className="flex h-full items-stretch gap-4">
+            {NAV_ITEMS.map(({ label, segment }) => {
+              const href = `${basePath}${segment}`;
+              const isActive =
+                segment === ""
+                  ? pathname === basePath
+                  : pathname.startsWith(href);
 
-          return (
-            <Link
-              key={segment}
-              href={href}
-              className={cn(
-                "relative text-xs font-medium transition-colors",
-                isActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {label}
-              {isActive && (
-                <span className="absolute -bottom-[9px] left-0 right-0 h-px bg-foreground" />
-              )}
-            </Link>
-          );
-        })}
+              return (
+                <Link
+                  key={segment}
+                  href={href}
+                  className={cn(
+                    "flex items-center border-b text-xs font-medium transition-colors",
+                    isActive
+                      ? "border-foreground text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        {actions && <div className="flex items-center">{actions}</div>}
       </div>
-    </nav>
+    </div>
   );
 }

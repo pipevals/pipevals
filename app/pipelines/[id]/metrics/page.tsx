@@ -14,12 +14,12 @@ export default async function MetricsPage({
   const result = await requirePipeline(id);
   if ("error" in result) redirect("/pipelines");
 
-  const { session } = result;
+  const { pipeline, session } = result;
 
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader user={session.user} />
-      <PipelineSubNav pipelineId={id} />
+      <PipelineSubNav pipelineId={id} pipelineSlug={pipeline.slug} />
       <main className="flex-1 px-8 py-10">
         <MetricsDashboard pipelineId={id} />
       </main>

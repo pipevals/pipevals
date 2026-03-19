@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { ReactFlowProvider } from "@xyflow/react";
 import { NodePalette } from "./node-palette";
 import { ConfigPanel } from "./config-panel";
-import { PipelineToolbar } from "./toolbar";
 import { usePipelineLoader } from "./use-pipeline-loader";
 
 const PipelineCanvas = dynamic(() => import("./canvas").then((m) => m.PipelineCanvas), {
@@ -30,7 +29,6 @@ export function PipelineEditor({ pipelineId }: { pipelineId: string }) {
   return (
     <ReactFlowProvider>
       <div className="flex min-h-0 flex-1 flex-col">
-        <PipelineToolbar />
         <div className="flex min-h-0 flex-1">
           <NodePalette />
           <div className="min-w-0 flex-1">
