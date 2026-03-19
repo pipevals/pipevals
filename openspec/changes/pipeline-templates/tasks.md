@@ -14,9 +14,9 @@
 
 ## 3. Templates API
 
-- [ ] 3.1 Create `app/api/templates/route.ts` with `GET` (list built-in + org-scoped) and `POST` (create org-scoped template with name, description, graphSnapshot, triggerSchema)
-- [ ] 3.2 Create `app/api/templates/[id]/route.ts` with `DELETE` (org-scoped only, reject built-in)
-- [ ] 3.3 Add unit tests for templates API (list visibility, create, duplicate slug 409, delete org-scoped, reject delete built-in)
+- [x] 3.1 Create `app/api/templates/route.ts` with `GET` (list built-in + org-scoped) and `POST` (create org-scoped template with name, description, graphSnapshot, triggerSchema)
+- [x] 3.2 Create `app/api/templates/[id]/route.ts` with `DELETE` (org-scoped only, reject built-in)
+- [x] 3.3 Add unit tests for templates API (list visibility, create, duplicate slug 409, delete org-scoped, reject delete built-in)
 
 ## 4. Extended Pipeline Creation
 
