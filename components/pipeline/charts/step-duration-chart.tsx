@@ -17,7 +17,7 @@ interface Props {
 const chartConfig: ChartConfig = {
   avgMs: {
     label: "Avg Duration",
-    color: "hsl(var(--chart-3))",
+    color: "var(--color-chart-3)",
   },
 };
 
@@ -51,7 +51,7 @@ export function StepDurationChart({ runs }: Props) {
       <h3 className="text-sm font-medium text-foreground">
         Avg Step Duration
       </h3>
-      <ChartContainer config={chartConfig} className="h-64 w-full">
+      <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
         <BarChart
           data={chartData}
           layout="vertical"

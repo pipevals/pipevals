@@ -60,7 +60,7 @@ function buildHistogram(values: number[]) {
 const chartConfig: ChartConfig = {
   count: {
     label: "Frequency",
-    color: "hsl(var(--chart-1))",
+    color: "var(--color-chart-1)",
   },
 };
 
@@ -105,7 +105,7 @@ export function ScoreDistributionChart({ runs, metricNames }: Props) {
           </SelectContent>
         </Select>
       </div>
-      <ChartContainer config={chartConfig} className="h-64 w-full">
+      <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
         <BarChart data={histogramData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis

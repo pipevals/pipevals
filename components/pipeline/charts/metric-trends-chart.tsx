@@ -18,11 +18,11 @@ import type { MetricRunEntry } from "../metrics-dashboard";
 
 // Palette for metric series — cycles if more than 5 metrics
 const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
 ];
 
 interface Props {
@@ -93,7 +93,7 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <ChartContainer config={chartConfig} className="h-72 w-full">
+      <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
         <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis
