@@ -1,29 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { formatShortDate, formatDateTime } from "@/lib/format";
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
+import { formatShortDate, formatDateTime } from "@/lib/format";
 import type { MetricRunEntry } from "../metrics-dashboard";
 
-// Palette for metric series — cycles if more than 5 metrics
 const COLORS = [
-  "var(--color-chart-1)",
-  "var(--color-chart-2)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
+  "#3b82f6",
+  "#8b5cf6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
 ];
 
 interface Props {
@@ -36,26 +36,14 @@ type XAxisMode = "run" | "time";
 export function MetricTrendsChart({ runs, metricNames }: Props) {
   const [xAxisMode, setXAxisMode] = useState<XAxisMode>("run");
 
-  // Only chart numeric metrics
   const numericMetrics = useMemo(() => {
     return metricNames.filter((name) =>
       runs.some((r) => typeof r.metrics[name] === "number"),
     );
   }, [runs, metricNames]);
 
-  const chartConfig = useMemo(() => {
-    const config: ChartConfig = {};
-    for (let i = 0; i < numericMetrics.length; i++) {
-      const name = numericMetrics[i];
-      config[name] = {
-        label: name,
-        color: COLORS[i % COLORS.length],
-      };
-    }
-    return config;
-  }, [numericMetrics]);
-
-  const chartData = useMemo(() => {
+  // "By run" mode: one point per individual run
+  const perRunData = useMemo(() => {
     return runs.map((run, index) => {
       const point: Record<string, unknown> = {
         runIndex: index + 1,
@@ -63,15 +51,80 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
       };
       for (const name of numericMetrics) {
         const val = run.metrics[name];
-        // Only include numeric values — skip strings, nulls, objects
         point[name] = typeof val === "number" ? val : undefined;
       }
       return point;
     });
   }, [runs, numericMetrics]);
 
+  // "By time" mode: bucket eval run items into one averaged point, keep ad-hoc as-is
+  const bucketedData = useMemo(() => {
+    // Group runs by evalRunId
+    const evalGroups = new Map<string, MetricRunEntry[]>();
+    const adhocRuns: MetricRunEntry[] = [];
+
+    for (const run of runs) {
+      if (run.evalRunId) {
+        const group = evalGroups.get(run.evalRunId);
+        if (group) group.push(run);
+        else evalGroups.set(run.evalRunId, [run]);
+      } else {
+        adhocRuns.push(run);
+      }
+    }
+
+    const points: { createdAt: string; label: string; [key: string]: unknown }[] = [];
+
+    // Ad-hoc runs as individual points
+    for (const run of adhocRuns) {
+      const point: Record<string, unknown> = {
+        createdAt: run.createdAt,
+        label: "Ad-hoc",
+      };
+      for (const name of numericMetrics) {
+        const val = run.metrics[name];
+        point[name] = typeof val === "number" ? val : undefined;
+      }
+      points.push(point as typeof points[number]);
+    }
+
+    // Eval runs as averaged points
+    for (const [, groupRuns] of evalGroups) {
+      const completed = groupRuns.filter((r) => r.status === "completed");
+      if (completed.length === 0) continue;
+
+      // Use earliest createdAt as the point's timestamp
+      const createdAt = groupRuns.reduce(
+        (min, r) => (r.createdAt < min ? r.createdAt : min),
+        groupRuns[0].createdAt,
+      );
+
+      const point: Record<string, unknown> = {
+        createdAt,
+        label: `Eval (${groupRuns.length} items)`,
+      };
+
+      for (const name of numericMetrics) {
+        const values = completed
+          .map((r) => r.metrics[name])
+          .filter((v): v is number => typeof v === "number");
+        if (values.length > 0) {
+          point[name] = values.reduce((a, b) => a + b, 0) / values.length;
+        }
+      }
+
+      points.push(point as typeof points[number]);
+    }
+
+    // Sort chronologically
+    points.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+    return points;
+  }, [runs, numericMetrics]);
+
   if (numericMetrics.length === 0) return null;
 
+  const chartData = xAxisMode === "run" ? perRunData : bucketedData;
   const xKey = xAxisMode === "run" ? "runIndex" : "createdAt";
 
   return (
@@ -94,56 +147,57 @@ export function MetricTrendsChart({ runs, metricNames }: Props) {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
-        <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey={xKey}
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={
-              xAxisMode === "time"
-                ? (val: string) => formatShortDate(val)
-                : undefined
-            }
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            width={40}
-          />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                labelFormatter={(_label, payload) => {
-                  if (!payload?.[0]?.payload) return "";
-                  const p = payload[0].payload as Record<string, unknown>;
-                  if (xAxisMode === "time" && typeof p.createdAt === "string") {
-                    return formatDateTime(p.createdAt);
-                  }
-                  return `Run #${p.runIndex}`;
-                }}
-              />
-            }
-          />
-          <ChartLegend content={<ChartLegendContent />} />
-          {numericMetrics.map((name) => (
-            <Area
-              key={name}
-              dataKey={name}
-              type="monotone"
-              fill={`var(--color-${name})`}
-              fillOpacity={0.1}
-              stroke={`var(--color-${name})`}
-              strokeWidth={2}
-              dot={false}
-              connectNulls
+      <div className="h-72 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+            <XAxis
+              dataKey={xKey}
+              className="text-[10px] fill-muted-foreground"
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={
+                xAxisMode === "time"
+                  ? (val: string) => formatShortDate(val)
+                  : undefined
+              }
             />
-          ))}
-        </AreaChart>
-      </ChartContainer>
+            <YAxis
+              className="text-[10px] fill-muted-foreground"
+              tickLine={false}
+              axisLine={false}
+              width={30}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--popover))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "0.375rem",
+                fontSize: "12px",
+              }}
+              labelFormatter={(label) => {
+                if (xAxisMode === "time") {
+                  return formatDateTime(String(label));
+                }
+                return `Run #${label}`;
+              }}
+            />
+            <Legend wrapperStyle={{ fontSize: "11px" }} />
+            {numericMetrics.map((name, i) => (
+              <Line
+                key={name}
+                type="monotone"
+                dataKey={name}
+                stroke={COLORS[i % COLORS.length]}
+                strokeWidth={2}
+                dot={{ r: 3, fill: COLORS[i % COLORS.length] }}
+                activeDot={{ r: 5 }}
+                connectNulls
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import {
@@ -17,13 +18,11 @@ import { ChartLineData02Icon } from "@hugeicons/core-free-icons";
 const MetricTrendsChart = dynamic(() =>
   import("./charts/metric-trends-chart").then((m) => m.MetricTrendsChart),
 );
-const ScoreDistributionChart = dynamic(() =>
-  import("./charts/score-distribution-chart").then(
-    (m) => m.ScoreDistributionChart,
-  ),
+const EvalRunTrendsChart = dynamic(() =>
+  import("./charts/eval-run-trends-chart").then((m) => m.EvalRunTrendsChart),
 );
-const StepDurationChart = dynamic(() =>
-  import("./charts/step-duration-chart").then((m) => m.StepDurationChart),
+const EvalRunSparklineCards = dynamic(() =>
+  import("./charts/eval-run-sparkline-cards").then((m) => m.EvalRunSparklineCards),
 );
 import type {
   MetricRunEntry,
@@ -41,6 +40,28 @@ export interface MetricsAggregate {
   runs: MetricRunEntry[];
 }
 
+interface EvalRunSummary {
+  id: string;
+  datasetId: string;
+  status: string;
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  createdAt: string;
+}
+
+interface DatasetInfo {
+  id: string;
+  name: string;
+}
+
+export interface EvalRunDataPoint {
+  evalRunId: string;
+  datasetName: string;
+  date: string;
+  metrics: Record<string, number>;
+}
+
 function computeAggregates(data: MetricsResponse): MetricsAggregate {
   const { runs } = data;
   const totalRuns = runs.length;
@@ -56,7 +77,6 @@ function computeAggregates(data: MetricsResponse): MetricsAggregate {
       ? durations.reduce((a, b) => a + b, 0) / durations.length
       : null;
 
-  // Collect all distinct metric names across runs
   const metricNameSet = new Set<string>();
   for (const run of runs) {
     for (const key of Object.keys(run.metrics)) {
@@ -65,7 +85,6 @@ function computeAggregates(data: MetricsResponse): MetricsAggregate {
   }
   const metricNames = Array.from(metricNameSet).sort();
 
-  // Find first numeric metric for the stat card
   let avgPrimaryMetric: { name: string; value: number } | null = null;
   for (const name of metricNames) {
     const values = runs
@@ -96,6 +115,83 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
     fetcher,
     { revalidateOnFocus: false },
   );
+
+  const { data: evalRuns } = useSWR<EvalRunSummary[]>(
+    `/api/pipelines/${pipelineId}/eval-runs`,
+    fetcher,
+  );
+
+  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets", fetcher);
+
+  const datasetMap = useMemo(
+    () => new Map((datasets ?? []).map((d) => [d.id, d.name])),
+    [datasets],
+  );
+
+  // Build eval run data points by grouping metrics entries by evalRunId
+  const evalRunDataPoints = useMemo(() => {
+    if (!data || !evalRuns) return [];
+
+    const evalRunMap = new Map(evalRuns.map((er) => [er.id, er]));
+
+    // Group metric entries by evalRunId
+    const groups = new Map<string, MetricRunEntry[]>();
+    for (const run of data.runs) {
+      if (!run.evalRunId) continue;
+      const group = groups.get(run.evalRunId);
+      if (group) group.push(run);
+      else groups.set(run.evalRunId, [run]);
+    }
+
+    const points: EvalRunDataPoint[] = [];
+    for (const [evalRunId, runs] of groups) {
+      const er = evalRunMap.get(evalRunId);
+      if (!er) continue;
+
+      // Compute average of each numeric metric across completed runs
+      const completedRuns = runs.filter((r) => r.status === "completed");
+      const metricSums: Record<string, { sum: number; count: number }> = {};
+      for (const run of completedRuns) {
+        for (const [key, value] of Object.entries(run.metrics)) {
+          if (typeof value === "number") {
+            if (!metricSums[key]) metricSums[key] = { sum: 0, count: 0 };
+            metricSums[key].sum += value;
+            metricSums[key].count++;
+          }
+        }
+      }
+
+      const metrics: Record<string, number> = {};
+      for (const [key, { sum, count }] of Object.entries(metricSums)) {
+        metrics[key] = sum / count;
+      }
+
+      points.push({
+        evalRunId,
+        datasetName: datasetMap.get(er.datasetId) ?? er.datasetId.slice(0, 8),
+        date: new Date(er.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        metrics,
+      });
+    }
+
+    // Sort chronologically
+    points.sort((a, b) => {
+      const erA = evalRunMap.get(a.evalRunId);
+      const erB = evalRunMap.get(b.evalRunId);
+      return (erA?.createdAt ?? "").localeCompare(erB?.createdAt ?? "");
+    });
+
+    return points;
+  }, [data, evalRuns, datasetMap]);
+
+  // Collect metric names from eval run data points
+  const evalMetricNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const p of evalRunDataPoints) {
+      for (const key of Object.keys(p.metrics)) names.add(key);
+    }
+    return Array.from(names).sort();
+  }, [evalRunDataPoints]);
 
   if (isLoading) {
     return (
@@ -136,13 +232,21 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
   return (
     <div className="flex flex-col gap-8">
       <MetricsStatCards agg={agg} />
+      {evalRunDataPoints.length >= 2 && (
+        <EvalRunSparklineCards
+          dataPoints={evalRunDataPoints}
+          metricNames={evalMetricNames}
+        />
+      )}
+      {evalRunDataPoints.length >= 2 && (
+        <EvalRunTrendsChart
+          dataPoints={evalRunDataPoints}
+          metricNames={evalMetricNames}
+        />
+      )}
       {agg.metricNames.length > 0 && (
         <MetricTrendsChart runs={agg.runs} metricNames={agg.metricNames} />
       )}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 [&>*]:min-w-0">
-        <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
-        <StepDurationChart runs={agg.runs} />
-      </div>
     </div>
   );
 }
@@ -190,4 +294,3 @@ function formatMs(ms: number): string {
   if (ms < 1000) return `${Math.round(ms)}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
 }
-
