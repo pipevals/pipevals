@@ -24,6 +24,11 @@ export const STATUS_CONFIG: Record<
     dotClass: "bg-fail",
     textClass: "text-fail",
   },
+  cancelled: {
+    label: "Cancelled",
+    dotClass: "bg-amber-500",
+    textClass: "text-amber-600 dark:text-amber-400",
+  },
 };
 
 export function StatusDot({ status }: { status: string }) {

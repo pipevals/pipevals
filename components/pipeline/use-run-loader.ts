@@ -11,7 +11,7 @@ import {
 const POLL_INTERVAL_MS = 2000;
 
 function isTerminal(status: string | undefined): boolean {
-  return status === "completed" || status === "failed";
+  return status === "completed" || status === "failed" || status === "cancelled";
 }
 
 export function useRunLoader(pipelineId: string, runId: string) {

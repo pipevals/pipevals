@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { computeDuration, shortId } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,6 +42,11 @@ const STATUS_DISPLAY: Record<
     className:
       "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
   },
+  cancelled: {
+    label: "Cancelled",
+    className:
+      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  },
 };
 
 function Stat({
@@ -66,10 +73,44 @@ function Stat({
   );
 }
 
+function CancelButton({ pipelineId, runId }: { pipelineId: string; runId: string }) {
+  const [cancelling, setCancelling] = useState(false);
+
+  async function handleCancel() {
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/pipelines/${pipelineId}/runs/${runId}/cancel`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("Failed to cancel run:", body.error ?? res.statusText);
+      }
+    } catch (err) {
+      console.error("Failed to cancel run:", err);
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-7 text-xs"
+      onClick={handleCancel}
+      disabled={cancelling}
+    >
+      {cancelling ? "Cancelling…" : "Cancel"}
+    </Button>
+  );
+}
+
 export function RunSummary() {
   const run = useRunViewerStore((s) => s.run);
   if (!run) return null;
 
+  const isCancellable = run.status === "pending" || run.status === "running";
   const statusDisplay = STATUS_DISPLAY[run.status];
   const duration = computeDuration(run.startedAt, run.completedAt, run.status === "running");
 
@@ -127,6 +168,10 @@ export function RunSummary() {
       >
         {statusDisplay.label}
       </div>
+
+      {isCancellable && (
+        <CancelButton pipelineId={run.pipelineId} runId={run.id} />
+      )}
 
       <div className="h-6 w-px bg-border" />
 

@@ -105,6 +105,7 @@ export const runStatusEnum = [
   "running",
   "completed",
   "failed",
+  "cancelled",
 ] as const;
 
 export const pipelineRuns = pgTable(

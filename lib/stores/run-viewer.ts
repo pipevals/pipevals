@@ -6,7 +6,7 @@ import type { PipelineNodeData } from "./pipeline-builder";
 export type RunNode = Node<PipelineNodeData>;
 export type RunEdge = Edge;
 
-export type RunStatus = "pending" | "running" | "completed" | "failed";
+export type RunStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
 export type StepResultStatus =
   | "pending"
   | "running"
