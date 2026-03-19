@@ -39,14 +39,24 @@ import type { PipelineSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
 
-interface PipelineListProps {
-  initialPipelines: PipelineSummary[];
+export interface TemplateSummary {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  organizationId: string | null;
 }
 
-export function PipelineList({ initialPipelines }: PipelineListProps) {
+interface PipelineListProps {
+  initialPipelines: PipelineSummary[];
+  templates: TemplateSummary[];
+}
+
+export function PipelineList({ initialPipelines, templates }: PipelineListProps) {
   const [pipelines, setPipelines] = useState(initialPipelines);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -102,7 +112,10 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
       const res = await fetch("/api/pipelines", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          ...(selectedTemplateId ? { templateId: selectedTemplateId } : {}),
+        }),
         signal: controller.signal,
       });
       if (!res.ok) {
@@ -113,6 +126,7 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
         return;
       }
       setName("");
+      setSelectedTemplateId(null);
       setCreating(false);
       await fetchPipelines();
     } catch (e) {
@@ -157,6 +171,54 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
         {creating && (
           <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
             <p className="text-sm font-medium text-foreground">New Pipeline</p>
+
+            {/* Template picker */}
+            {templates.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">Start from a template</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTemplateId(null)}
+                    className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+                      selectedTemplateId === null
+                        ? "border-ring bg-muted/60 ring-1 ring-ring"
+                        : "border-border bg-background hover:bg-muted/40"
+                    }`}
+                  >
+                    <span className="font-medium text-foreground">Start from scratch</span>
+                    <span className="block text-muted-foreground mt-0.5">Empty pipeline</span>
+                  </button>
+                  {templates.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedTemplateId(t.id)}
+                      className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${
+                        selectedTemplateId === t.id
+                          ? "border-ring bg-muted/60 ring-1 ring-ring"
+                          : "border-border bg-background hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span className="font-medium text-foreground">{t.name}</span>
+                        {t.organizationId === null && (
+                          <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
+                            Built-in
+                          </span>
+                        )}
+                      </span>
+                      {t.description && (
+                        <span className="block text-muted-foreground mt-0.5 line-clamp-2">
+                          {t.description}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <input
               autoFocus
               aria-label="Pipeline name"
@@ -191,6 +253,7 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
                   createController?.abort();
                   setCreating(false);
                   setName("");
+                  setSelectedTemplateId(null);
                   setError(null);
                 }}
               >
@@ -234,24 +297,66 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
           <div
             className={`flex flex-col ${filtered.length > 0 ? "border-t border-border" : ""}`}
           >
-            {filtered.length === 0 && (
+            {filtered.length === 0 && search && (
               <Empty className="py-12">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <HugeiconsIcon icon={BrowserIcon} size={24} aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>
-                    {search
-                      ? "No pipelines match your search"
-                      : "No pipelines yet"}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    {search
-                      ? "Try a different search term"
-                      : "Create one to get started"}
-                  </EmptyDescription>
+                  <EmptyTitle>No pipelines match your search</EmptyTitle>
+                  <EmptyDescription>Try a different search term</EmptyDescription>
                 </EmptyHeader>
               </Empty>
+            )}
+
+            {filtered.length === 0 && !search && (
+              <div className="flex flex-col items-center gap-6 py-12">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-foreground">No pipelines yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Get started with a template or create from scratch
+                  </p>
+                </div>
+
+                {templates.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-2xl">
+                    {templates.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTemplateId(t.id);
+                          setName(t.name);
+                          setCreating(true);
+                        }}
+                        className="rounded-lg border border-border bg-card px-4 py-3 text-left text-xs hover:bg-muted/40 transition-colors"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span className="font-medium text-foreground">{t.name}</span>
+                          {t.organizationId === null && (
+                            <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
+                              Built-in
+                            </span>
+                          )}
+                        </span>
+                        {t.description && (
+                          <span className="block text-muted-foreground mt-1 line-clamp-2">
+                            {t.description}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCreating(true)}
+                >
+                  Start from scratch
+                </Button>
+              </div>
             )}
 
             {filtered.map((p) => (

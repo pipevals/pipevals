@@ -26,10 +26,10 @@
 
 ## 5. Template Picker UI
 
-- [ ] 5.1 Fetch templates in the `/pipelines` page and pass them to `PipelineList` as a prop
-- [ ] 5.2 Add template picker to the "New Pipeline" creation form in `PipelineList` — show template cards (name, description, built-in badge) with "Start from scratch" option
-- [ ] 5.3 Submit selected `templateId` alongside `name` in `onCreate`
-- [ ] 5.4 Update empty state (zero pipelines) to prominently display template cards with create CTAs
+- [x] 5.1 Fetch templates in the `/pipelines` page and pass them to `PipelineList` as a prop
+- [x] 5.2 Add template picker to the "New Pipeline" creation form in `PipelineList` — show template cards (name, description, built-in badge) with "Start from scratch" option
+- [x] 5.3 Submit selected `templateId` alongside `name` in `onCreate`
+- [x] 5.4 Update empty state (zero pipelines) to prominently display template cards with create CTAs
 
 ## 6. Save as Template (Editor)
 
