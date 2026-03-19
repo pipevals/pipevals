@@ -150,7 +150,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
                     Type
                   </TableHead>
                   <TableHead className="w-[30%] font-mono text-[11px] uppercase tracking-wider">
-                    Trigger / Dataset
+                    Source
                   </TableHead>
                   <TableHead className="w-[22%] font-mono text-[11px] uppercase tracking-wider">
                     Status

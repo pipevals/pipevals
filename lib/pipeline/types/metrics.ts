@@ -5,6 +5,7 @@ export interface MetricRunEntry {
   durationMs: number | null;
   metrics: Record<string, unknown>;
   steps: { label: string; durationMs: number | null }[];
+  evalRunId: string | null;
 }
 
 export interface MetricsResponse {

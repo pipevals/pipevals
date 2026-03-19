@@ -25,10 +25,6 @@ const ScoreDistributionChart = dynamic(() =>
 const StepDurationChart = dynamic(() =>
   import("./charts/step-duration-chart").then((m) => m.StepDurationChart),
 );
-const RecentRunsTable = dynamic(() =>
-  import("./charts/recent-runs-table").then((m) => m.RecentRunsTable),
-);
-
 import type {
   MetricRunEntry,
   MetricsResponse,
@@ -147,11 +143,6 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
         <ScoreDistributionChart runs={agg.runs} metricNames={agg.metricNames} />
         <StepDurationChart runs={agg.runs} />
       </div>
-      <RecentRunsTable
-        runs={agg.runs}
-        metricNames={agg.metricNames}
-        pipelineId={pipelineId}
-      />
     </div>
   );
 }

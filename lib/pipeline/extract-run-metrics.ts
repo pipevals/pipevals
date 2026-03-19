@@ -10,6 +10,7 @@ interface RunWithStepResults {
   id: string;
   status: string;
   graphSnapshot: unknown;
+  evalRunId: string | null;
   startedAt: Date | null;
   completedAt: Date | null;
   createdAt: Date;
@@ -67,6 +68,7 @@ export function extractRunMetrics(runs: RunWithStepResults[]): MetricRunEntry[] 
       durationMs,
       metrics,
       steps,
+      evalRunId: run.evalRunId,
     };
   });
 }
