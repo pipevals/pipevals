@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
 import { requirePipeline } from "@/lib/api/auth";
 import { AppHeader } from "@/components/app-header";
 import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
 import { EvalRunDetail } from "@/components/pipeline/eval-run-detail";
+
+export const metadata: Metadata = {
+  title: "Eval Run",
+};
 
 export default async function EvalRunDetailPage({
   params,

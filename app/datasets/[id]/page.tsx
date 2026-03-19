@@ -5,9 +5,15 @@ import { getDatasetWithItems } from "@/lib/api/datasets";
 import { DatasetDetail } from "@/components/dataset/dataset-detail";
 import { AppHeader } from "@/components/app-header";
 
-export const metadata: Metadata = {
-  title: "Dataset",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const dataset = await getDatasetWithItems(id);
+  return { title: dataset?.name ?? "Dataset" };
+}
 
 export default async function DatasetDetailPage({
   params,

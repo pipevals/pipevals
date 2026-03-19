@@ -7,6 +7,10 @@ interface DerivedStatus {
 }
 
 export function deriveEvalRunStatus(runs: RunStatus[]): DerivedStatus {
+  if (runs.length === 0) {
+    return { status: "pending", completedItems: 0, failedItems: 0 };
+  }
+
   let completedItems = 0;
   let failedItems = 0;
   let hasRunning = false;

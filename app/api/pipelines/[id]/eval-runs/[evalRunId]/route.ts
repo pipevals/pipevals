@@ -50,7 +50,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
         completedItems: derived.completedItems,
         failedItems: derived.failedItems,
         completedAt: derived.status === "completed" || derived.status === "failed"
-          ? new Date()
+          ? evalRun.completedAt ?? new Date()
           : null,
       })
       .where(eq(evalRuns.id, evalRunId));

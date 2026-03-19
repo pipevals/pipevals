@@ -235,10 +235,10 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
                 </span>
               </Link>
 
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive">
+                    <Button size="sm" variant="destructive" aria-label={`Delete ${d.name}`}>
                       <HugeiconsIcon icon={Delete01Icon} size={14} />
                     </Button>
                   </AlertDialogTrigger>
@@ -328,6 +328,7 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
                       <Button
                         size="sm"
                         variant="ghost"
+                        aria-label="Remove key"
                         onClick={() =>
                           setSchemaKeys(schemaKeys.filter((_, j) => j !== i))
                         }

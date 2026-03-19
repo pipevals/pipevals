@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -48,7 +47,6 @@ interface DatasetDetailProps {
 }
 
 export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
-  const router = useRouter();
   const [items, setItems] = useState<DatasetItem[]>(initial.items);
   const [addingItems, setAddingItems] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
@@ -204,7 +202,7 @@ export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
                     <TableCell>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost">
+                          <Button size="sm" variant="ghost" aria-label="Delete item">
                             <HugeiconsIcon icon={Delete01Icon} size={14} />
                           </Button>
                         </AlertDialogTrigger>

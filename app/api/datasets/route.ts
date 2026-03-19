@@ -3,6 +3,8 @@ import { desc, eq, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { datasets, datasetItems } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
+import { parsePagination } from "@/lib/api/pagination";
+import { validateItemsAgainstSchema } from "@/lib/api/validate-dataset-items";
 
 export async function POST(request: Request) {
   const authResult = await requireAuth();
@@ -40,25 +42,9 @@ export async function POST(request: Request) {
     );
   }
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return NextResponse.json(
-        { error: `items[${i}] must be an object` },
-        { status: 400 },
-      );
-    }
-    const itemKeys = Object.keys(item).sort();
-    const expected = [...schemaKeys].sort();
-    if (
-      itemKeys.length !== expected.length ||
-      !itemKeys.every((k, j) => k === expected[j])
-    ) {
-      return NextResponse.json(
-        { error: `items[${i}] keys must exactly match schema keys: ${schemaKeys.join(", ")}` },
-        { status: 400 },
-      );
-    }
+  const validation = validateItemsAgainstSchema(items, schemaKeys);
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
   const [dataset] = await db
@@ -88,9 +74,11 @@ export async function POST(request: Request) {
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const authResult = await requireAuth();
   if ("error" in authResult) return authResult.error;
+
+  const { limit, offset } = parsePagination(new URL(request.url));
 
   const rows = await db
     .select({
@@ -108,7 +96,9 @@ export async function GET() {
     .leftJoin(datasetItems, eq(datasetItems.datasetId, datasets.id))
     .where(eq(datasets.organizationId, authResult.organizationId))
     .groupBy(datasets.id)
-    .orderBy(desc(datasets.createdAt));
+    .orderBy(desc(datasets.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return NextResponse.json(rows);
 }

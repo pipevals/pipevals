@@ -8,6 +8,7 @@ import {
   pipelineRuns,
 } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
+import { parsePagination } from "@/lib/api/pagination";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 
@@ -140,46 +141,62 @@ export async function POST(request: Request, { params }: RouteParams) {
     )
     .returning({ id: pipelineRuns.id });
 
-  // Start workflows in batches to avoid exhausting DB connection pool
+  // Start workflows in batches to avoid exhausting DB connection pool.
+  // Individual failures are caught and marked — the eval run continues.
   const poolMax = Number(process.env.DB_POOL_MAX || 10);
   const BATCH_SIZE = Math.max(1, Math.floor(poolMax / 3));
+  let startFailures = 0;
+
   for (let i = 0; i < runRows.length; i += BATCH_SIZE) {
     const batch = runRows.slice(i, i + BATCH_SIZE);
-    const results = await Promise.all(
-      batch.map(async (run) => {
-        const wf = await start(runPipelineWorkflow, [run.id]);
-        return { runId: run.id, workflowRunId: wf.runId };
-      }),
-    );
     await Promise.all(
-      results.map(({ runId, workflowRunId }) =>
-        db
-          .update(pipelineRuns)
-          .set({ workflowRunId })
-          .where(eq(pipelineRuns.id, runId)),
-      ),
+      batch.map(async (run) => {
+        try {
+          const wf = await start(runPipelineWorkflow, [run.id]);
+          await db
+            .update(pipelineRuns)
+            .set({ workflowRunId: wf.runId })
+            .where(eq(pipelineRuns.id, run.id));
+        } catch {
+          startFailures++;
+          await db
+            .update(pipelineRuns)
+            .set({ status: "failed" })
+            .where(eq(pipelineRuns.id, run.id));
+        }
+      }),
     );
   }
 
-  // Mark eval run as running
+  // Mark eval run status based on start results
+  const allFailed = startFailures === runRows.length;
   await db
     .update(evalRuns)
-    .set({ status: "running", startedAt: new Date() })
+    .set({
+      status: allFailed ? "failed" : "running",
+      startedAt: new Date(),
+      failedItems: startFailures,
+      ...(allFailed ? { completedAt: new Date() } : {}),
+    })
     .where(eq(evalRuns.id, evalRun.id));
 
   return NextResponse.json({ evalRunId: evalRun.id }, { status: 202 });
 }
 
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams) {
   const { id } = await params;
   const result = await requirePipeline(id);
   if ("error" in result) return result.error;
+
+  const { limit, offset } = parsePagination(new URL(request.url));
 
   const rows = await db
     .select()
     .from(evalRuns)
     .where(eq(evalRuns.pipelineId, id))
-    .orderBy(desc(evalRuns.createdAt));
+    .orderBy(desc(evalRuns.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return NextResponse.json(rows);
 }

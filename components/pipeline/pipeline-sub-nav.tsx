@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { shortId } from "@/lib/format";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
+
 
 const NAV_ITEMS = [
   { label: "Editor", segment: "" },

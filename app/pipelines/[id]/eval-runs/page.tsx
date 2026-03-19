@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
 import { requirePipeline } from "@/lib/api/auth";
 import { AppHeader } from "@/components/app-header";
 import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
 import { EvalRunList } from "@/components/pipeline/eval-run-list";
 import { TriggerRunButton } from "@/components/pipeline/run-list-page-content";
+
+export const metadata: Metadata = {
+  title: "Eval Runs",
+};
 
 export default async function EvalRunsPage({
   params,

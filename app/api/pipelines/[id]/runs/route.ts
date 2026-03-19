@@ -3,6 +3,7 @@ import { desc, eq, and, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
+import { parsePagination } from "@/lib/api/pagination";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 import { buildTriggerValidator } from "@/lib/pipeline/utils/build-trigger-validator";
@@ -95,6 +96,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const url = new URL(request.url);
   const evalRunId = url.searchParams.get("evalRunId");
+  const { limit, offset } = parsePagination(url);
 
   const filter = evalRunId
     ? and(eq(pipelineRuns.pipelineId, id), eq(pipelineRuns.evalRunId, evalRunId))
@@ -111,7 +113,9 @@ export async function GET(request: Request, { params }: RouteParams) {
     })
     .from(pipelineRuns)
     .where(filter)
-    .orderBy(desc(pipelineRuns.createdAt));
+    .orderBy(desc(pipelineRuns.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return NextResponse.json(runs);
 }
