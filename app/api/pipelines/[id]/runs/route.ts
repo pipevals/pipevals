@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
@@ -88,10 +88,17 @@ export async function POST(request: Request, { params }: RouteParams) {
   return NextResponse.json({ runId: run.id }, { status: 202 });
 }
 
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams) {
   const { id } = await params;
   const result = await requirePipeline(id);
   if ("error" in result) return result.error;
+
+  const url = new URL(request.url);
+  const evalRunId = url.searchParams.get("evalRunId");
+
+  const filter = evalRunId
+    ? and(eq(pipelineRuns.pipelineId, id), eq(pipelineRuns.evalRunId, evalRunId))
+    : and(eq(pipelineRuns.pipelineId, id), isNull(pipelineRuns.evalRunId));
 
   const runs = await db
     .select({
@@ -103,7 +110,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
       createdAt: pipelineRuns.createdAt,
     })
     .from(pipelineRuns)
-    .where(eq(pipelineRuns.pipelineId, id))
+    .where(filter)
     .orderBy(desc(pipelineRuns.createdAt));
 
   return NextResponse.json(runs);

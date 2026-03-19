@@ -22,8 +22,8 @@
 
 ## 4. Modified Pipeline APIs
 
-- [ ] 4.1 Update `GET /api/pipelines/[id]/runs` to filter by `evalRunId` query param (default: only ad-hoc runs where evalRunId is null)
-- [ ] 4.2 Update `GET /api/pipelines/[id]/runs/metrics` to accept optional `evalRunId` query param for scoping
+- [x] 4.1 Update `GET /api/pipelines/[id]/runs` to filter by `evalRunId` query param (default: only ad-hoc runs where evalRunId is null)
+- [x] 4.2 Update `GET /api/pipelines/[id]/runs/metrics` to accept optional `evalRunId` query param for scoping
 
 ## 5. Dataset UI
 
