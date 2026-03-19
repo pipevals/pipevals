@@ -20,9 +20,9 @@
 
 ## 4. Extended Pipeline Creation
 
-- [ ] 4.1 Extend `POST /api/pipelines` to accept optional `templateId` in the request body schema
-- [ ] 4.2 Implement template-to-pipeline cloning: fetch template, generate fresh UUIDs for nodes/edges with reference remapping, insert atomically
-- [ ] 4.3 Add unit tests for pipeline creation from template (happy path, invalid template 404, fresh UUIDs)
+- [x] 4.1 Extend `POST /api/pipelines` to accept optional `templateId` in the request body schema
+- [x] 4.2 Implement template-to-pipeline cloning: fetch template, generate fresh UUIDs for nodes/edges with reference remapping, insert atomically
+- [x] 4.3 Add unit tests for pipeline creation from template (happy path, invalid template 404, fresh UUIDs)
 
 ## 5. Template Picker UI
 

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { pipelines } from "@/lib/db/pipeline-schema";
+import {
+  pipelines,
+  pipelineNodes,
+  pipelineEdges,
+  pipelineTemplates,
+} from "@/lib/db/pipeline-schema";
+import type { PipelineNodeType } from "@/lib/pipeline/types";
 import { requireAuth } from "@/lib/api/auth";
 import { getPipelinesForOrg } from "@/lib/api/pipelines";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, isNull } from "drizzle-orm";
 import { slugify } from "@/lib/slugify";
 
 export async function GET() {
@@ -18,6 +24,7 @@ export async function GET() {
 const createPipelineSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().nullable().optional(),
+  templateId: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -32,22 +39,87 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const { name, description } = parsed.data;
+  const { name, description, templateId } = parsed.data;
   const baseSlug = slugify(name);
 
-  try {
-    const [pipeline] = await db
-      .insert(pipelines)
-      .values({
-        name: name.trim(),
-        slug: baseSlug,
-        description: description ?? null,
-        organizationId,
-        createdBy: userId,
-      })
-      .returning();
+  // If templateId is provided, fetch and verify visibility
+  let template: typeof pipelineTemplates.$inferSelect | null = null;
+  if (templateId) {
+    const found = await db.query.pipelineTemplates.findFirst({
+      where: and(
+        eq(pipelineTemplates.id, templateId),
+        or(
+          isNull(pipelineTemplates.organizationId),
+          eq(pipelineTemplates.organizationId, organizationId),
+        ),
+      ),
+    });
+    if (!found) {
+      return NextResponse.json(
+        { error: "Template not found" },
+        { status: 404 },
+      );
+    }
+    template = found;
+  }
 
-    return NextResponse.json(pipeline, { status: 201 });
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [pipeline] = await tx
+        .insert(pipelines)
+        .values({
+          name: name.trim(),
+          slug: baseSlug,
+          description: description ?? null,
+          triggerSchema: template?.triggerSchema ?? {},
+          organizationId,
+          createdBy: userId,
+        })
+        .returning();
+
+      if (template) {
+        const snapshot = template.graphSnapshot as {
+          nodes: Array<Record<string, unknown>>;
+          edges: Array<Record<string, unknown>>;
+        };
+
+        // Build oldId → newId map for nodes
+        const idMap: Record<string, string> = Object.fromEntries(
+          snapshot.nodes.map((n) => [n.id as string, crypto.randomUUID()]),
+        );
+
+        if (snapshot.nodes.length > 0) {
+          await tx.insert(pipelineNodes).values(
+            snapshot.nodes.map((n) => ({
+              id: idMap[n.id as string],
+              pipelineId: pipeline.id,
+              type: n.type as PipelineNodeType,
+              label: (n.label as string) ?? null,
+              config: (n.config as Record<string, unknown>) ?? {},
+              positionX: n.positionX as number,
+              positionY: n.positionY as number,
+            })),
+          );
+        }
+
+        if (snapshot.edges.length > 0) {
+          await tx.insert(pipelineEdges).values(
+            snapshot.edges.map((e) => ({
+              id: crypto.randomUUID(),
+              pipelineId: pipeline.id,
+              sourceNodeId: idMap[e.sourceNodeId as string],
+              sourceHandle: (e.sourceHandle as string) ?? null,
+              targetNodeId: idMap[e.targetNodeId as string],
+              targetHandle: (e.targetHandle as string) ?? null,
+            })),
+          );
+        }
+      }
+
+      return pipeline;
+    });
+
+    return NextResponse.json(result, { status: 201 });
   } catch (err) {
     const cause = err instanceof Error ? (err.cause as Record<string, unknown> | undefined) : undefined;
     const constraint =

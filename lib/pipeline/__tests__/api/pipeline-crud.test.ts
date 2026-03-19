@@ -11,7 +11,7 @@ const {
   PUT: updatePipeline,
   DELETE: deletePipeline,
 } = await import("@/app/api/pipelines/[id]/route");
-const { pipelines, pipelineNodes, pipelineEdges } = await import(
+const { pipelines, pipelineNodes, pipelineEdges, pipelineTemplates } = await import(
   "@/lib/db/pipeline-schema"
 );
 
@@ -295,6 +295,101 @@ describe("pipeline CRUD (PGlite integration)", () => {
       const res = await deletePipeline(
         new Request("http://localhost", { method: "DELETE" }),
         makeParams("nonexistent"),
+      );
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("POST /api/pipelines with templateId", () => {
+    const templateSnapshot = {
+      nodes: [
+        { id: "tmpl-n1", type: "trigger", label: "Trigger", config: {}, positionX: 0, positionY: 0 },
+        { id: "tmpl-n2", type: "ai_sdk", label: "Gen", config: { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "trigger.prompt" }, positionX: 300, positionY: 0 },
+      ],
+      edges: [
+        { id: "tmpl-e1", sourceNodeId: "tmpl-n1", sourceHandle: null, targetNodeId: "tmpl-n2", targetHandle: null },
+      ],
+    };
+
+    async function seedTemplate(opts?: { orgId?: string | null }) {
+      const id = crypto.randomUUID();
+      await testDb.insert(pipelineTemplates).values({
+        id,
+        name: `Template ${id.slice(0, 8)}`,
+        slug: `tmpl-${id.slice(0, 8)}`,
+        graphSnapshot: templateSnapshot,
+        triggerSchema: { prompt: "" },
+        organizationId: opts?.orgId === undefined ? null : opts.orgId,
+        createdBy: null,
+      });
+      return id;
+    }
+
+    test("201 creates pipeline pre-populated from template", async () => {
+      const templateId = await seedTemplate();
+      const res = await createPipeline(
+        postJson({ name: `From Tmpl ${crypto.randomUUID().slice(0, 8)}`, templateId }),
+      );
+      expect(res.status).toBe(201);
+      const data = await res.json();
+
+      // Fetch the pipeline with graph to verify nodes/edges were cloned
+      const getRes = await getPipeline(
+        new Request("http://localhost"),
+        makeParams(data.id),
+      );
+      const pipeline = await getRes.json();
+      expect(pipeline.nodes.length).toBe(2);
+      expect(pipeline.edges.length).toBe(1);
+      expect(pipeline.triggerSchema).toEqual({ prompt: "" });
+    });
+
+    test("fresh UUIDs — no collision between two pipelines from same template", async () => {
+      const templateId = await seedTemplate();
+      const res1 = await createPipeline(
+        postJson({ name: `Clone A ${crypto.randomUUID().slice(0, 8)}`, templateId }),
+      );
+      const res2 = await createPipeline(
+        postJson({ name: `Clone B ${crypto.randomUUID().slice(0, 8)}`, templateId }),
+      );
+      expect(res1.status).toBe(201);
+      expect(res2.status).toBe(201);
+
+      const p1 = await (await getPipeline(new Request("http://localhost"), makeParams((await res1.clone().json()).id))).json();
+      const p2 = await (await getPipeline(new Request("http://localhost"), makeParams((await res2.clone().json()).id))).json();
+
+      const nodeIds1 = p1.nodes.map((n: any) => n.id);
+      const nodeIds2 = p2.nodes.map((n: any) => n.id);
+
+      // No overlapping node IDs
+      for (const id of nodeIds1) {
+        expect(nodeIds2).not.toContain(id);
+      }
+
+      // None match the original template IDs
+      for (const id of nodeIds1) {
+        expect(id).not.toBe("tmpl-n1");
+        expect(id).not.toBe("tmpl-n2");
+      }
+    });
+
+    test("404 on invalid templateId", async () => {
+      const res = await createPipeline(
+        postJson({ name: "Bad Template", templateId: "nonexistent" }),
+      );
+      expect(res.status).toBe(404);
+    });
+
+    test("404 on template from another org", async () => {
+      // Create a second org via test helpers so the FK is satisfied
+      const otherCtx = await createAuthenticatedUser();
+      const otherOrgTemplateId = await seedTemplate({ orgId: otherCtx.organizationId });
+
+      // Switch back to original user's headers
+      setActiveHeaders(ctx.headers);
+
+      const res = await createPipeline(
+        postJson({ name: "Other Org Template", templateId: otherOrgTemplateId }),
       );
       expect(res.status).toBe(404);
     });
