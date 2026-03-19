@@ -7,11 +7,11 @@
 
 ## 2. Dataset API
 
-- [ ] 2.1 Create `app/api/datasets/route.ts` with POST (create dataset) and GET (list datasets) handlers
-- [ ] 2.2 Create `app/api/datasets/[id]/route.ts` with GET (dataset + items), PUT (update metadata), DELETE handlers
-- [ ] 2.3 Create `app/api/datasets/[id]/items/route.ts` with POST (add items) handler
-- [ ] 2.4 Create `app/api/datasets/[id]/items/[itemId]/route.ts` with DELETE (remove item) handler
-- [ ] 2.5 Add dataset auth helper (verify dataset belongs to user's org) in `lib/api/auth.ts`
+- [x] 2.1 Create `app/api/datasets/route.ts` with POST (create dataset) and GET (list datasets) handlers
+- [x] 2.2 Create `app/api/datasets/[id]/route.ts` with GET (dataset + items), PUT (update metadata), DELETE handlers
+- [x] 2.3 Create `app/api/datasets/[id]/items/route.ts` with POST (add items) handler
+- [x] 2.4 Create `app/api/datasets/[id]/items/[itemId]/route.ts` with DELETE (remove item) handler
+- [x] 2.5 Add dataset auth helper (verify dataset belongs to user's org) in `lib/api/auth.ts`
 
 ## 3. Eval Run API
 

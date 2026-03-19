@@ -6,6 +6,7 @@ import {
   pipelines,
   pipelineNodes,
   pipelineEdges,
+  datasets,
 } from "@/lib/db/pipeline-schema";
 import { headers } from "next/headers";
 
@@ -85,4 +86,35 @@ export async function requirePipeline<W extends boolean = false>(
   }
 
   return { ...authResult, pipeline } as AuthSuccess & { pipeline: PipelineFor<W> };
+}
+
+type DatasetRow = typeof datasets.$inferSelect;
+
+/**
+ * Auth + dataset ownership check. Returns 401/403/404 or the dataset
+ * scoped to the user's active organization.
+ */
+export async function requireDataset(
+  datasetId: string,
+): Promise<AuthError | (AuthSuccess & { dataset: DatasetRow })> {
+  const authResult = await requireAuth();
+  if ("error" in authResult) return authResult;
+
+  const where = and(
+    eq(datasets.id, datasetId),
+    eq(datasets.organizationId, authResult.organizationId),
+  );
+
+  const dataset = await db.query.datasets.findFirst({ where });
+
+  if (!dataset) {
+    return {
+      error: NextResponse.json(
+        { error: "Dataset not found" },
+        { status: 404 },
+      ),
+    };
+  }
+
+  return { ...authResult, dataset };
 }
