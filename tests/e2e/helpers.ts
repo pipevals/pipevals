@@ -1,5 +1,5 @@
 import { execSync, execFileSync } from "child_process";
-import { seedPipelineDefinitions } from "../../lib/db/seed-pipelines";
+import { seedPipelineDefinitions } from "../../lib/db/seed-templates";
 
 export const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 

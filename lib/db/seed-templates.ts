@@ -1,7 +1,16 @@
-import { eq, and } from "drizzle-orm";
-import { pipelines, pipelineNodes, pipelineEdges } from "./pipeline-schema";
+import { eq, and, isNull } from "drizzle-orm";
+import {
+  pipelines,
+  pipelineNodes,
+  pipelineEdges,
+  pipelineTemplates,
+} from "./pipeline-schema";
 import type { PipelineNodeType } from "../pipeline/types";
 import type { db as appDb } from ".";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface SeedNode {
   id: string;
@@ -405,11 +414,64 @@ const humanInTheLoop: SeedPipelineDefinition = {
   ],
 };
 
+// ---------------------------------------------------------------------------
+// Exports
+// ---------------------------------------------------------------------------
+
 export const seedPipelineDefinitions: SeedPipelineDefinition[] = [
   aiAsAJudge,
   modelAbComparison,
   humanInTheLoop,
 ];
+
+// ---------------------------------------------------------------------------
+// seedTemplates — inserts built-in templates (organizationId = NULL)
+// ---------------------------------------------------------------------------
+
+export async function seedTemplates(db: typeof appDb) {
+  for (const def of seedPipelineDefinitions) {
+    // Idempotency: skip if built-in template with this slug already exists
+    const existing = await db
+      .select({ id: pipelineTemplates.id })
+      .from(pipelineTemplates)
+      .where(
+        and(
+          eq(pipelineTemplates.slug, def.slug),
+          isNull(pipelineTemplates.organizationId),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      console.log(`  ⏭ Skipped "${def.name}" (already exists)`);
+      continue;
+    }
+
+    await db.transaction(async (tx) => {
+      const [template] = await tx
+        .insert(pipelineTemplates)
+        .values({
+          name: def.name,
+          slug: def.slug,
+          description: def.description,
+          triggerSchema: def.triggerSchema,
+          graphSnapshot: {
+            nodes: def.nodes,
+            edges: def.edges,
+          },
+          organizationId: null,
+          createdBy: null,
+        })
+        .returning({ id: pipelineTemplates.id });
+
+      console.log(`  ✔ Created "${def.name}" (${template.id})`);
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// seedPipelines — inserts actual pipelines into an org (used by tests)
+// ---------------------------------------------------------------------------
 
 export async function seedPipelines(
   db: typeof appDb,
@@ -417,7 +479,6 @@ export async function seedPipelines(
   createdBy: string,
 ) {
   for (const def of seedPipelineDefinitions) {
-    // Idempotency: skip if slug already exists in this org
     const existing = await db
       .select({ id: pipelines.id })
       .from(pipelines)

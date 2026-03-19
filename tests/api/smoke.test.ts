@@ -19,7 +19,7 @@ import {
 import {
   seedPipelines,
   seedPipelineDefinitions,
-} from "../../lib/db/seed-pipelines";
+} from "../../lib/db/seed-templates";
 
 // -- Bootstrap test DB and mocks --
 

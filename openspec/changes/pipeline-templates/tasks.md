@@ -7,10 +7,10 @@
 
 ## 2. Seed Templates
 
-- [ ] 2.1 Create `lib/db/seed-templates.ts` with `seedTemplates()` function that inserts the 3 existing seed definitions into `pipeline_template` with `organizationId = NULL` and `createdBy = NULL`, using the `graphSnapshot` JSONB shape
-- [ ] 2.2 Create `scripts/seed-templates.ts` CLI script (no `--org` flag required)
-- [ ] 2.3 Update seed-pipelines test or add new test for `seedTemplates()` idempotency
-- [ ] 2.4 Remove `scripts/seed-pipelines.ts` and `lib/db/seed-pipelines.ts` (keep definitions accessible to the new seed-templates module)
+- [x] 2.1 Create `lib/db/seed-templates.ts` with `seedTemplates()` function that inserts the 3 existing seed definitions into `pipeline_template` with `organizationId = NULL` and `createdBy = NULL`, using the `graphSnapshot` JSONB shape
+- [x] 2.2 Create `scripts/seed-templates.ts` CLI script (no `--org` flag required)
+- [x] 2.3 Update seed-pipelines test or add new test for `seedTemplates()` idempotency
+- [x] 2.4 Remove `scripts/seed-pipelines.ts` and `lib/db/seed-pipelines.ts` (keep definitions accessible to the new seed-templates module)
 
 ## 3. Templates API
 

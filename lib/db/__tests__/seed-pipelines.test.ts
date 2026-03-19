@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { seedPipelineDefinitions } from "../seed-pipelines";
+import { seedPipelineDefinitions } from "../seed-templates";
 import { nodeConfigSchema } from "../../pipeline/config-schemas";
 import { validateGraph } from "../../pipeline/graph-validation";
 
