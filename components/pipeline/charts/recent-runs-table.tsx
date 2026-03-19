@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -12,56 +11,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { shortId } from "@/lib/format";
+import { StatusDot } from "../run-status";
 import type { MetricRunEntry } from "../metrics-dashboard";
 
 const MAX_ROWS = 10;
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; dotClass: string; textClass: string }
-> = {
-  pending: {
-    label: "Pending",
-    dotClass: "bg-muted-foreground/50",
-    textClass: "text-muted-foreground",
-  },
-  running: {
-    label: "Running",
-    dotClass: "bg-running motion-safe:animate-pulse",
-    textClass: "text-running",
-  },
-  completed: {
-    label: "Completed",
-    dotClass: "bg-pass",
-    textClass: "text-pass",
-  },
-  failed: {
-    label: "Failed",
-    dotClass: "bg-fail",
-    textClass: "text-fail",
-  },
-};
-
-function StatusDot({ status }: { status: string }) {
-  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
-  return (
-    <span className="flex items-center gap-1.5">
-      <span
-        className={cn(
-          "inline-block h-1.5 w-1.5 rounded-full",
-          config.dotClass,
-        )}
-      />
-      <span className={cn("text-xs", config.textClass)}>{config.label}</span>
-    </span>
-  );
-}
+const MAX_STRING_LEN = 32;
 
 function formatMetricValue(value: unknown): string {
   if (value == null) return "—";
   if (typeof value === "number")
     return Number.isInteger(value) ? String(value) : value.toFixed(4);
-  return String(value);
+  const str = String(value);
+  return str.length > MAX_STRING_LEN ? `${str.slice(0, MAX_STRING_LEN)}…` : str;
 }
 
 interface Props {
@@ -128,14 +90,18 @@ export function RecentRunsTable({ runs, metricNames, pipelineId }: Props) {
               <TableCell>
                 <StatusDot status={run.status} />
               </TableCell>
-              {displayMetrics.map((name) => (
-                <TableCell
-                  key={name}
-                  className="text-right font-mono text-xs text-muted-foreground"
-                >
-                  {formatMetricValue(run.metrics[name])}
-                </TableCell>
-              ))}
+              {displayMetrics.map((name) => {
+                const raw = run.metrics[name];
+                return (
+                  <TableCell
+                    key={name}
+                    className="max-w-40 truncate text-right font-mono text-xs text-muted-foreground"
+                    title={raw != null ? String(raw) : undefined}
+                  >
+                    {formatMetricValue(raw)}
+                  </TableCell>
+                );
+              })}
               <TableCell className="text-right font-mono text-xs text-muted-foreground">
                 {run.durationMs != null
                   ? run.durationMs < 1000

@@ -4,10 +4,8 @@ import Link from "next/link";
 import useSWR from "swr";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlayIcon } from "@hugeicons/core-free-icons";
-import { cn } from "@/lib/utils";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -21,9 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { computeDuration, formatDateTime, shortId } from "@/lib/format";
 import type { RunStatus } from "@/lib/stores/run-viewer";
+import { StatusDot } from "./run-status";
 
 interface RunSummary {
   id: string;
@@ -32,44 +30,6 @@ interface RunSummary {
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;
-}
-
-const STATUS_CONFIG: Record<
-  RunStatus,
-  { label: string; dotClass: string; textClass: string }
-> = {
-  pending: {
-    label: "Pending",
-    dotClass: "bg-muted-foreground/50",
-    textClass: "text-muted-foreground",
-  },
-  running: {
-    label: "Running",
-    dotClass: "bg-running motion-safe:animate-pulse",
-    textClass: "text-running",
-  },
-  completed: {
-    label: "Completed",
-    dotClass: "bg-pass",
-    textClass: "text-pass",
-  },
-  failed: {
-    label: "Failed",
-    dotClass: "bg-fail",
-    textClass: "text-fail",
-  },
-};
-
-function StatusDot({ status }: { status: RunStatus }) {
-  const config = STATUS_CONFIG[status];
-  return (
-    <span className="flex items-center gap-1.5">
-      <span
-        className={cn("inline-block h-1.5 w-1.5 rounded-full", config.dotClass)}
-      />
-      <span className={cn("text-xs", config.textClass)}>{config.label}</span>
-    </span>
-  );
 }
 
 const fetcher = (url: string) =>
