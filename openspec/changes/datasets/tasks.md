@@ -43,6 +43,6 @@
 
 ## 7. Tests
 
-- [ ] 7.1 Add API tests for dataset CRUD endpoints
-- [ ] 7.2 Add API tests for eval run trigger, list, detail, and metrics endpoints
-- [ ] 7.3 Add API tests for modified pipeline runs list (evalRunId filter) and metrics (evalRunId scoping)
+- [x] 7.1 Add API tests for dataset CRUD endpoints
+- [x] 7.2 Add API tests for eval run trigger, list, detail, and metrics endpoints
+- [x] 7.3 Add API tests for modified pipeline runs list (evalRunId filter) and metrics (evalRunId scoping)
