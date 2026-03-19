@@ -2,11 +2,13 @@
  * E2E Smoke Test: Model A/B Comparison Canvas Render
  *
  * Verifies that opening the Model A/B Comparison pipeline renders the correct nodes.
+ * Creates the pipeline from a template if it doesn't exist yet.
  */
 
 import {
   AB_PIPELINE_NAME,
   navigateAuthenticated,
+  ensurePipeline,
   ab_exec,
   fullSnapshot,
   assert,
@@ -14,6 +16,7 @@ import {
 } from "./helpers";
 
 await navigateAuthenticated("/pipelines");
+ensurePipeline(AB_PIPELINE_NAME);
 
 ab_exec(`find text "${AB_PIPELINE_NAME}" click`);
 ab_exec("wait --load networkidle");

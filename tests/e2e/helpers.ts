@@ -134,6 +134,29 @@ export async function navigateAuthenticated(path: string): Promise<void> {
 }
 
 /**
+ * Ensure a pipeline exists in the list. If not, creates it from a template
+ * in the empty state. Must be called after navigateAuthenticated("/pipelines").
+ *
+ * Returns the updated interactive snapshot.
+ */
+export function ensurePipeline(pipelineName: string): string {
+  let snap = snapshot();
+  if (snap.includes(pipelineName)) return snap;
+
+  console.log(`  → "${pipelineName}" not found, creating from template...`);
+
+  ab_exec(`find text "${pipelineName}" click`);
+  ab_exec("wait 1000");
+  ab_exec('find text "Create" click');
+  ab_exec("wait --load networkidle");
+  ab_exec("wait 1000");
+
+  snap = snapshot();
+  assert(snap.includes(pipelineName), `"${pipelineName}" pipeline created from template`);
+  return snap;
+}
+
+/**
  * Assert a condition, logging and exiting on failure.
  */
 export function assert(condition: boolean, message: string): void {
