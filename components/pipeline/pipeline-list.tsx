@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Empty,
   EmptyDescription,
@@ -203,18 +204,18 @@ export function PipelineList({ initialPipelines }: PipelineListProps) {
         <div className="relative max-w-md">
           <HugeiconsIcon
             icon={Search01Icon}
-            size={16}
-            className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={14}
+            className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
-          <input
+          <Input
             aria-label="Search pipelines"
             name="search"
             autoComplete="off"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search pipelines…"
-            className="w-full border-0 border-b border-border bg-transparent pb-2 pl-7 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none transition-colors"
+            className="pl-7"
           />
         </div>
 

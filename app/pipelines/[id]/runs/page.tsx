@@ -18,7 +18,6 @@ export default async function RunListPage({
   if ("error" in result) redirect("/pipelines");
 
   const { pipeline, session } = result;
-
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader user={session.user} />

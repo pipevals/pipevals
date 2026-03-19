@@ -77,6 +77,16 @@ function MetricCaptureNode(props: StepNodeProps) {
   );
 }
 
+function HumanReviewNode(props: StepNodeProps) {
+  return (
+    <BaseNode
+      {...props}
+      icon={<span>H</span>}
+      color="bg-cyan-600"
+    />
+  );
+}
+
 export const nodeTypes = {
   api_request: ApiRequestNode,
   ai_sdk: AiSdkNode,
@@ -84,5 +94,6 @@ export const nodeTypes = {
   condition: ConditionNode,
   transform: TransformNode,
   metric_capture: MetricCaptureNode,
+  human_review: HumanReviewNode,
   trigger: TriggerNode,
 } as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { TaskQueueSidebar } from "./task-queue-sidebar";
 import { TaskReviewPanel } from "./task-review-panel";
@@ -34,6 +34,13 @@ export function TasksPageContent({ pipelineId }: { pipelineId: string }) {
   const filteredTasks = (tasks ?? []).filter((t) =>
     statusFilter === "all" ? true : t.status === statusFilter,
   );
+
+  // Auto-select the first task once data arrives
+  useEffect(() => {
+    if (selectedTaskId === null && filteredTasks.length > 0) {
+      setSelectedTaskId(filteredTasks[0].id);
+    }
+  }, [filteredTasks, selectedTaskId]);
 
   return (
     <div className="flex flex-1 overflow-hidden">

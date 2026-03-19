@@ -20,7 +20,7 @@ export async function executeHumanReview(
   config: HumanReviewConfig,
   input: StepInput,
 ): Promise<Record<string, unknown>> {
-  const start = performance.now();
+  const start = Date.now();
   const inputSnapshot = { steps: input.steps, trigger: input.trigger };
 
   // Step 1: Resolve display data, create tasks, mark step as awaiting_review
@@ -41,7 +41,7 @@ export async function executeHumanReview(
   );
 
   // Step 3: Aggregate and record completion
-  const durationMs = performance.now() - start;
+  const durationMs = Date.now() - start;
   const output = aggregateReviews(reviews, config);
   await recordHumanReviewCompleted(
     runId,

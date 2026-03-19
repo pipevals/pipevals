@@ -309,9 +309,106 @@ const modelAbComparison: SeedPipelineDefinition = {
   ],
 };
 
+// ---------------------------------------------------------------------------
+// Human-in-the-Loop Review
+// ---------------------------------------------------------------------------
+
+const humanInTheLoop: SeedPipelineDefinition = {
+  name: "Human-in-the-Loop Review",
+  slug: "human-in-the-loop-review",
+  description:
+    "Generates a response to a prompt, then pauses for a human reviewer to score it on accuracy, tone, and helpfulness before capturing metrics. Demonstrates the HITL evaluation pattern.",
+  triggerSchema: {
+    prompt: "",
+  },
+  nodes: [
+    {
+      id: "seed-hitl-trigger",
+      type: "trigger",
+      label: "Trigger",
+      config: {},
+      positionX: 0,
+      positionY: 150,
+    },
+    {
+      id: "seed-hitl-generator",
+      type: "ai_sdk",
+      label: "Generator",
+      config: {
+        type: "ai_sdk",
+        model: "openai/gpt-4o",
+        promptTemplate: "trigger.prompt",
+        temperature: 0.7,
+      },
+      positionX: 300,
+      positionY: 150,
+    },
+    {
+      id: "seed-hitl-review",
+      type: "human_review",
+      label: "Human Review",
+      config: {
+        type: "human_review",
+        display: {
+          Prompt: "trigger.prompt",
+          "AI Response": "steps.Generator.text",
+        },
+        rubric: [
+          { name: "accuracy", type: "rating", min: 1, max: 5, label: "Accuracy" },
+          { name: "tone", type: "rating", min: 1, max: 5, label: "Tone" },
+          { name: "helpfulness", type: "rating", min: 1, max: 5, label: "Helpfulness" },
+          { name: "notes", type: "text", label: "Notes", placeholder: "Any additional feedback..." },
+        ],
+        requiredReviewers: 1,
+      },
+      positionX: 600,
+      positionY: 150,
+    },
+    {
+      id: "seed-hitl-metrics",
+      type: "metric_capture",
+      label: "Metrics",
+      config: {
+        type: "metric_capture",
+        metrics: {
+          accuracy: "steps.Human Review.scores.accuracy",
+          tone: "steps.Human Review.scores.tone",
+          helpfulness: "steps.Human Review.scores.helpfulness",
+        },
+      },
+      positionX: 900,
+      positionY: 150,
+    },
+  ],
+  edges: [
+    {
+      id: "seed-hitl-e1",
+      sourceNodeId: "seed-hitl-trigger",
+      sourceHandle: null,
+      targetNodeId: "seed-hitl-generator",
+      targetHandle: null,
+    },
+    {
+      id: "seed-hitl-e2",
+      sourceNodeId: "seed-hitl-generator",
+      sourceHandle: null,
+      targetNodeId: "seed-hitl-review",
+      targetHandle: null,
+    },
+    {
+      id: "seed-hitl-e3",
+      sourceNodeId: "seed-hitl-review",
+      sourceHandle: null,
+      targetNodeId: "seed-hitl-metrics",
+      targetHandle: null,
+    },
+  ],
+};
+
 export const seedPipelineDefinitions: SeedPipelineDefinition[] = [
   aiAsAJudge,
   modelAbComparison,
+  humanInTheLoop,
 ];
 
 export async function seedPipelines(

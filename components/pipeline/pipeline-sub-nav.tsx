@@ -10,8 +10,8 @@ import { WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
 const NAV_ITEMS = [
   { label: "Editor", segment: "" },
   { label: "Runs", segment: "/runs" },
-  { label: "Metrics", segment: "/metrics" },
   { label: "Tasks", segment: "/tasks" },
+  { label: "Metrics", segment: "/metrics" },
 ] as const;
 
 export function PipelineSubNav({
@@ -41,7 +41,7 @@ export function PipelineSubNav({
               <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
             </Link>
             <Link
-              href={basePath}
+              href="/pipelines"
               className="max-w-[200px] truncate rounded-sm text-sm font-medium text-foreground hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {pipelineSlug ?? shortId(pipelineId)}
