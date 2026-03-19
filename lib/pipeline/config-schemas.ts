@@ -40,6 +40,20 @@ export const metricCaptureConfigSchema = z.object({
   metrics: z.record(z.string(), z.string()),
 });
 
+export const rubricFieldSchema = z.discriminatedUnion("type", [
+  z.object({ name: z.string(), type: z.literal("rating"), min: z.number(), max: z.number(), label: z.string().optional() }),
+  z.object({ name: z.string(), type: z.literal("boolean"), label: z.string() }),
+  z.object({ name: z.string(), type: z.literal("text"), label: z.string().optional(), placeholder: z.string().optional() }),
+  z.object({ name: z.string(), type: z.literal("select"), label: z.string().optional(), options: z.array(z.string()) }),
+]);
+
+export const humanReviewConfigSchema = z.object({
+  type: z.literal("human_review"),
+  display: z.record(z.string(), z.string()),
+  rubric: z.array(rubricFieldSchema),
+  requiredReviewers: z.number().int().positive(),
+});
+
 export const nodeConfigSchema = z.discriminatedUnion("type", [
   apiRequestConfigSchema,
   aiSdkConfigSchema,
@@ -47,4 +61,5 @@ export const nodeConfigSchema = z.discriminatedUnion("type", [
   conditionConfigSchema,
   transformConfigSchema,
   metricCaptureConfigSchema,
+  humanReviewConfigSchema,
 ]);

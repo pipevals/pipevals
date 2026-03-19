@@ -2,7 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { shortId, formatDateTime } from "@/lib/format";
-import type { TaskListItem } from "./tasks-page-content";
+import {
+  useTaskReviewStore,
+  filterTasks,
+  type TaskListItem,
+} from "@/lib/stores/task-review";
 
 /** Group sibling tasks (same runId + nodeId) to compute progress. */
 function getProgress(
@@ -18,22 +22,15 @@ function getProgress(
 
 const FILTERS = ["all", "pending", "completed"] as const;
 
-export function TaskQueueSidebar({
-  tasks,
-  allTasks,
-  selectedTaskId,
-  onSelect,
-  statusFilter,
-  onStatusFilterChange,
-}: {
-  tasks: TaskListItem[];
-  allTasks: TaskListItem[];
-  selectedTaskId: string | null;
-  onSelect: (id: string) => void;
-  statusFilter: "all" | "pending" | "completed";
-  onStatusFilterChange: (f: "all" | "pending" | "completed") => void;
-}) {
-  const pendingCount = allTasks.filter((t) => t.status === "pending").length;
+export function TaskQueueSidebar() {
+  const tasks = useTaskReviewStore((s) => s.tasks);
+  const selectedTaskId = useTaskReviewStore((s) => s.selectedTaskId);
+  const statusFilter = useTaskReviewStore((s) => s.statusFilter);
+  const selectTask = useTaskReviewStore((s) => s.selectTask);
+  const setStatusFilter = useTaskReviewStore((s) => s.setStatusFilter);
+
+  const filteredTasks = filterTasks(tasks, statusFilter);
+  const pendingCount = tasks.filter((t) => t.status === "pending").length;
 
   return (
     <aside className="flex w-[300px] shrink-0 flex-col border-r border-border bg-background">
@@ -52,7 +49,7 @@ export function TaskQueueSidebar({
           <button
             key={f}
             type="button"
-            onClick={() => onStatusFilterChange(f)}
+            onClick={() => setStatusFilter(f)}
             className={cn(
               "rounded px-2 py-0.5 text-[10px] font-medium capitalize transition-colors",
               statusFilter === f
@@ -67,15 +64,15 @@ export function TaskQueueSidebar({
 
       {/* Task list */}
       <div className="flex-1 overflow-y-auto">
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="p-4 text-xs text-muted-foreground">
             No {statusFilter === "all" ? "" : statusFilter} tasks
           </div>
         ) : (
           <ul className="flex flex-col">
-            {tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const isSelected = task.id === selectedTaskId;
-              const progress = getProgress(task, allTasks);
+              const progress = getProgress(task, tasks);
               const allDone =
                 progress.completed === progress.total;
 
@@ -84,11 +81,11 @@ export function TaskQueueSidebar({
                   key={task.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => onSelect(task.id)}
+                  onClick={() => selectTask(task.id)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      onSelect(task.id);
+                      selectTask(task.id);
                     }
                   }}
                   className={cn(

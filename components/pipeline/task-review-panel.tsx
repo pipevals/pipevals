@@ -5,9 +5,9 @@ import useSWR from "swr";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import type { RubricField } from "@/lib/pipeline/types";
-import type { TaskListItem } from "./tasks-page-content";
+import { useTaskReviewStore } from "@/lib/stores/task-review";
 import { TaskDisplayData } from "./task-display-data";
-import { TaskScoringForm } from "./task-scoring-form";
+import { TaskScoringForm, TaskScoringReadonly } from "./task-scoring-form";
 
 interface TaskDetail {
   id: string;
@@ -38,14 +38,13 @@ function isComplete(rubric: RubricField[], values: Record<string, unknown>): boo
 }
 
 export function TaskReviewPanel({
-  taskId,
-  allTasks,
   onSubmitted,
 }: {
-  taskId: string;
-  allTasks: TaskListItem[];
   onSubmitted: () => void;
 }) {
+  const taskId = useTaskReviewStore((s) => s.selectedTaskId)!;
+  const allTasks = useTaskReviewStore((s) => s.tasks);
+
   const { data: task, mutate } = useSWR<TaskDetail>(
     `/api/tasks/${taskId}`,
     fetcher,
@@ -124,11 +123,9 @@ export function TaskReviewPanel({
         </h3>
 
         {isAlreadyCompleted ? (
-          <TaskScoringForm
+          <TaskScoringReadonly
             rubric={rubric}
             values={(task.response ?? {}) as Record<string, unknown>}
-            onChange={() => {}}
-            disabled
           />
         ) : (
           <>

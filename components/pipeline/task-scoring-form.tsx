@@ -147,6 +147,16 @@ function SelectInput({
   );
 }
 
+export function TaskScoringReadonly({
+  rubric,
+  values,
+}: {
+  rubric: RubricField[];
+  values: Record<string, unknown>;
+}) {
+  return <TaskScoringForm rubric={rubric} values={values} onChange={() => {}} disabled />;
+}
+
 export function TaskScoringForm({
   rubric,
   values,

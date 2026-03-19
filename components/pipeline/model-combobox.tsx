@@ -36,12 +36,12 @@ export function ModelCombobox({
   models,
   value,
   onValueChange,
-  fallback,
+  hint,
 }: {
   models: GatewayModel[];
   value: string;
   onValueChange: (value: string) => void;
-  fallback?: boolean;
+  hint?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -146,9 +146,9 @@ export function ModelCombobox({
         </Command>
       </PopoverContent>
     </Popover>
-    {fallback && (
+    {hint && (
       <span className="text-[10px] text-muted-foreground">
-        Add AI_GATEWAY_API_KEY for account-specific availability.
+        {hint}
       </span>
     )}
     </div>

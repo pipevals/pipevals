@@ -72,9 +72,14 @@ export function ScoreDistributionChart({ runs, metricNames }: Props) {
     );
   }, [runs, metricNames]);
 
-  const [selectedMetric, setSelectedMetric] = useState(
-    numericMetrics[0] ?? "",
-  );
+  // Store only the user's explicit pick; null = "use default"
+  const [userPick, setUserPick] = useState<string | null>(null);
+
+  // Derive the effective metric: user pick if still valid, otherwise first available
+  const selectedMetric =
+    userPick && numericMetrics.includes(userPick)
+      ? userPick
+      : numericMetrics[0] ?? "";
 
   const histogramData = useMemo(() => {
     if (!selectedMetric) return [];
@@ -92,7 +97,7 @@ export function ScoreDistributionChart({ runs, metricNames }: Props) {
         <h3 className="text-sm font-medium text-foreground">
           Score Distribution
         </h3>
-        <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+        <Select value={selectedMetric} onValueChange={setUserPick}>
           <SelectTrigger className="h-7 w-auto min-w-28 text-xs">
             <SelectValue />
           </SelectTrigger>
@@ -106,7 +111,7 @@ export function ScoreDistributionChart({ runs, metricNames }: Props) {
         </Select>
       </div>
       <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full">
-        <BarChart data={histogramData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <BarChart key={selectedMetric} data={histogramData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="bucket"

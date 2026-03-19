@@ -227,7 +227,7 @@ function AiSdkFields({
           models={models}
           value={config.model}
           onValueChange={(v) => onUpdate({ model: v })}
-          fallback={fallback}
+          hint={fallback ? "Add AI_GATEWAY_API_KEY for account-specific availability." : undefined}
         />
       </Field>
       <Field label="Prompt Template">

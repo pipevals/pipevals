@@ -87,14 +87,14 @@ describe("ModelCombobox", () => {
     expect(onValueChange).toHaveBeenCalled();
   });
 
-  test("shows fallback hint when fallback is true", () => {
+  test("shows hint when provided", () => {
     const onValueChange = mock(() => {});
     render(
       <ModelCombobox
         models={models}
         value=""
         onValueChange={onValueChange}
-        fallback={true}
+        hint="Add AI_GATEWAY_API_KEY for account-specific availability."
       />,
     );
 
