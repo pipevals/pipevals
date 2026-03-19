@@ -10,6 +10,7 @@ import {
 } from "@/lib/stores/run-viewer";
 
 const POLL_INTERVAL_MS = 2000;
+const POLL_INTERVAL_SLOW_MS = 5000;
 
 export function useRunLoader(pipelineId: string, runId: string) {
   const setRun = useRunViewerStore((s) => s.setRun);
@@ -18,8 +19,11 @@ export function useRunLoader(pipelineId: string, runId: string) {
     `/api/pipelines/${pipelineId}/runs/${runId}`,
     fetcher,
     {
-      refreshInterval: (latestData) =>
-        isTerminalRunStatus(latestData?.status) ? 0 : POLL_INTERVAL_MS,
+      refreshInterval: (latestData) => {
+        if (isTerminalRunStatus(latestData?.status)) return 0;
+        if (latestData?.status === "awaiting_review") return POLL_INTERVAL_SLOW_MS;
+        return POLL_INTERVAL_MS;
+      },
       revalidateOnFocus: false,
       onSuccess: (run) => {
         const store = useRunViewerStore.getState();

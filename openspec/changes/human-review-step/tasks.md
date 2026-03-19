@@ -51,10 +51,10 @@
 
 ## 8. Run Viewer Updates
 
-- [ ] 8.1 Add `awaiting_review` badge styling (amber/orange) to the run viewer node status badges
-- [ ] 8.2 Update polling logic to continue polling during `awaiting_review` status (at a slower 5s interval)
-- [ ] 8.3 Update run summary to show "Waiting on: <step label>" with a link to the tasks page when run is `awaiting_review`
-- [ ] 8.4 Add "Tasks" to the sub-navigation links in the run viewer
+- [x] 8.1 Add `awaiting_review` badge styling (amber/orange) to the run viewer node status badges
+- [x] 8.2 Update polling logic to continue polling during `awaiting_review` status (at a slower 5s interval)
+- [x] 8.3 Update run summary to show "Waiting on: <step label>" with a link to the tasks page when run is `awaiting_review`
+- [x] 8.4 Add "Tasks" to the sub-navigation links in the run viewer
 
 ## 9. Testing
 

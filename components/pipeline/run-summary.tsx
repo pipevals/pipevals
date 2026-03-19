@@ -48,6 +48,11 @@ const STATUS_DISPLAY: Record<
     className:
       "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
+  awaiting_review: {
+    label: "Awaiting review",
+    className:
+      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  },
 };
 
 function Stat({
@@ -113,7 +118,22 @@ export function RunSummary() {
 
   const isCancellable = isCancellableRunStatus(run.status);
   const statusDisplay = STATUS_DISPLAY[run.status];
-  const duration = computeDuration(run.startedAt, run.completedAt, run.status === "running");
+  const isAwaitingReview = run.status === "awaiting_review";
+  const duration = computeDuration(
+    run.startedAt,
+    run.completedAt,
+    run.status === "running" || isAwaitingReview,
+  );
+
+  // Find the step label that is awaiting review
+  const awaitingStepLabel = isAwaitingReview
+    ? (() => {
+        const sr = run.stepResults.find((s) => s.status === "awaiting_review");
+        if (!sr) return null;
+        const node = run.graphSnapshot.nodes.find((n) => n.id === sr.nodeId);
+        return (node as { label?: string })?.label ?? null;
+      })()
+    : null;
 
   const counts: Record<StepResultStatus, number> = {
     pending: 0,
@@ -121,6 +141,7 @@ export function RunSummary() {
     completed: 0,
     failed: 0,
     skipped: 0,
+    awaiting_review: 0,
   };
   for (const sr of run.stepResults) {
     counts[sr.status]++;
@@ -174,6 +195,16 @@ export function RunSummary() {
         <CancelButton pipelineId={run.pipelineId} runId={run.id} />
       )}
 
+      {isAwaitingReview && (
+        <Link
+          href={`/pipelines/${run.pipelineId}/tasks`}
+          className="flex items-center gap-1.5 rounded border border-amber-500/30 bg-amber-500/5 px-2 py-1 text-[11px] font-medium text-amber-600 hover:bg-amber-500/10 transition-colors dark:text-amber-400"
+        >
+          Waiting on: {awaitingStepLabel ?? "human review"}
+          <span className="text-[10px]">&rarr;</span>
+        </Link>
+      )}
+
       <div className="h-6 w-px bg-border" />
 
       <Stat label="Duration" value={duration} />
@@ -201,6 +232,13 @@ export function RunSummary() {
             label="Running"
             value={counts.running}
             className="text-blue-600 dark:text-blue-400"
+          />
+        )}
+        {counts.awaiting_review > 0 && (
+          <Stat
+            label="Reviewing"
+            value={counts.awaiting_review}
+            className="text-amber-600 dark:text-amber-400"
           />
         )}
         <Stat

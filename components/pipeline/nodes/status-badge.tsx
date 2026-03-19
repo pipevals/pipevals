@@ -32,6 +32,11 @@ const statusConfig: Record<
     className: "border-muted-foreground/20 bg-muted/50 text-muted-foreground/60",
     icon: "—",
   },
+  awaiting_review: {
+    label: "Awaiting review",
+    className: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    icon: "◷",
+  },
 };
 
 export function StatusBadge({ status }: { status: StepResultStatus }) {
