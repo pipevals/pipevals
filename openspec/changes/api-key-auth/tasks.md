@@ -18,10 +18,10 @@
 
 ## 4. Test Setup & Tests
 
-- [ ] 4.1 Add the `apiKey` plugin to test auth instances in `lib/pipeline/__tests__/api/setup.ts`
-- [ ] 4.2 Add a test helper to create an API key for a test user
-- [ ] 4.3 Write tests: API key auth succeeds on the runs endpoint with a valid key
-- [ ] 4.4 Write tests: API key auth returns 401 with an invalid/expired/disabled key
-- [ ] 4.5 Write tests: API key auth returns 404 when the user is not a member of the pipeline's org
-- [ ] 4.6 Write tests: API key auth returns 403 when the user has the guest role
-- [ ] 4.7 Write tests: API key auth is rejected on non-whitelisted endpoints (e.g., PUT /api/pipelines/:id)
+- [x] 4.1 Add the `apiKey` plugin to test auth instances in `lib/pipeline/__tests__/api/setup.ts`
+- [x] 4.2 Add a test helper to create an API key for a test user
+- [x] 4.3 Write tests: API key auth succeeds on the runs endpoint with a valid key
+- [x] 4.4 Write tests: API key auth returns 401 with an invalid/expired/disabled key
+- [x] 4.5 Write tests: API key auth returns 404 when the user is not a member of the pipeline's org
+- [x] 4.6 Write tests: API key auth returns 403 when the user has the guest role
+- [x] 4.7 Write tests: API key auth is rejected on non-whitelisted endpoints (e.g., PUT /api/pipelines/:id)

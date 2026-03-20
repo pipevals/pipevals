@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization, admin, testUtils } from "better-auth/plugins";
+import { apiKey } from "@better-auth/api-key";
 import type { TestHelpers } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
 import { guestRole, createGuestHooks } from "@/lib/auth-guest";
@@ -15,7 +16,7 @@ function createAuth(db: DrizzleDb, baseURL = "http://localhost:3000") {
     secret: "test-secret-at-least-32-characters-long",
     baseURL,
     database: drizzleAdapter(db, { provider: "pg" }),
-    plugins: [organization(), admin(), testUtils()],
+    plugins: [organization(), admin(), apiKey({ apiKeyHeaders: ["x-api-key"] }), testUtils()],
   });
 }
 
@@ -70,6 +71,7 @@ function createAuthWithGuestHooks(db: DrizzleDb, baseURL: string) {
     plugins: [
       organization({ roles: { guest: guestRole } }),
       admin(),
+      apiKey({ apiKeyHeaders: ["x-api-key"] }),
       testUtils(),
     ],
   });
@@ -239,4 +241,26 @@ export async function createGuestInOrg(organizationId: string): Promise<{
     userId: savedUser.id,
     headers: loginResult.headers,
   };
+}
+
+/**
+ * Creates an API key for a user and returns headers with the x-api-key set.
+ * Requires the user to have a session (pass their login headers).
+ */
+export async function createApiKeyForUser(sessionHeaders: Headers): Promise<{
+  key: string;
+  apiKeyHeaders: Headers;
+}> {
+  const { auth } = await setupTestDb();
+
+  const result = await (auth.api as any).createApiKey({
+    headers: sessionHeaders,
+    body: { name: "test-key" },
+  });
+
+  const key = result.key as string;
+  const apiKeyHeaders = new Headers();
+  apiKeyHeaders.set("x-api-key", key);
+
+  return { key, apiKeyHeaders };
 }
