@@ -177,18 +177,30 @@ type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolea
  * Pass `{ withRole: true }` to include role in the result.
  * Also accepts `true` as shorthand for `{ withGraph: true }` (backward compat).
  */
+// Overloads with `apiKey: true` include ApiKeyPipelineResult (no session).
+// Overloads without it return session-based results only.
+// TS resolves top-to-bottom, so `options: true` (backward-compat shorthand)
+// skips the first overload (requires object with apiKey: true) and matches the second.
 export async function requirePipeline(
   pipelineId: string,
-  options: true | { withGraph: true; write?: boolean; withRole?: boolean; apiKey?: boolean },
+  options: { withGraph: true; write?: boolean; withRole?: boolean; apiKey: true },
 ): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph }) | ApiKeyPipelineResult<PipelineWithGraph>>;
 export async function requirePipeline(
   pipelineId: string,
-  options: { withGraph?: false; write?: boolean; withRole: true; apiKey?: boolean },
+  options: true | { withGraph: true; write?: boolean; withRole?: boolean; apiKey?: false },
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph })>;
+export async function requirePipeline(
+  pipelineId: string,
+  options: { withGraph?: false; write?: boolean; withRole: true; apiKey: true },
 ): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow }) | ApiKeyPipelineResult<PipelineRow>>;
 export async function requirePipeline(
   pipelineId: string,
-  options?: false | { withGraph?: false; write?: boolean; withRole?: false; apiKey?: boolean },
-): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow }) | ApiKeyPipelineResult<PipelineRow>>;
+  options: { withGraph?: false; write?: boolean; withRole: true; apiKey?: false },
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow })>;
+export async function requirePipeline(
+  pipelineId: string,
+  options?: false | { withGraph?: false; write?: boolean; withRole?: false; apiKey?: false },
+): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow })>;
 export async function requirePipeline(
   pipelineId: string,
   options?: boolean | PipelineOptions,

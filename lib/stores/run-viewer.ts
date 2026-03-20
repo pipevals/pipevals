@@ -50,6 +50,7 @@ interface GraphSnapshot {
     id: string;
     type: string;
     label: string | null;
+    slug?: string | null;
     config: Record<string, unknown>;
     positionX: number;
     positionY: number;
@@ -175,6 +176,7 @@ export function snapshotToFlow(
     position: { x: n.positionX, y: n.positionY },
     data: {
       label: n.label,
+      slug: n.slug ?? null,
       config: n.config,
       stepStatus: statusMap[n.id] ?? ("pending" as StepResultStatus),
     },
