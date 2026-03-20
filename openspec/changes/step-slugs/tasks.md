@@ -1,9 +1,9 @@
 ## 1. Slug Utility & Validation
 
-- [ ] 1.1 Add `stepSlugify(name: string): string` to `lib/slugify.ts` — lowercase, replace non-alphanumeric runs with `_`, trim leading/trailing `_`, return `""` for empty input
-- [ ] 1.2 Add `validateNodeSlugs(nodes: { id: string; slug: string | null }[]): string[]` to a new `lib/pipeline/validate-slugs.ts` — format check, uniqueness check, null passthrough
-- [ ] 1.3 Write tests for `stepSlugify` (simple label, spaces, special chars, empty, only special chars)
-- [ ] 1.4 Write tests for `validateNodeSlugs` (valid unique, duplicates, invalid format, empty string, null slugs, mixed)
+- [x] 1.1 Add `stepSlugify(name: string): string` to `lib/slugify.ts` — lowercase, replace non-alphanumeric runs with `_`, trim leading/trailing `_`, return `""` for empty input
+- [x] 1.2 Add `validateNodeSlugs(nodes: { id: string; slug: string | null }[]): string[]` to a new `lib/pipeline/validate-slugs.ts` — format check, uniqueness check, null passthrough
+- [x] 1.3 Write tests for `stepSlugify` (simple label, spaces, special chars, empty, only special chars)
+- [x] 1.4 Write tests for `validateNodeSlugs` (valid unique, duplicates, invalid format, empty string, null slugs, mixed)
 
 ## 2. Database Schema
 
