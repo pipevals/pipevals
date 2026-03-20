@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Key01Icon, MoreHorizontalIcon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { authClient } from "@/lib/auth-client";
 import { formatDateTime } from "@/lib/format";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -71,6 +72,7 @@ function toISOString(date: string | Date | null): string | null {
 }
 
 export function ApiKeyTable() {
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const [keys, setKeys] = useState<ApiKeyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -126,7 +128,7 @@ export function ApiKeyTable() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Button size="sm" onClick={() => setCreateOpen(true)} disabled={readOnly}>
               Create API Key
             </Button>
           </EmptyContent>
@@ -143,7 +145,7 @@ export function ApiKeyTable() {
   return (
     <>
       <div className="mb-4 flex items-center justify-end">
-        <Button size="sm" onClick={() => setCreateOpen(true)}>
+        <Button size="sm" onClick={() => setCreateOpen(true)} disabled={readOnly}>
           Create API Key
         </Button>
       </div>
@@ -204,6 +206,7 @@ export function ApiKeyTable() {
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onClick={() => setRevokeTarget(k)}
+                          disabled={readOnly}
                         >
                           <HugeiconsIcon icon={Delete02Icon} size={16} />
                           Revoke

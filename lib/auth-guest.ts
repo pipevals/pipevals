@@ -16,11 +16,22 @@ export const GUEST_ALLOWED_ORG_PATHS = new Set([
   "/organization/get-active-member-role",
 ]);
 
+/** API key write endpoints that guests must not access. */
+const GUEST_BLOCKED_API_KEY_PATHS = new Set([
+  "/api-key/create",
+  "/api-key/delete",
+  "/api-key/delete-all-expired-api-keys",
+  "/api-key/update",
+]);
+
 export function createGuestHooks(db: PgDatabase<any, typeof schema>) {
   return {
     before: createAuthMiddleware(async (ctx) => {
-      if (!ctx.path.startsWith("/organization/")) return;
-      if (GUEST_ALLOWED_ORG_PATHS.has(ctx.path)) return;
+      const isOrgPath = ctx.path.startsWith("/organization/");
+      const isBlockedApiKeyPath = GUEST_BLOCKED_API_KEY_PATHS.has(ctx.path);
+
+      if (!isOrgPath && !isBlockedApiKeyPath) return;
+      if (isOrgPath && GUEST_ALLOWED_ORG_PATHS.has(ctx.path)) return;
 
       const session = await getSessionFromCtx(ctx);
       if (!session) return;
