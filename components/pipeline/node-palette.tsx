@@ -4,6 +4,11 @@ import type { StepType } from "@/lib/pipeline/types";
 import { cn } from "@/lib/utils";
 import type { DragEvent } from "react";
 import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PaletteEntry {
   type: StepType;
@@ -11,6 +16,7 @@ interface PaletteEntry {
   icon: string;
   color: string;
   description: string;
+  disabled?: boolean;
 }
 
 interface PaletteCategory {
@@ -28,6 +34,7 @@ const categories: PaletteCategory[] = [
         icon: "A",
         color: "bg-blue-600",
         description: "Make an HTTP request",
+        disabled: true,
       },
       {
         type: "ai_sdk",
@@ -42,6 +49,7 @@ const categories: PaletteCategory[] = [
         icon: "S",
         color: "bg-amber-600",
         description: "Execute code in a sandbox",
+        disabled: true,
       },
     ],
   },
@@ -54,6 +62,7 @@ const categories: PaletteCategory[] = [
         icon: "?",
         color: "bg-emerald-600",
         description: "Branch based on a condition",
+        disabled: true,
       },
       {
         type: "transform",
@@ -113,36 +122,55 @@ export function NodePalette() {
             <div className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground first:pt-1">
               {category.name}
             </div>
-            {category.entries.map((entry) => (
-              <div
-                key={entry.type}
-                draggable={!readOnly}
-                onDragStart={(e) => onDragStart(e, entry.type)}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 transition-colors",
-                  readOnly
-                    ? "cursor-default opacity-50"
-                    : "cursor-grab hover:border-border hover:bg-muted/50 active:cursor-grabbing",
-                )}
-              >
+            {category.entries.map((entry) => {
+              const isDisabled = entry.disabled || readOnly;
+              const node = (
                 <div
+                  key={entry.type}
+                  draggable={!isDisabled}
+                  onDragStart={(e) => !entry.disabled && onDragStart(e, entry.type)}
                   className={cn(
-                    "flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white",
-                    entry.color,
+                    "flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 transition-colors",
+                    entry.disabled
+                      ? "cursor-default opacity-40"
+                      : readOnly
+                        ? "cursor-default opacity-50"
+                        : "cursor-grab hover:border-border hover:bg-muted/50 active:cursor-grabbing",
                   )}
                 >
-                  {entry.icon}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-xs font-medium text-foreground">
-                    {entry.label}
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white",
+                      entry.color,
+                      entry.disabled && "grayscale",
+                    )}
+                  >
+                    {entry.icon}
                   </div>
-                  <div className="truncate text-[10px] text-muted-foreground">
-                    {entry.description}
+                  <div className="min-w-0">
+                    <div className="truncate text-xs font-medium text-foreground">
+                      {entry.label}
+                    </div>
+                    <div className="truncate text-[10px] text-muted-foreground">
+                      {entry.disabled ? "Coming soon" : entry.description}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+
+              if (entry.disabled) {
+                return (
+                  <Tooltip key={entry.type}>
+                    <TooltipTrigger asChild>{node}</TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Soon&trade;</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return node;
+            })}
           </div>
         ))}
       </div>
