@@ -9,10 +9,10 @@
 
 ## 3. API Keys Page
 
-- [ ] 3.1 Create `app/settings/api-keys/page.tsx` — server component shell that renders the client component
-- [ ] 3.2 Create `components/settings/api-key-table.tsx` — client component that fetches keys via `authClient.apiKey.list()` and renders a Table with name, prefix, created, expires, and status columns
-- [ ] 3.3 Add empty state when no keys exist using the `Empty` component with a "Create API Key" CTA
-- [ ] 3.4 Add status Badge per row — "Active" (default) or "Expired" (when `expiresAt` is in the past)
+- [x] 3.1 Create `app/settings/api-keys/page.tsx` — server component shell that renders the client component
+- [x] 3.2 Create `components/settings/api-key-table.tsx` — client component that fetches keys via `authClient.apiKey.list()` and renders a Table with name, prefix, created, expires, and status columns
+- [x] 3.3 Add empty state when no keys exist using the `Empty` component with a "Create API Key" CTA
+- [x] 3.4 Add status Badge per row — "Active" (default) or "Expired" (when `expiresAt` is in the past)
 
 ## 4. Create Key Dialog
 
@@ -23,8 +23,8 @@
 
 ## 5. Revoke Key
 
-- [ ] 5.1 Add a DropdownMenu to each table row with a "Revoke" action
-- [ ] 5.2 Wire the Revoke action to an AlertDialog confirmation that calls `authClient.apiKey.delete()` and removes the key from the list on success
+- [x] 5.1 Add a DropdownMenu to each table row with a "Revoke" action
+- [x] 5.2 Wire the Revoke action to an AlertDialog confirmation that calls `authClient.apiKey.delete()` and removes the key from the list on success
 
 ## 6. Curl Command API Key Injection
 
