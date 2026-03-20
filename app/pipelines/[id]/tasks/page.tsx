@@ -12,14 +12,14 @@ export default async function TasksPage({
 }) {
   const { id } = await params;
 
-  const result = await requirePipeline(id);
+  const result = await requirePipeline(id, { withRole: true });
   if ("error" in result) redirect("/pipelines");
 
-  const { pipeline, session, role, orgName } = result;
+  const { pipeline, session, role } = result;
 
   return (
     <div className="flex min-h-screen flex-col">
-      <RoleInit role={role} orgName={orgName} />
+      <RoleInit role={role} />
       <AppHeader user={session.user} />
       <PipelineSubNav pipelineId={id} pipelineSlug={pipeline.slug} />
       <TasksPageContent pipelineId={id} />

@@ -48,7 +48,7 @@ import {
 import type { PipelineSummary, TemplateSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 
 function TemplateCard({
   template,
@@ -94,7 +94,7 @@ interface PipelineListProps {
 }
 
 export function PipelineList({ initialPipelines, templates }: PipelineListProps) {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const [pipelines, setPipelines] = useState(initialPipelines);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");

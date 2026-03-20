@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { useOrgRoleStore } from "@/lib/stores/org-role";
 import { signOut } from "@/lib/auth-client";
 
@@ -58,7 +59,6 @@ interface AppHeaderProps {
 export function AppHeader({ user }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const orgName = useOrgRoleStore((s) => s.orgName);
   const role = useOrgRoleStore((s) => s.role);
 
   const initials = user?.name
@@ -122,12 +122,19 @@ export function AppHeader({ user }: AppHeaderProps) {
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col gap-0.5">
-                  {user.name && (
-                    <p className="text-sm font-medium">{user.name}</p>
-                  )}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    {user.name && (
+                      <p className="text-sm font-medium">{user.name}</p>
+                    )}
+                    {role && (
+                      <Badge variant="secondary" className="text-[10px] capitalize">
+                        {role}
+                      </Badge>
+                    )}
+                  </div>
                   {user.email && (
                     <p className="text-xs text-muted-foreground truncate">
                       {user.email}
@@ -135,21 +142,6 @@ export function AppHeader({ user }: AppHeaderProps) {
                   )}
                 </div>
               </DropdownMenuLabel>
-              {orgName && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs truncate">{orgName}</span>
-                      {role && (
-                        <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                          {role}
-                        </span>
-                      )}
-                    </div>
-                  </DropdownMenuLabel>
-                </>
-              )}
               <DropdownMenuSeparator />
               <ThemeMenuItems />
               <DropdownMenuSeparator />

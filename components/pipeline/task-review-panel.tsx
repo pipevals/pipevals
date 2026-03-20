@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import type { RubricField } from "@/lib/pipeline/types";
 import { useTaskReviewStore } from "@/lib/stores/task-review";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 import { TaskDisplayData } from "./task-display-data";
 import { TaskScoringForm, TaskScoringReadonly } from "./task-scoring-form";
 
@@ -43,7 +43,7 @@ export function TaskReviewPanel({
 }: {
   onSubmitted: () => void;
 }) {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const taskId = useTaskReviewStore((s) => s.selectedTaskId)!;
   const allTasks = useTaskReviewStore((s) => s.tasks);
 

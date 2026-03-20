@@ -1,13 +1,15 @@
 import { create } from "zustand";
 
 interface OrgRoleState {
-  readOnly: boolean;
   role: string;
-  orgName: string;
 }
 
 export const useOrgRoleStore = create<OrgRoleState>(() => ({
-  readOnly: false,
   role: "",
-  orgName: "",
 }));
+
+const READ_ONLY_ROLES = new Set(["guest"]);
+
+export function selectReadOnly(s: OrgRoleState) {
+  return READ_ONLY_ROLES.has(s.role);
+}

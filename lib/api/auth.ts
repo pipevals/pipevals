@@ -14,21 +14,27 @@ import { headers } from "next/headers";
 import { isAutoInviteEnabled } from "@/lib/auto-invite";
 
 type AuthError = { error: NextResponse };
-type AuthSuccess = {
+type AuthSuccessBase = {
   session: Awaited<ReturnType<typeof auth.api.getSession>> & {};
   userId: string;
   organizationId: string;
-  role: string;
-  orgName: string;
 };
+type AuthSuccessFull = AuthSuccessBase & {
+  role: string;
+};
+type AuthSuccess = AuthSuccessBase | AuthSuccessFull;
 
-type AuthOptions = { write?: boolean };
+type AuthOptions = { write?: boolean; withRole?: boolean };
 
 /**
  * Gets the authenticated session with an active organization.
- * Returns the session or a 401/403 Response.
- * Pass `{ write: true }` to block guest users from mutation endpoints.
+ *
+ * Without options: fast path — session + org check only, no DB query.
+ * With `{ write: true }`: queries member table, blocks guests with 403.
+ * With `{ withRole: true }`: queries member table, returns role.
  */
+export async function requireAuth(): Promise<AuthError | AuthSuccessBase>;
+export async function requireAuth(options: AuthOptions): Promise<AuthError | AuthSuccessFull>;
 export async function requireAuth(
   options?: AuthOptions,
 ): Promise<AuthError | AuthSuccess> {
@@ -50,9 +56,12 @@ export async function requireAuth(
     };
   }
 
+  const base: AuthSuccessBase = { session, userId: session.user.id, organizationId };
+
+  if (!options) return base;
+
   const membership = await db.query.member.findFirst({
     where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
-    with: { organization: { columns: { name: true } } },
   });
 
   if (!membership) {
@@ -64,7 +73,7 @@ export async function requireAuth(
     };
   }
 
-  if (options?.write && membership.role === "guest") {
+  if (options.write && membership.role === "guest") {
     return {
       error: NextResponse.json(
         { error: "Insufficient permissions" },
@@ -73,13 +82,7 @@ export async function requireAuth(
     };
   }
 
-  return {
-    session,
-    userId: session.user.id,
-    organizationId,
-    role: membership.role,
-    orgName: membership.organization.name,
-  };
+  return { ...base, role: membership.role };
 }
 
 /**
@@ -92,19 +95,14 @@ export async function requireSessionWithOrg() {
   if (!session) redirect("/sign-in");
 
   let organizationId = session.session.activeOrganizationId;
-  let role: string | undefined;
-  let orgName: string | undefined;
 
   if (!organizationId && isAutoInviteEnabled()) {
-    const membership = await db.query.member.findFirst({
+    const anyMembership = await db.query.member.findFirst({
       where: eq(member.userId, session.user.id),
-      with: { organization: { columns: { name: true } } },
     });
-    if (!membership) redirect("/sign-in");
+    if (!anyMembership) redirect("/sign-in");
 
-    organizationId = membership.organizationId;
-    role = membership.role;
-    orgName = membership.organization.name;
+    organizationId = anyMembership.organizationId;
     await auth.api.setActiveOrganization({
       headers: reqHeaders,
       body: { organizationId },
@@ -113,17 +111,12 @@ export async function requireSessionWithOrg() {
 
   if (!organizationId) redirect("/sign-in");
 
-  if (!role) {
-    const membership = await db.query.member.findFirst({
-      where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
-      with: { organization: { columns: { name: true } } },
-    });
-    if (!membership) redirect("/sign-in");
-    role = membership.role;
-    orgName = membership.organization.name;
-  }
+  const membership = await db.query.member.findFirst({
+    where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+  });
+  if (!membership) redirect("/sign-in");
 
-  return { session, user: session.user, organizationId, role, orgName: orgName! };
+  return { session, user: session.user, organizationId, role: membership.role };
 }
 
 type PipelineRow = typeof pipelines.$inferSelect;
@@ -131,23 +124,28 @@ type NodeRow = typeof pipelineNodes.$inferSelect;
 type EdgeRow = typeof pipelineEdges.$inferSelect;
 
 type PipelineWithGraph = PipelineRow & { nodes: NodeRow[]; edges: EdgeRow[] };
-type PipelineOptions = { withGraph?: boolean; write?: boolean };
+type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolean };
 
 /**
  * Auth + pipeline ownership check. Returns 401/403/404 or the pipeline
  * scoped to the user's active organization.
  * Pass `{ withGraph: true }` to include nodes and edges.
  * Pass `{ write: true }` to block guest users.
+ * Pass `{ withRole: true }` to include role in the result.
  * Also accepts `true` as shorthand for `{ withGraph: true }` (backward compat).
  */
 export async function requirePipeline(
   pipelineId: string,
-  options: true | { withGraph: true; write?: boolean },
-): Promise<AuthError | (AuthSuccess & { pipeline: PipelineWithGraph })>;
+  options: true | { withGraph: true; write?: boolean; withRole?: boolean },
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph })>;
 export async function requirePipeline(
   pipelineId: string,
-  options?: false | { withGraph?: false; write?: boolean },
-): Promise<AuthError | (AuthSuccess & { pipeline: PipelineRow })>;
+  options: { withGraph?: false; write?: boolean; withRole: true },
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow })>;
+export async function requirePipeline(
+  pipelineId: string,
+  options?: false | { withGraph?: false; write?: boolean; withRole?: false },
+): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow })>;
 export async function requirePipeline(
   pipelineId: string,
   options?: boolean | PipelineOptions,
@@ -155,7 +153,10 @@ export async function requirePipeline(
   const opts: PipelineOptions =
     typeof options === "boolean" ? { withGraph: options } : options ?? {};
 
-  const authResult = await requireAuth(opts.write ? { write: true } : undefined);
+  const needsMember = opts.write || opts.withRole;
+  const authResult = needsMember
+    ? await requireAuth({ write: opts.write, withRole: opts.withRole })
+    : await requireAuth();
   if ("error" in authResult) return authResult;
 
   const where = and(
@@ -190,7 +191,9 @@ export async function requireDataset(
   datasetId: string,
   options?: AuthOptions,
 ): Promise<AuthError | (AuthSuccess & { dataset: DatasetRow })> {
-  const authResult = await requireAuth(options?.write ? { write: true } : undefined);
+  const authResult = options?.write
+    ? await requireAuth({ write: true })
+    : await requireAuth();
   if ("error" in authResult) return authResult;
 
   const where = and(

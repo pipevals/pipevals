@@ -3,7 +3,7 @@
 import type { StepType } from "@/lib/pipeline/types";
 import { cn } from "@/lib/utils";
 import type { DragEvent } from "react";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 
 interface PaletteEntry {
   type: StepType;
@@ -98,7 +98,7 @@ function onDragStart(event: DragEvent, type: StepType) {
 }
 
 export function NodePalette() {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-background">
       <div className="border-b border-border px-4 py-3">

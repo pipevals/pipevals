@@ -52,14 +52,14 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { DatasetSummary } from "@/lib/api/datasets";
 import { handleApiError } from "@/lib/handle-api-error";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 
 interface DatasetListProps {
   initialDatasets: DatasetSummary[];
 }
 
 export function DatasetList({ initialDatasets }: DatasetListProps) {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const router = useRouter();
   const [datasets, setDatasets] = useState(initialDatasets);
   const [search, setSearch] = useState("");

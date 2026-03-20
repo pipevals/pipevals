@@ -24,13 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PipelineEditorPage({ params }: Props) {
   const { id } = await params;
 
-  const result = await requirePipeline(id);
+  const result = await requirePipeline(id, { withRole: true });
   if ("error" in result) redirect("/pipelines");
 
-  const { pipeline, session, role, orgName } = result;
+  const { pipeline, session, role } = result;
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <RoleInit role={role} orgName={orgName} />
+      <RoleInit role={role} />
       <AppHeader user={session.user} />
       <PipelineSubNav
         pipelineId={id}

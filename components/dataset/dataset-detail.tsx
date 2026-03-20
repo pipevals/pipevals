@@ -46,14 +46,14 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { CheckmarkCircle01Icon, Copy01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import type { DatasetWithItems, DatasetItem } from "@/lib/api/datasets";
 import { handleApiError } from "@/lib/handle-api-error";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 
 interface DatasetDetailProps {
   dataset: DatasetWithItems;
 }
 
 export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const [items, setItems] = useState<DatasetItem[]>(initial.items);
   const [addingItems, setAddingItems] = useState(false);
   const [idCopied, setIdCopied] = useState(false);

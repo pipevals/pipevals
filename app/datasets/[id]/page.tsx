@@ -22,14 +22,14 @@ export default async function DatasetDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { user, organizationId, role, orgName } = await requireSessionWithOrg();
+  const { user, organizationId, role } = await requireSessionWithOrg();
 
   const dataset = await getDatasetWithItems(id);
   if (!dataset || dataset.organizationId !== organizationId) notFound();
 
   return (
     <div className="flex min-h-screen flex-col">
-      <RoleInit role={role} orgName={orgName} />
+      <RoleInit role={role} />
       <AppHeader user={user} />
       <DatasetDetail dataset={dataset} />
     </div>

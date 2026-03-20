@@ -11,11 +11,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
-import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { useOrgRoleStore, selectReadOnly } from "@/lib/stores/org-role";
 import { SaveAsTemplateDialog } from "./save-as-template-dialog";
 
 export function PipelineToolbar() {
-  const readOnly = useOrgRoleStore((s) => s.readOnly);
+  const readOnly = useOrgRoleStore(selectReadOnly);
   const pipelineId = usePipelineBuilderStore((s) => s.pipelineId);
   const dirty = usePipelineBuilderStore((s) => s.dirty);
   const saving = usePipelineBuilderStore((s) => s.saving);
