@@ -7,10 +7,10 @@
 
 ## 2. Auth Layer
 
-- [ ] 2.1 Determine whether the `apiKey` plugin hooks into `getSession()` automatically or requires a separate `verifyApiKey()` call (resolve the open question from design.md)
-- [ ] 2.2 Extend `requireAuth()` in `lib/api/auth.ts` to accept an `apiKey` boolean option — when true and `x-api-key` header is present, verify the key and return the userId; when false or unset, ignore the header entirely
-- [ ] 2.3 Extend `requirePipeline()` to handle API key auth: look up pipeline by ID (without org scoping), infer `organizationId` from the pipeline, verify the user's membership and role in that org
-- [ ] 2.4 Ensure non-whitelisted routes reject API key sessions even if the plugin auto-resolves them via `getSession()`
+- [x] 2.1 Determine whether the `apiKey` plugin hooks into `getSession()` automatically or requires a separate `verifyApiKey()` call (resolve the open question from design.md)
+- [x] 2.2 Extend `requireAuth()` in `lib/api/auth.ts` to accept an `apiKey` boolean option — when true and `x-api-key` header is present, verify the key and return the userId; when false or unset, ignore the header entirely
+- [x] 2.3 Extend `requirePipeline()` to handle API key auth: look up pipeline by ID (without org scoping), infer `organizationId` from the pipeline, verify the user's membership and role in that org
+- [x] 2.4 Ensure non-whitelisted routes reject API key sessions even if the plugin auto-resolves them via `getSession()`
 
 ## 3. Route Integration
 

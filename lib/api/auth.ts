@@ -24,7 +24,30 @@ type AuthSuccessFull = AuthSuccessBase & {
 };
 type AuthSuccess = AuthSuccessBase | AuthSuccessFull;
 
-type AuthOptions = { write?: boolean; withRole?: boolean };
+/** Result from API key verification — no session, org inferred later. */
+type ApiKeyAuthResult = {
+  fromApiKey: true;
+  userId: string;
+  organizationId: null;
+};
+
+type AuthOptions = { write?: boolean; withRole?: boolean; apiKey?: boolean };
+
+/**
+ * Attempts API key authentication. Returns the verified userId or null.
+ */
+async function verifyApiKey(reqHeaders: Headers): Promise<ApiKeyAuthResult | null> {
+  const apiKeyHeader = reqHeaders.get("x-api-key");
+  if (!apiKeyHeader) return null;
+
+  const result = await auth.api.verifyApiKey({
+    body: { key: apiKeyHeader },
+  });
+
+  if (!result.valid || !result.key) return null;
+
+  return { fromApiKey: true, userId: result.key.referenceId, organizationId: null };
+}
 
 /**
  * Gets the authenticated session with an active organization.
@@ -32,14 +55,25 @@ type AuthOptions = { write?: boolean; withRole?: boolean };
  * Without options: fast path — session + org check only, no DB query.
  * With `{ write: true }`: queries member table, blocks guests with 403.
  * With `{ withRole: true }`: queries member table, returns role.
+ * With `{ apiKey: true }`: also accepts x-api-key header (org inferred later by caller).
  */
 export async function requireAuth(): Promise<AuthError | AuthSuccessBase>;
+export async function requireAuth(options: AuthOptions & { apiKey: true }): Promise<AuthError | AuthSuccessFull | ApiKeyAuthResult>;
 export async function requireAuth(options: AuthOptions): Promise<AuthError | AuthSuccessFull>;
 export async function requireAuth(
   options?: AuthOptions,
-): Promise<AuthError | AuthSuccess> {
+): Promise<AuthError | AuthSuccess | ApiKeyAuthResult> {
+  const reqHeaders = await headers();
+
+  // API key path: verify key, return userId (org inferred later by caller)
+  if (options?.apiKey) {
+    const apiKeyResult = await verifyApiKey(reqHeaders);
+    if (apiKeyResult) return apiKeyResult;
+    // Fall through to cookie auth if no x-api-key header present
+  }
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: reqHeaders,
   });
 
   if (!session) {
@@ -124,7 +158,7 @@ type NodeRow = typeof pipelineNodes.$inferSelect;
 type EdgeRow = typeof pipelineEdges.$inferSelect;
 
 type PipelineWithGraph = PipelineRow & { nodes: NodeRow[]; edges: EdgeRow[] };
-type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolean };
+type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolean; apiKey?: boolean };
 
 /**
  * Auth + pipeline ownership check. Returns 401/403/404 or the pipeline
@@ -154,11 +188,60 @@ export async function requirePipeline(
     typeof options === "boolean" ? { withGraph: options } : options ?? {};
 
   const needsMember = opts.write || opts.withRole;
-  const authResult = needsMember
-    ? await requireAuth({ write: opts.write, withRole: opts.withRole })
-    : await requireAuth();
+  const authResult = opts.apiKey
+    ? await requireAuth({ write: opts.write, withRole: opts.withRole, apiKey: true })
+    : needsMember
+      ? await requireAuth({ write: opts.write, withRole: opts.withRole })
+      : await requireAuth();
   if ("error" in authResult) return authResult;
 
+  // API key path: look up pipeline by ID, then verify membership in its org.
+  if ("fromApiKey" in authResult) {
+    const pipeline = opts.withGraph
+      ? await db.query.pipelines.findFirst({
+          where: eq(pipelines.id, pipelineId),
+          with: { nodes: true, edges: true },
+        })
+      : await db.query.pipelines.findFirst({
+          where: eq(pipelines.id, pipelineId),
+        });
+
+    if (!pipeline) {
+      return {
+        error: NextResponse.json({ error: "Pipeline not found" }, { status: 404 }),
+      };
+    }
+
+    const membership = await db.query.member.findFirst({
+      where: and(
+        eq(member.userId, authResult.userId),
+        eq(member.organizationId, pipeline.organizationId),
+      ),
+    });
+
+    if (!membership) {
+      return {
+        error: NextResponse.json({ error: "Pipeline not found" }, { status: 404 }),
+      };
+    }
+
+    if (opts.write && membership.role === "guest") {
+      return {
+        error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }),
+      };
+    }
+
+    const session = null as unknown as AuthSuccessBase["session"];
+    return {
+      session,
+      userId: authResult.userId,
+      organizationId: pipeline.organizationId,
+      role: membership.role,
+      pipeline,
+    };
+  }
+
+  // Cookie path: pipeline scoped to active org.
   const where = and(
     eq(pipelines.id, pipelineId),
     eq(pipelines.organizationId, authResult.organizationId),
