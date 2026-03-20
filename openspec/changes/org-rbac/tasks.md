@@ -1,9 +1,9 @@
 ## 1. Auth Helpers — Role Awareness
 
-- [ ] 1.1 Enhance `requireAuth()` in `lib/api/auth.ts` to query the `member` table and return `role` in the result. Accept optional `{ write: true }` option that returns 403 for guests.
-- [ ] 1.2 Update `requirePipeline()` signature to accept `{ write: true }` option (replacing the `withGraph` boolean with an options object) and gate on guest role when set.
-- [ ] 1.3 Update `requireDataset()` signature to accept `{ write: true }` option and gate on guest role when set.
-- [ ] 1.4 Update `requireSessionWithOrg()` to query member role and return it alongside session, user, and organizationId.
+- [x] 1.1 Enhance `requireAuth()` in `lib/api/auth.ts` to query the `member` table and return `role` in the result. Accept optional `{ write: true }` option that returns 403 for guests.
+- [x] 1.2 Update `requirePipeline()` signature to accept `{ write: true }` option (replacing the `withGraph` boolean with an options object) and gate on guest role when set.
+- [x] 1.3 Update `requireDataset()` signature to accept `{ write: true }` option and gate on guest role when set.
+- [x] 1.4 Update `requireSessionWithOrg()` to query member role and return it alongside session, user, and organizationId.
 
 ## 2. Route Handlers — Apply Write Gating
 

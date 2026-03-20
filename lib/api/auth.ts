@@ -18,13 +18,19 @@ type AuthSuccess = {
   session: Awaited<ReturnType<typeof auth.api.getSession>> & {};
   userId: string;
   organizationId: string;
+  role: string;
 };
+
+type AuthOptions = { write?: boolean };
 
 /**
  * Gets the authenticated session with an active organization.
  * Returns the session or a 401/403 Response.
+ * Pass `{ write: true }` to block guest users from mutation endpoints.
  */
-export async function requireAuth(): Promise<AuthError | AuthSuccess> {
+export async function requireAuth(
+  options?: AuthOptions,
+): Promise<AuthError | AuthSuccess> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -43,10 +49,33 @@ export async function requireAuth(): Promise<AuthError | AuthSuccess> {
     };
   }
 
+  const membership = await db.query.member.findFirst({
+    where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+  });
+
+  if (!membership) {
+    return {
+      error: NextResponse.json(
+        { error: "Not a member of this organization" },
+        { status: 403 },
+      ),
+    };
+  }
+
+  if (options?.write && membership.role === "guest") {
+    return {
+      error: NextResponse.json(
+        { error: "Insufficient permissions" },
+        { status: 403 },
+      ),
+    };
+  }
+
   return {
     session,
     userId: session.user.id,
     organizationId,
+    role: membership.role,
   };
 }
 
@@ -60,6 +89,8 @@ export async function requireSessionWithOrg() {
   if (!session) redirect("/sign-in");
 
   let organizationId = session.session.activeOrganizationId;
+  let role: string | undefined;
+
   if (!organizationId && isAutoInviteEnabled()) {
     const membership = await db.query.member.findFirst({
       where: eq(member.userId, session.user.id),
@@ -67,6 +98,7 @@ export async function requireSessionWithOrg() {
     if (!membership) redirect("/sign-in");
 
     organizationId = membership.organizationId;
+    role = membership.role;
     await auth.api.setActiveOrganization({
       headers: reqHeaders,
       body: { organizationId },
@@ -75,27 +107,47 @@ export async function requireSessionWithOrg() {
 
   if (!organizationId) redirect("/sign-in");
 
-  return { session, user: session.user, organizationId };
+  if (!role) {
+    const membership = await db.query.member.findFirst({
+      where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+    });
+    if (!membership) redirect("/sign-in");
+    role = membership.role;
+  }
+
+  return { session, user: session.user, organizationId, role };
 }
 
 type PipelineRow = typeof pipelines.$inferSelect;
 type NodeRow = typeof pipelineNodes.$inferSelect;
 type EdgeRow = typeof pipelineEdges.$inferSelect;
 
-type PipelineFor<W extends boolean> = W extends true
-  ? PipelineRow & { nodes: NodeRow[]; edges: EdgeRow[] }
-  : PipelineRow;
+type PipelineWithGraph = PipelineRow & { nodes: NodeRow[]; edges: EdgeRow[] };
+type PipelineOptions = { withGraph?: boolean; write?: boolean };
 
 /**
  * Auth + pipeline ownership check. Returns 401/403/404 or the pipeline
  * scoped to the user's active organization.
- * Pass `true` as second arg to include nodes and edges.
+ * Pass `{ withGraph: true }` to include nodes and edges.
+ * Pass `{ write: true }` to block guest users.
+ * Also accepts `true` as shorthand for `{ withGraph: true }` (backward compat).
  */
-export async function requirePipeline<W extends boolean = false>(
+export async function requirePipeline(
   pipelineId: string,
-  withGraph?: W,
-): Promise<AuthError | (AuthSuccess & { pipeline: PipelineFor<W> })> {
-  const authResult = await requireAuth();
+  options: true | { withGraph: true; write?: boolean },
+): Promise<AuthError | (AuthSuccess & { pipeline: PipelineWithGraph })>;
+export async function requirePipeline(
+  pipelineId: string,
+  options?: false | { withGraph?: false; write?: boolean },
+): Promise<AuthError | (AuthSuccess & { pipeline: PipelineRow })>;
+export async function requirePipeline(
+  pipelineId: string,
+  options?: boolean | PipelineOptions,
+): Promise<AuthError | (AuthSuccess & { pipeline: PipelineRow | PipelineWithGraph })> {
+  const opts: PipelineOptions =
+    typeof options === "boolean" ? { withGraph: options } : options ?? {};
+
+  const authResult = await requireAuth(opts.write ? { write: true } : undefined);
   if ("error" in authResult) return authResult;
 
   const where = and(
@@ -103,7 +155,7 @@ export async function requirePipeline<W extends boolean = false>(
     eq(pipelines.organizationId, authResult.organizationId),
   );
 
-  const pipeline = withGraph
+  const pipeline = opts.withGraph
     ? await db.query.pipelines.findFirst({ where, with: { nodes: true, edges: true } })
     : await db.query.pipelines.findFirst({ where });
 
@@ -116,7 +168,7 @@ export async function requirePipeline<W extends boolean = false>(
     };
   }
 
-  return { ...authResult, pipeline } as AuthSuccess & { pipeline: PipelineFor<W> };
+  return { ...authResult, pipeline };
 }
 
 type DatasetRow = typeof datasets.$inferSelect;
@@ -124,11 +176,13 @@ type DatasetRow = typeof datasets.$inferSelect;
 /**
  * Auth + dataset ownership check. Returns 401/403/404 or the dataset
  * scoped to the user's active organization.
+ * Pass `{ write: true }` to block guest users.
  */
 export async function requireDataset(
   datasetId: string,
+  options?: AuthOptions,
 ): Promise<AuthError | (AuthSuccess & { dataset: DatasetRow })> {
-  const authResult = await requireAuth();
+  const authResult = await requireAuth(options?.write ? { write: true } : undefined);
   if ("error" in authResult) return authResult;
 
   const where = and(
