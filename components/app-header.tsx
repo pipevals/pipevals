@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons";
+import { Moon01Icon, Sun01Icon, WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -16,8 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const Logo = () => null;
 
 function ThemeMenuItems() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -68,16 +66,15 @@ export function AppHeader({ user }: AppHeaderProps) {
     : (user?.email?.[0]?.toUpperCase() ?? "?");
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-8">
-      <Link
-        href="/"
-        className="flex items-center gap-2.5 text-foreground hover:opacity-80 transition-opacity"
-      >
-        <Logo />
-        <span className="text-sm font-semibold tracking-tight">Pipevals</span>
-      </Link>
+    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-8">
+      <div className="flex items-center gap-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-foreground hover:opacity-80 transition-opacity"
+        >
+          <HugeiconsIcon icon={WorkflowSquare05Icon} size={18} />
+        </Link>
 
-      <div className="flex items-center gap-7">
         <nav className="flex items-center gap-5">
           {[
             { href: "/pipelines", label: "Pipelines" },
@@ -97,6 +94,9 @@ export function AppHeader({ user }: AppHeaderProps) {
             </Link>
           ))}
         </nav>
+      </div>
+
+      <div className="flex items-center">
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

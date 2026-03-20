@@ -17,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -38,8 +39,11 @@ import {
   BrowserIcon,
   CheckmarkCircle01Icon,
   Copy01Icon,
+  Delete02Icon,
+  MoreHorizontalIcon,
+  PencilEdit02Icon,
+  PlayIcon,
   Search01Icon,
-  WorkflowSquare05Icon,
 } from "@hugeicons/core-free-icons";
 import type { PipelineSummary, TemplateSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
@@ -199,17 +203,30 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
     <>
       <div className="border-b border-border bg-background">
         <div className="flex h-12 shrink-0 items-center justify-between px-8">
-          <h1 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <HugeiconsIcon icon={WorkflowSquare05Icon} size={16} />
-            Pipelines
-          </h1>
+          <div className="relative max-w-md flex-1">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={14}
+              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              aria-label="Search pipelines"
+              name="search"
+              autoComplete="off"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search pipelines…"
+              className="h-6 pl-7 text-xs"
+            />
+          </div>
           <Button onClick={() => setCreating(true)} size="sm">
             New Pipeline
           </Button>
         </div>
       </div>
 
-      <main className="px-8 py-8 flex flex-col gap-6">
+      <main className="px-8 py-6 flex flex-col gap-6">
         {/* Create form */}
         {creating && (
           <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
@@ -290,25 +307,6 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
             </div>
           </div>
         )}
-
-        {/* Search */}
-        <div className="relative max-w-md">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            size={14}
-            className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            aria-label="Search pipelines"
-            name="search"
-            autoComplete="off"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search pipelines…"
-            className="pl-7"
-          />
-        </div>
 
         {/* Error */}
         {error && !creating && (
@@ -391,75 +389,87 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
                       {p.description}
                     </span>
                   ) : (
-                    <span className="font-mono text-[11px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-sm bg-background">
+                    <span className="font-mono text-[11px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-sm bg-background w-fit">
                       POST /api/pipelines/{p.id}/runs
                     </span>
                   )}
                 </Link>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon-sm" variant="ghost" asChild>
+                        <Link href={`/pipelines/${p.id}/runs`}>
+                          <HugeiconsIcon icon={PlayIcon} size={14} />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Runs</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon-sm" variant="ghost" asChild>
+                        <Link href={`/pipelines/${p.id}`}>
+                          <HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit</TooltipContent>
+                  </Tooltip>
+
                   <DropdownMenu>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            aria-label="Copy curl command"
-                          >
-                            {copiedId === p.id ? (
-                              <HugeiconsIcon
-                                icon={CheckmarkCircle01Icon}
-                                size={14}
-                              />
-                            ) : (
-                              <HugeiconsIcon icon={Copy01Icon} size={14} />
-                            )}
+                          <Button size="icon-sm" variant="ghost">
+                            <HugeiconsIcon icon={MoreHorizontalIcon} size={14} />
                           </Button>
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent>Copy cURL command</TooltipContent>
+                      <TooltipContent>More actions</TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => copyCurl(p.id, "run")}>
+                        <HugeiconsIcon icon={copiedId === p.id ? CheckmarkCircle01Icon : Copy01Icon} size={14} />
                         Copy run cURL
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => copyCurl(p.id, "eval-run")}>
+                        <HugeiconsIcon icon={copiedId === p.id ? CheckmarkCircle01Icon : Copy01Icon} size={14} />
                         Copy eval run cURL
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <HugeiconsIcon icon={Delete02Icon} size={14} />
+                            Delete
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete pipeline?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              <strong>{p.name}</strong> and all its runs will be
+                              permanently deleted. This cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onDelete(p.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/pipelines/${p.id}/runs`}>Runs</Link>
-                  </Button>
-                  <Button size="sm" variant="ghost" asChild>
-                    <Link href={`/pipelines/${p.id}`}>Edit</Link>
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive">
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete pipeline?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <strong>{p.name}</strong> and all its runs will be
-                          permanently deleted. This cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => onDelete(p.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </div>
               </div>
             ))}

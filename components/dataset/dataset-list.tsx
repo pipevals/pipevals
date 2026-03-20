@@ -14,6 +14,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,7 +44,9 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BrowserIcon,
-  Database01Icon,
+  Delete02Icon,
+  MoreHorizontalIcon,
+  PencilEdit02Icon,
   Search01Icon,
   Delete01Icon,
 } from "@hugeicons/core-free-icons";
@@ -146,36 +160,30 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
     <>
       <div className="border-b border-border bg-background">
         <div className="flex h-12 shrink-0 items-center justify-between px-8">
-          <h1 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <HugeiconsIcon icon={Database01Icon} size={16} />
-            Datasets
-          </h1>
+          <div className="relative max-w-md flex-1">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={14}
+              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              aria-label="Search datasets"
+              name="search"
+              autoComplete="off"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search datasets..."
+              className="h-6 pl-7 text-xs"
+            />
+          </div>
           <Button onClick={() => setCreating(true)} size="sm">
             New Dataset
           </Button>
         </div>
       </div>
 
-      <main className="px-8 py-8 flex flex-col gap-6">
-        {/* Search */}
-        <div className="relative max-w-md">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            size={14}
-            className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            aria-label="Search datasets"
-            name="search"
-            autoComplete="off"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search datasets..."
-            className="pl-7"
-          />
-        </div>
-
+      <main className="px-8 py-6 flex flex-col gap-6">
         {/* Dataset list */}
         <div
           className={`flex flex-col ${filtered.length > 0 ? "border-t border-border" : ""}`}
@@ -235,32 +243,61 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
                 </span>
               </Link>
 
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" aria-label={`Delete ${d.name}`}>
-                      <HugeiconsIcon icon={Delete01Icon} size={14} />
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon-sm" variant="ghost" asChild>
+                      <Link href={`/datasets/${d.id}`}>
+                        <HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+                      </Link>
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete dataset?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <strong>{d.name}</strong> and all its items will be
-                        permanently deleted. This cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => onDelete(d.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
+
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon-sm" variant="ghost">
+                          <HugeiconsIcon icon={MoreHorizontalIcon} size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>More actions</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent align="end">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          <HugeiconsIcon icon={Delete02Icon} size={14} />
+                          Delete
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete dataset?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <strong>{d.name}</strong> and all its items will be
+                            permanently deleted. This cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onDelete(d.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ))}
