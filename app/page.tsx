@@ -181,11 +181,14 @@ export default function Home() {
                   without writing orchestration code.
                 </p>
               </div>
-              <div className="aspect-video bg-[#1a1c1e] border border-[#2d3135] flex items-center justify-center">
-                <span className="text-xs text-[#3f444a] uppercase tracking-widest">
-                  Demo video coming soon
-                </span>
-              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/build.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -207,11 +210,14 @@ export default function Home() {
                   step-by-step results you can inspect after.
                 </p>
               </div>
-              <div className="aspect-video bg-[#1a1c1e] border border-[#2d3135] flex items-center justify-center">
-                <span className="text-xs text-[#3f444a] uppercase tracking-widest">
-                  Demo video coming soon
-                </span>
-              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/run.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -233,11 +239,14 @@ export default function Home() {
                   all populated automatically from your pipeline runs.
                 </p>
               </div>
-              <div className="aspect-video bg-[#1a1c1e] border border-[#2d3135] flex items-center justify-center">
-                <span className="text-xs text-[#3f444a] uppercase tracking-widest">
-                  Demo video coming soon
-                </span>
-              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/measure.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
             </div>
           </div>
         </section>
