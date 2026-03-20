@@ -72,6 +72,7 @@ export interface RunData {
   triggerPayload: Record<string, unknown> | null;
   triggerSchema: Record<string, unknown>;
   graphSnapshot: GraphSnapshot;
+  workflowRunId: string | null;
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;

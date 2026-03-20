@@ -19,6 +19,14 @@ import {
   type RunStatus,
   type StepResultStatus,
 } from "@/lib/stores/run-viewer";
+import { getWorkflowRunUrl } from "@/lib/workflow-url";
+import { WorkflowIcon } from "@/components/icons/workflow-icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const STATUS_DISPLAY: Record<
   RunStatus,
@@ -135,6 +143,8 @@ export function RunSummary() {
       })()
     : null;
 
+  const workflowRunUrl = getWorkflowRunUrl(run.workflowRunId ?? null);
+
   const counts: Record<StepResultStatus, number> = {
     pending: 0,
     running: 0,
@@ -247,6 +257,27 @@ export function RunSummary() {
           className="text-foreground"
         />
       </div>
+
+      {workflowRunUrl && (
+        <>
+          <div className="h-6 w-px bg-border" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a
+                  href={workflowRunUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <WorkflowIcon className="h-3.5 w-3.5" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent>Inspect in Workflow DevKit</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </>
+      )}
 
       </div>
     </div>
