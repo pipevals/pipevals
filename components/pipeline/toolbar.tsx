@@ -11,9 +11,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePipelineBuilderStore } from "@/lib/stores/pipeline-builder";
+import { useOrgRoleStore } from "@/lib/stores/org-role";
 import { SaveAsTemplateDialog } from "./save-as-template-dialog";
 
 export function PipelineToolbar() {
+  const readOnly = useOrgRoleStore((s) => s.readOnly);
   const pipelineId = usePipelineBuilderStore((s) => s.pipelineId);
   const dirty = usePipelineBuilderStore((s) => s.dirty);
   const saving = usePipelineBuilderStore((s) => s.saving);
@@ -48,7 +50,7 @@ export function PipelineToolbar() {
             <Button
               size="sm"
               variant="outline"
-              disabled={dirty || saving}
+              disabled={dirty || saving || readOnly}
               onClick={() => setTemplateDialogOpen(true)}
             >
               Save as Template
@@ -72,7 +74,7 @@ export function PipelineToolbar() {
         size="sm"
         // Error is surfaced via saveError state — catch prevents unhandled rejection
         onClick={() => save().catch(() => {})}
-        disabled={!dirty || saving}
+        disabled={!dirty || saving || readOnly}
         className="gap-1.5"
       >
         <HugeiconsIcon icon={Rocket01Icon} size={12} aria-hidden />

@@ -24,11 +24,11 @@
 
 ## 3. Pages — Pass Role and Disable Mutation UI
 
-- [ ] 3.1 `/pipelines` page — pass `role` from `requireSessionWithOrg()`, disable "New Pipeline" button for guests
-- [ ] 3.2 `/pipelines/[id]` page — pass `role`, disable save, node add, and delete controls for guests
-- [ ] 3.3 `/pipelines/[id]/tasks` page — pass `role`, disable task submit button for guests
-- [ ] 3.4 `/datasets` page — pass `role` from `requireSessionWithOrg()`, disable "New Dataset" button for guests
-- [ ] 3.5 `/datasets/[id]` page — pass `role`, disable edit name, add item, and delete item controls for guests
+- [x] 3.1 `/pipelines` page — pass `role` from `requireSessionWithOrg()`, disable "New Pipeline" button for guests
+- [x] 3.2 `/pipelines/[id]` page — pass `role`, disable save, node add, and delete controls for guests
+- [x] 3.3 `/pipelines/[id]/tasks` page — pass `role`, disable task submit button for guests
+- [x] 3.4 `/datasets` page — pass `role` from `requireSessionWithOrg()`, disable "New Dataset" button for guests
+- [x] 3.5 `/datasets/[id]` page — pass `role`, disable edit name, add item, and delete item controls for guests
 
 ## 4. Tests
 

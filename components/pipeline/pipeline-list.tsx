@@ -48,6 +48,7 @@ import {
 import type { PipelineSummary, TemplateSummary } from "@/lib/api/pipelines";
 import { handleApiError } from "@/lib/handle-api-error";
 import { slugify } from "@/lib/slugify";
+import { useOrgRoleStore } from "@/lib/stores/org-role";
 
 function TemplateCard({
   template,
@@ -93,6 +94,7 @@ interface PipelineListProps {
 }
 
 export function PipelineList({ initialPipelines, templates }: PipelineListProps) {
+  const readOnly = useOrgRoleStore((s) => s.readOnly);
   const [pipelines, setPipelines] = useState(initialPipelines);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -220,7 +222,7 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
               className="h-6 pl-7 text-xs"
             />
           </div>
-          <Button onClick={() => setCreating(true)} size="sm">
+          <Button onClick={() => setCreating(true)} size="sm" disabled={readOnly}>
             New Pipeline
           </Button>
         </div>
@@ -444,6 +446,7 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onSelect={(e) => e.preventDefault()}
+                            disabled={readOnly}
                           >
                             <HugeiconsIcon icon={Delete02Icon} size={14} />
                             Delete

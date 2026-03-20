@@ -8,6 +8,7 @@ import { AppHeader } from "@/components/app-header";
 import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
 import { PipelineToolbar } from "@/components/pipeline/toolbar";
 import { PipelineEditor } from "@/components/pipeline/pipeline-editor";
+import { RoleInit } from "@/components/role-init";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -26,9 +27,10 @@ export default async function PipelineEditorPage({ params }: Props) {
   const result = await requirePipeline(id);
   if ("error" in result) redirect("/pipelines");
 
-  const { pipeline, session } = result;
+  const { pipeline, session, role } = result;
   return (
     <div className="flex h-screen flex-col overflow-hidden">
+      <RoleInit readOnly={role === "guest"} />
       <AppHeader user={session.user} />
       <PipelineSubNav
         pipelineId={id}

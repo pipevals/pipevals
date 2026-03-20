@@ -46,12 +46,14 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { CheckmarkCircle01Icon, Copy01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import type { DatasetWithItems, DatasetItem } from "@/lib/api/datasets";
 import { handleApiError } from "@/lib/handle-api-error";
+import { useOrgRoleStore } from "@/lib/stores/org-role";
 
 interface DatasetDetailProps {
   dataset: DatasetWithItems;
 }
 
 export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
+  const readOnly = useOrgRoleStore((s) => s.readOnly);
   const [items, setItems] = useState<DatasetItem[]>(initial.items);
   const [addingItems, setAddingItems] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
@@ -167,7 +169,7 @@ export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <Button size="sm" onClick={() => setAddingItems(true)}>
+          <Button size="sm" onClick={() => setAddingItems(true)} disabled={readOnly}>
             Add Items
           </Button>
         </div>
@@ -234,7 +236,7 @@ export function DatasetDetail({ dataset: initial }: DatasetDetailProps) {
                     <TableCell>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" aria-label="Delete item">
+                          <Button size="sm" variant="ghost" aria-label="Delete item" disabled={readOnly}>
                             <HugeiconsIcon icon={Delete01Icon} size={14} />
                           </Button>
                         </AlertDialogTrigger>

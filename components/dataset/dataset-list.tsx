@@ -52,12 +52,14 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { DatasetSummary } from "@/lib/api/datasets";
 import { handleApiError } from "@/lib/handle-api-error";
+import { useOrgRoleStore } from "@/lib/stores/org-role";
 
 interface DatasetListProps {
   initialDatasets: DatasetSummary[];
 }
 
 export function DatasetList({ initialDatasets }: DatasetListProps) {
+  const readOnly = useOrgRoleStore((s) => s.readOnly);
   const router = useRouter();
   const [datasets, setDatasets] = useState(initialDatasets);
   const [search, setSearch] = useState("");
@@ -177,7 +179,7 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
               className="h-6 pl-7 text-xs"
             />
           </div>
-          <Button onClick={() => setCreating(true)} size="sm">
+          <Button onClick={() => setCreating(true)} size="sm" disabled={readOnly}>
             New Dataset
           </Button>
         </div>
@@ -272,6 +274,7 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onSelect={(e) => e.preventDefault()}
+                          disabled={readOnly}
                         >
                           <HugeiconsIcon icon={Delete02Icon} size={14} />
                           Delete

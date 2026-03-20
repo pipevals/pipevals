@@ -3,6 +3,7 @@ import { requirePipeline } from "@/lib/api/auth";
 import { AppHeader } from "@/components/app-header";
 import { PipelineSubNav } from "@/components/pipeline/pipeline-sub-nav";
 import { TasksPageContent } from "@/components/pipeline/tasks-page-content";
+import { RoleInit } from "@/components/role-init";
 
 export default async function TasksPage({
   params,
@@ -14,10 +15,11 @@ export default async function TasksPage({
   const result = await requirePipeline(id);
   if ("error" in result) redirect("/pipelines");
 
-  const { pipeline, session } = result;
+  const { pipeline, session, role } = result;
 
   return (
     <div className="flex min-h-screen flex-col">
+      <RoleInit readOnly={role === "guest"} />
       <AppHeader user={session.user} />
       <PipelineSubNav pipelineId={id} pipelineSlug={pipeline.slug} />
       <TasksPageContent pipelineId={id} />

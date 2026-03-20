@@ -4,6 +4,7 @@ import { requireSessionWithOrg } from "@/lib/api/auth";
 import { getDatasetWithItems } from "@/lib/api/datasets";
 import { DatasetDetail } from "@/components/dataset/dataset-detail";
 import { AppHeader } from "@/components/app-header";
+import { RoleInit } from "@/components/role-init";
 
 export async function generateMetadata({
   params,
@@ -21,13 +22,14 @@ export default async function DatasetDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { user, organizationId } = await requireSessionWithOrg();
+  const { user, organizationId, role } = await requireSessionWithOrg();
 
   const dataset = await getDatasetWithItems(id);
   if (!dataset || dataset.organizationId !== organizationId) notFound();
 
   return (
     <div className="flex min-h-screen flex-col">
+      <RoleInit readOnly={role === "guest"} />
       <AppHeader user={user} />
       <DatasetDetail dataset={dataset} />
     </div>
