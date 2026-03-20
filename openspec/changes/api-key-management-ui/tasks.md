@@ -4,8 +4,8 @@
 
 ## 2. Settings Layout
 
-- [ ] 2.1 Create `app/settings/layout.tsx` — server component with `requireSessionWithOrg()`, sidebar with "API Keys" link, and content area
-- [ ] 2.2 Create `app/settings/page.tsx` — redirect to `/settings/api-keys`
+- [x] 2.1 Create `app/settings/layout.tsx` — server component with `requireSessionWithOrg()`, sidebar with "API Keys" link, and content area
+- [x] 2.2 Create `app/settings/page.tsx` — redirect to `/settings/api-keys`
 
 ## 3. API Keys Page
 
