@@ -12,7 +12,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requirePipeline(id, { withGraph: true, write: true });
+  const result = await requirePipeline(id, { withGraph: true, write: true, apiKey: true });
   if ("error" in result) return result.error;
 
   const { nodes, edges } = result.pipeline;

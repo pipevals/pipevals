@@ -14,7 +14,7 @@
 
 ## 3. Route Integration
 
-- [ ] 3.1 Update `POST /api/pipelines/:id/runs` route handler to pass `apiKey: true` to `requirePipeline()`
+- [x] 3.1 Update `POST /api/pipelines/:id/runs` route handler to pass `apiKey: true` to `requirePipeline()`
 
 ## 4. Test Setup & Tests
 

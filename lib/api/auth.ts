@@ -170,15 +170,15 @@ type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolea
  */
 export async function requirePipeline(
   pipelineId: string,
-  options: true | { withGraph: true; write?: boolean; withRole?: boolean },
+  options: true | { withGraph: true; write?: boolean; withRole?: boolean; apiKey?: boolean },
 ): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph })>;
 export async function requirePipeline(
   pipelineId: string,
-  options: { withGraph?: false; write?: boolean; withRole: true },
+  options: { withGraph?: false; write?: boolean; withRole: true; apiKey?: boolean },
 ): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow })>;
 export async function requirePipeline(
   pipelineId: string,
-  options?: false | { withGraph?: false; write?: boolean; withRole?: false },
+  options?: false | { withGraph?: false; write?: boolean; withRole?: false; apiKey?: boolean },
 ): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow })>;
 export async function requirePipeline(
   pipelineId: string,
