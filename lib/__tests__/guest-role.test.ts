@@ -94,19 +94,30 @@ describe("guest role: whitelisted endpoints (should succeed)", () => {
   });
 });
 
+describe("guest role: whitelisted read endpoints (should succeed)", () => {
+  test("get-active-member returns 200", async () => {
+    const res = await handler(
+      new Request(orgUrl("get-active-member"), {
+        headers: { cookie: guestCookie },
+      }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  test("get-active-member-role returns 200", async () => {
+    const res = await handler(
+      new Request(orgUrl("get-active-member-role"), {
+        headers: { cookie: guestCookie },
+      }),
+    );
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("guest role: non-whitelisted read endpoints (should 403)", () => {
   test("list-members is blocked", async () => {
     const res = await handler(
       new Request(orgUrl("list-members"), {
-        headers: { cookie: guestCookie },
-      }),
-    );
-    expect(res.status).toBe(403);
-  });
-
-  test("get-active-member is blocked", async () => {
-    const res = await handler(
-      new Request(orgUrl("get-active-member"), {
         headers: { cookie: guestCookie },
       }),
     );

@@ -12,6 +12,8 @@ export const GUEST_ALLOWED_ORG_PATHS = new Set([
   "/organization/set-active",
   "/organization/get-full-organization",
   "/organization/list",
+  "/organization/get-active-member",
+  "/organization/get-active-member-role",
 ]);
 
 export function createGuestHooks(db: PgDatabase<any, typeof schema>) {
