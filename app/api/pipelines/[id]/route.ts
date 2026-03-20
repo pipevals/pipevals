@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
 import { validateGraph } from "@/lib/pipeline/graph-validation";
+import { validateNodeSlugs } from "@/lib/pipeline/validate-slugs";
 import { eq, and, ne, notInArray, inArray } from "drizzle-orm";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -23,7 +24,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     id: n.id,
     type: n.type,
     position: { x: n.positionX, y: n.positionY },
-    data: { label: n.label, config: n.config },
+    data: { label: n.label, slug: n.slug, config: n.config },
   }));
 
   const edges = pipeline.edges.map((e) => ({
@@ -57,6 +58,7 @@ const nodeSchema = z.object({
   position: z.object({ x: z.number(), y: z.number() }),
   data: z.object({
     label: z.string().nullable().optional(),
+    slug: z.string().nullable().optional(),
     config: z.record(z.string(), z.unknown()).optional(),
   }),
 });
@@ -110,6 +112,16 @@ export async function PUT(request: Request, { params }: RouteParams) {
   if (!validation.valid) {
     return NextResponse.json(
       { error: "Invalid graph", details: validation.errors },
+      { status: 400 },
+    );
+  }
+
+  const slugErrors = validateNodeSlugs(
+    nodes.map((n) => ({ id: n.id, slug: n.data.slug ?? null })),
+  );
+  if (slugErrors.length > 0) {
+    return NextResponse.json(
+      { error: "Invalid node slugs", details: slugErrors },
       { status: 400 },
     );
   }
@@ -216,6 +228,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
           pipelineId: id,
           type: node.type,
           label: node.data.label ?? null,
+          slug: node.data.slug ?? null,
           config: (node.data.config as Record<string, unknown>) ?? {},
           positionX: node.position.x,
           positionY: node.position.y,
@@ -225,6 +238,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
           set: {
             type: node.type,
             label: node.data.label ?? null,
+            slug: node.data.slug ?? null,
             config: (node.data.config as Record<string, unknown>) ?? {},
             positionX: node.position.x,
             positionY: node.position.y,

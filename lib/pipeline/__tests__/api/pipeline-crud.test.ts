@@ -271,6 +271,73 @@ describe("pipeline CRUD (PGlite integration)", () => {
       );
       expect(res.status).toBe(404);
     });
+
+    test("400 on duplicate node slugs", async () => {
+      const pipelineId = await seedPipeline();
+      const body = {
+        nodes: [
+          { id: crypto.randomUUID(), type: "ai_sdk", position: { x: 0, y: 0 }, data: { label: "A", slug: "generator" } },
+          { id: crypto.randomUUID(), type: "ai_sdk", position: { x: 200, y: 0 }, data: { label: "B", slug: "generator" } },
+        ],
+        edges: [],
+      };
+
+      const res = await updatePipeline(putJson(body), makeParams(pipelineId));
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toBe("Invalid node slugs");
+      expect(data.details[0]).toContain("generator");
+    });
+
+    test("400 on invalid slug format", async () => {
+      const pipelineId = await seedPipeline();
+      const body = {
+        nodes: [
+          { id: crypto.randomUUID(), type: "ai_sdk", position: { x: 0, y: 0 }, data: { label: "A", slug: "Model A" } },
+        ],
+        edges: [],
+      };
+
+      const res = await updatePipeline(putJson(body), makeParams(pipelineId));
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toBe("Invalid node slugs");
+    });
+
+    test("200 with null slugs", async () => {
+      const pipelineId = await seedPipeline();
+      const body = {
+        nodes: [
+          { id: crypto.randomUUID(), type: "trigger", position: { x: 0, y: 0 }, data: { label: "Trigger", slug: null } },
+          { id: crypto.randomUUID(), type: "ai_sdk", position: { x: 200, y: 0 }, data: { label: "Gen", slug: null } },
+        ],
+        edges: [],
+      };
+
+      const res = await updatePipeline(putJson(body), makeParams(pipelineId));
+      expect(res.status).toBe(200);
+    });
+
+    test("200 with valid unique slugs and persists them", async () => {
+      const pipelineId = await seedPipeline();
+      const n1 = crypto.randomUUID();
+      const body = {
+        nodes: [
+          { id: n1, type: "ai_sdk", position: { x: 0, y: 0 }, data: { label: "Generator", slug: "generator" } },
+          { id: crypto.randomUUID(), type: "metric_capture", position: { x: 200, y: 0 }, data: { label: "Metrics", slug: "metrics" } },
+        ],
+        edges: [],
+      };
+
+      const res = await updatePipeline(putJson(body), makeParams(pipelineId));
+      expect(res.status).toBe(200);
+
+      // Verify slug is returned in GET
+      const getRes = await getPipeline(new Request("http://localhost"), makeParams(pipelineId));
+      const data = await getRes.json();
+      const gen = data.nodes.find((n: any) => n.id === n1);
+      expect(gen.data.slug).toBe("generator");
+    });
   });
 
   describe("DELETE /api/pipelines/:id", () => {

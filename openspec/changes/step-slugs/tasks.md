@@ -13,11 +13,11 @@
 
 ## 3. API Layer
 
-- [ ] 3.1 Update `PUT /api/pipelines/:id` to accept `slug` on each node in the request body
-- [ ] 3.2 Call `validateNodeSlugs` in the PUT handler — return 400 with errors on failure
-- [ ] 3.3 Persist `slug` when upserting nodes
-- [ ] 3.4 Include `slug` in `GET /api/pipelines/:id` response (node objects)
-- [ ] 3.5 Write API tests for slug validation (duplicate slugs → 400, invalid format → 400, null slugs → 200, valid slugs → 200)
+- [x] 3.1 Update `PUT /api/pipelines/:id` to accept `slug` on each node in the request body
+- [x] 3.2 Call `validateNodeSlugs` in the PUT handler — return 400 with errors on failure
+- [x] 3.3 Persist `slug` when upserting nodes
+- [x] 3.4 Include `slug` in `GET /api/pipelines/:id` response (node objects)
+- [x] 3.5 Write API tests for slug validation (duplicate slugs → 400, invalid format → 400, null slugs → 200, valid slugs → 200)
 
 ## 4. Auto-wire & Input Resolver
 
