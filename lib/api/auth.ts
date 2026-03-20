@@ -31,6 +31,15 @@ type ApiKeyAuthResult = {
   organizationId: null;
 };
 
+/** Pipeline result when authenticated via API key — no session object. */
+type ApiKeyPipelineResult<P> = {
+  fromApiKey: true;
+  userId: string;
+  organizationId: string;
+  role: string;
+  pipeline: P;
+};
+
 type AuthOptions = { write?: boolean; withRole?: boolean; apiKey?: boolean };
 
 /**
@@ -171,19 +180,19 @@ type PipelineOptions = { withGraph?: boolean; write?: boolean; withRole?: boolea
 export async function requirePipeline(
   pipelineId: string,
   options: true | { withGraph: true; write?: boolean; withRole?: boolean; apiKey?: boolean },
-): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph })>;
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineWithGraph }) | ApiKeyPipelineResult<PipelineWithGraph>>;
 export async function requirePipeline(
   pipelineId: string,
   options: { withGraph?: false; write?: boolean; withRole: true; apiKey?: boolean },
-): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow })>;
+): Promise<AuthError | (AuthSuccessFull & { pipeline: PipelineRow }) | ApiKeyPipelineResult<PipelineRow>>;
 export async function requirePipeline(
   pipelineId: string,
   options?: false | { withGraph?: false; write?: boolean; withRole?: false; apiKey?: boolean },
-): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow })>;
+): Promise<AuthError | (AuthSuccessBase & { pipeline: PipelineRow }) | ApiKeyPipelineResult<PipelineRow>>;
 export async function requirePipeline(
   pipelineId: string,
   options?: boolean | PipelineOptions,
-): Promise<AuthError | (AuthSuccess & { pipeline: PipelineRow | PipelineWithGraph })> {
+): Promise<AuthError | (AuthSuccess & { pipeline: PipelineRow | PipelineWithGraph }) | ApiKeyPipelineResult<PipelineRow | PipelineWithGraph>> {
   const opts: PipelineOptions =
     typeof options === "boolean" ? { withGraph: options } : options ?? {};
 
@@ -231,9 +240,8 @@ export async function requirePipeline(
       };
     }
 
-    const session = null as unknown as AuthSuccessBase["session"];
     return {
-      session,
+      fromApiKey: true as const,
       userId: authResult.userId,
       organizationId: pipeline.organizationId,
       role: membership.role,

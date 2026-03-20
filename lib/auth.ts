@@ -4,7 +4,9 @@ import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins/organization";
 import { admin } from "better-auth/plugins/admin";
 import { apiKey } from "@better-auth/api-key";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
+import { apikey } from "./db/auth-schema";
 import { guestRole, createGuestHooks } from "./auth-guest";
 import { createAutoInviteHook } from "./auto-invite";
 
@@ -57,6 +59,15 @@ export const auth = betterAuth({
     user: {
       create: {
         after: createAutoInviteHook(db, (params) => addMemberFn(params)),
+      },
+      delete: {
+        before: async (user) => {
+          await db
+            .update(apikey)
+            .set({ enabled: false })
+            .where(eq(apikey.referenceId, user.id));
+          return true;
+        },
       },
     },
   },

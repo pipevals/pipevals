@@ -131,8 +131,8 @@ describe("API key authentication", () => {
     });
   });
 
-  describe("PUT /api/pipelines/:id (not whitelisted)", () => {
-    test("401 when using API key on non-whitelisted endpoint", async () => {
+  describe("PUT /api/pipelines/:id (apiKey not opted in)", () => {
+    test("401 when using API key on endpoint without apiKey: true", async () => {
       setActiveHeaders(apiKeyHeaders);
 
       const res = await updatePipeline(
