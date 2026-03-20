@@ -109,20 +109,20 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
   const copyCurl = useCallback(
     (id: string, type: "run" | "eval-run" = "run") => {
       const pipeline = pipelines.find((p) => p.id === id);
-      const apiKeyHeader = keyPrefix
+      const apiKeyLine = keyPrefix
         ? `\\\n  -H "x-api-key: ${keyPrefix}..." `
         : "";
       let cmd: string;
 
       if (type === "eval-run") {
-        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/eval-runs ${apiKeyHeader}\\\n  -H "Content-Type: application/json" \\\n  -d '{"datasetId": "<DATASET_ID>"}'`;
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/eval-runs ${apiKeyLine}\\\n  -H "Content-Type: application/json" \\\n  -d '{"datasetId": "<DATASET_ID>"}'`.replace(/ {2,}\\/g, " \\");
       } else {
         const schema = pipeline?.triggerSchema;
         const hasSchema =
           schema && typeof schema === "object" && Object.keys(schema).length > 0;
         const body = hasSchema ? JSON.stringify(schema) : "{}";
         const escaped = body.replace(/'/g, "'\\''");
-        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs ${apiKeyHeader}\\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs ${apiKeyLine}\\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`.replace(/ {2,}\\/g, " \\");
       }
 
       navigator.clipboard.writeText(cmd);

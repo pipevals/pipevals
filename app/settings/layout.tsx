@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireSessionWithOrg } from "@/lib/api/auth";
 import { AppHeader } from "@/components/app-header";
 import { RoleInit } from "@/components/role-init";

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Key01Icon, MoreHorizontalIcon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { authClient } from "@/lib/auth-client";
+import { formatDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -44,24 +45,29 @@ interface ApiKeyRow {
   id: string;
   name: string | null;
   start: string | null;
-  createdAt: Date;
-  expiresAt: Date | null;
-  lastRequest: Date | null;
+  createdAt: string | Date;
+  expiresAt: string | Date | null;
+  lastRequest: string | Date | null;
   enabled: boolean;
 }
 
-function isExpired(expiresAt: Date | null): boolean {
+// Better Auth's list endpoint returns { apiKeys: ApiKey[] } at runtime,
+// but the SDK client types don't reflect this wrapper. Extract safely.
+function extractApiKeys(data: unknown): ApiKeyRow[] {
+  if (!data || typeof data !== "object") return [];
+  const obj = data as Record<string, unknown>;
+  const list = Array.isArray(obj.apiKeys) ? obj.apiKeys : Array.isArray(data) ? data : [];
+  return list as ApiKeyRow[];
+}
+
+function isExpired(expiresAt: string | Date | null): boolean {
   if (!expiresAt) return false;
   return new Date(expiresAt) < new Date();
 }
 
-function formatDate(date: Date | null): string {
-  if (!date) return "—";
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function toISOString(date: string | Date | null): string | null {
+  if (!date) return null;
+  return typeof date === "string" ? date : date.toISOString();
 }
 
 export function ApiKeyTable() {
@@ -71,9 +77,11 @@ export function ApiKeyTable() {
   const [revokeTarget, setRevokeTarget] = useState<ApiKeyRow | null>(null);
 
   const fetchKeys = useCallback(async () => {
-    const { data } = await authClient.apiKey.list();
-    if (data) {
-      setKeys(data as unknown as ApiKeyRow[]);
+    try {
+      const { data } = await authClient.apiKey.list();
+      setKeys(extractApiKeys(data));
+    } catch {
+      setKeys([]);
     }
     setLoading(false);
   }, []);
@@ -82,9 +90,16 @@ export function ApiKeyTable() {
     fetchKeys();
   }, [fetchKeys]);
 
+  const [revokeError, setRevokeError] = useState<string | null>(null);
+
   const handleRevoke = async () => {
     if (!revokeTarget) return;
-    await authClient.apiKey.delete({ keyId: revokeTarget.id });
+    setRevokeError(null);
+    const { error } = await authClient.apiKey.delete({ keyId: revokeTarget.id });
+    if (error) {
+      setRevokeError("Failed to revoke key. Please try again.");
+      return;
+    }
     setRevokeTarget(null);
     fetchKeys();
   };
@@ -167,13 +182,13 @@ export function ApiKeyTable() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {formatDate(k.createdAt)}
+                    {formatDateTime(toISOString(k.createdAt))}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {formatDate(k.expiresAt)}
+                    {formatDateTime(toISOString(k.expiresAt))}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {formatDate(k.lastRequest)}
+                    {formatDateTime(toISOString(k.lastRequest))}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -211,7 +226,12 @@ export function ApiKeyTable() {
 
       <AlertDialog
         open={!!revokeTarget}
-        onOpenChange={(open) => !open && setRevokeTarget(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRevokeTarget(null);
+            setRevokeError(null);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -224,6 +244,9 @@ export function ApiKeyTable() {
               . Any integrations using this key will stop working immediately.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {revokeError && (
+            <p className="text-xs text-destructive">{revokeError}</p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
