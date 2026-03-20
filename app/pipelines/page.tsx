@@ -4,6 +4,7 @@ import { getPipelinesForOrg, getTemplatesForOrg } from "@/lib/api/pipelines";
 import { PipelineList } from "@/components/pipeline/pipeline-list";
 import { AppHeader } from "@/components/app-header";
 import { RoleInit } from "@/components/role-init";
+import { ApiKeyPrefixInit } from "@/components/api-key-prefix-init";
 import { SyncUpdatesPreference } from "@/components/sync-updates-preference";
 import { isAutoInviteEnabled } from "@/lib/auto-invite";
 
@@ -22,6 +23,7 @@ export default async function PipelinesPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <RoleInit role={role} />
+      <ApiKeyPrefixInit />
       {isAutoInviteEnabled() && <SyncUpdatesPreference />}
       <AppHeader user={user} />
       <PipelineList initialPipelines={pipelines} templates={templates} />

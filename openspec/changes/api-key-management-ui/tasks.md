@@ -28,9 +28,9 @@
 
 ## 6. Curl Command API Key Injection
 
-- [ ] 6.1 Create `lib/stores/api-key.ts` — Zustand store with `keyPrefix: string | null` and a `fetchKeyPrefix` action that calls `authClient.apiKey.list()` and caches the first key's `start` field
-- [ ] 6.2 Initialize the store on app load (e.g., in the settings layout or a shared provider) so `keyPrefix` is populated when the user has at least one key
-- [ ] 6.3 Update `copyCurl` in `components/pipeline/pipeline-list.tsx` to read `keyPrefix` from the store and inject `-H "x-api-key: <prefix>..."` into the curl command when a key exists
+- [x] 6.1 Create `lib/stores/api-key.ts` — Zustand store with `keyPrefix: string | null` and a `fetchKeyPrefix` action that calls `authClient.apiKey.list()` and caches the first key's `start` field
+- [x] 6.2 Initialize the store on app load (e.g., in the settings layout or a shared provider) so `keyPrefix` is populated when the user has at least one key
+- [x] 6.3 Update `copyCurl` in `components/pipeline/pipeline-list.tsx` to read `keyPrefix` from the store and inject `-H "x-api-key: <prefix>..."` into the curl command when a key exists
 
 ## 7. Navigation
 

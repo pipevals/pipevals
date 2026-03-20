@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useApiKeyStore } from "@/lib/stores/api-key";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -95,6 +96,7 @@ interface PipelineListProps {
 
 export function PipelineList({ initialPipelines, templates }: PipelineListProps) {
   const readOnly = useOrgRoleStore(selectReadOnly);
+  const keyPrefix = useApiKeyStore((s) => s.keyPrefix);
   const [pipelines, setPipelines] = useState(initialPipelines);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -107,17 +109,20 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
   const copyCurl = useCallback(
     (id: string, type: "run" | "eval-run" = "run") => {
       const pipeline = pipelines.find((p) => p.id === id);
+      const apiKeyHeader = keyPrefix
+        ? `\\\n  -H "x-api-key: ${keyPrefix}..." `
+        : "";
       let cmd: string;
 
       if (type === "eval-run") {
-        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/eval-runs \\\n  -H "Content-Type: application/json" \\\n  -d '{"datasetId": "<DATASET_ID>"}'`;
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/eval-runs ${apiKeyHeader}\\\n  -H "Content-Type: application/json" \\\n  -d '{"datasetId": "<DATASET_ID>"}'`;
       } else {
         const schema = pipeline?.triggerSchema;
         const hasSchema =
           schema && typeof schema === "object" && Object.keys(schema).length > 0;
         const body = hasSchema ? JSON.stringify(schema) : "{}";
         const escaped = body.replace(/'/g, "'\\''");
-        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
+        cmd = `curl -X POST ${window.location.origin}/api/pipelines/${id}/runs ${apiKeyHeader}\\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`;
       }
 
       navigator.clipboard.writeText(cmd);
@@ -125,7 +130,7 @@ export function PipelineList({ initialPipelines, templates }: PipelineListProps)
       clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
     },
-    [pipelines],
+    [pipelines, keyPrefix],
   );
 
   const filtered = useMemo(
