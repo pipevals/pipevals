@@ -34,4 +34,4 @@
 
 ## 7. Navigation
 
-- [ ] 7.1 Add a "Settings" link to the app header or sidebar that navigates to `/settings/api-keys`
+- [x] 7.1 Add a "Settings" link to the app header or sidebar that navigates to `/settings/api-keys`

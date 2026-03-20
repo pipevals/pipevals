@@ -84,6 +84,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {[
             { href: "/pipelines", label: "Pipelines" },
             { href: "/datasets", label: "Datasets" },
+            { href: "/settings", label: "Settings" },
           ].map(({ href, label }) => (
             <Link
               key={href}
