@@ -36,19 +36,19 @@ export default function Home() {
           </span>
           <div className="flex items-center gap-6 text-sm">
             <a
-              href="https://github.com/pipevals"
+              href="https://github.com/pipevals/pipevals"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#00F0FF] transition-colors"
             >
               GitHub
             </a>
-            {/* <Link
+            <Link
               href="/sign-in"
               className="hover:text-[#00F0FF] transition-colors"
             >
               Demo
-            </Link> */}
+            </Link>
           </div>
         </div>
       </nav>
@@ -79,7 +79,7 @@ export default function Home() {
           </p>
 
           <a
-            href="https://github.com/pipevals"
+            href="https://github.com/pipevals/pipevals"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-[#00F0FF] text-[#0a0a0a] px-6 py-2.5 text-sm font-bold hover:bg-[#00d4e0] transition-colors"
@@ -322,7 +322,7 @@ export default function Home() {
               MIT License
             </Link>
             <a
-              href="https://github.com/pipevals"
+              href="https://github.com/pipevals/pipevals"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#00F0FF] transition-colors"
