@@ -7,9 +7,9 @@
 
 ## 2. Database Schema
 
-- [ ] 2.1 Add nullable `slug` text column to `pipelineNodes` in `lib/db/pipeline-schema.ts`
-- [ ] 2.2 Add partial unique index on `(pipelineId, slug)` where `slug IS NOT NULL`
-- [ ] 2.3 Generate and run the Drizzle migration
+- [x] 2.1 Add nullable `slug` text column to `pipelineNodes` in `lib/db/pipeline-schema.ts`
+- [x] 2.2 Add partial unique index on `(pipelineId, slug)` where `slug IS NOT NULL`
+- [x] 2.3 Generate and run the Drizzle migration
 
 ## 3. API Layer
 

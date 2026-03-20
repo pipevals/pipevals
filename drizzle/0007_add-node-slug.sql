@@ -1,0 +1,2 @@
+ALTER TABLE "pipeline_node" ADD COLUMN "slug" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "pipeline_node_slug_uidx" ON "pipeline_node" USING btree ("pipeline_id","slug") WHERE "pipeline_node"."slug" IS NOT NULL;

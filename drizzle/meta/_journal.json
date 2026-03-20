@@ -50,6 +50,13 @@
       "when": 1774014339675,
       "tag": "0006_apikey_table",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774018679168,
+      "tag": "0007_add-node-slug",
+      "breakpoints": true
     }
   ]
 }

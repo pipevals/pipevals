@@ -68,11 +68,17 @@ export const pipelineNodes = pgTable(
       .references(() => pipelines.id, { onDelete: "cascade" }),
     type: text("type", { enum: pipelineNodeTypeEnum }).notNull(),
     label: text("label"),
+    slug: text("slug"),
     config: jsonb("config").$type<Record<string, unknown>>().default({}),
     positionX: real("position_x").notNull().default(0),
     positionY: real("position_y").notNull().default(0),
   },
-  (table) => [index("pipeline_node_pipeline_idx").on(table.pipelineId)],
+  (table) => [
+    index("pipeline_node_pipeline_idx").on(table.pipelineId),
+    uniqueIndex("pipeline_node_slug_uidx")
+      .on(table.pipelineId, table.slug)
+      .where(sql`${table.slug} IS NOT NULL`),
+  ],
 );
 
 export const pipelineEdges = pgTable(
