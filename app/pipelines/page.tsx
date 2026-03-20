@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PipelinesPage() {
-  const { user, organizationId, role } = await requireSessionWithOrg();
+  const { user, organizationId, role, orgName } = await requireSessionWithOrg();
 
   const [pipelines, templates] = await Promise.all([
     getPipelinesForOrg(organizationId),
@@ -19,7 +19,7 @@ export default async function PipelinesPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <RoleInit readOnly={role === "guest"} />
+      <RoleInit role={role} orgName={orgName} />
       <AppHeader user={user} />
       <PipelineList initialPipelines={pipelines} templates={templates} />
     </div>

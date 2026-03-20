@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function DatasetsPage() {
-  const { user, organizationId, role } = await requireSessionWithOrg();
+  const { user, organizationId, role, orgName } = await requireSessionWithOrg();
 
   const datasets = await getDatasetsForOrg(organizationId);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <RoleInit readOnly={role === "guest"} />
+      <RoleInit role={role} orgName={orgName} />
       <AppHeader user={user} />
       <DatasetList initialDatasets={datasets} />
     </div>

@@ -19,6 +19,7 @@ type AuthSuccess = {
   userId: string;
   organizationId: string;
   role: string;
+  orgName: string;
 };
 
 type AuthOptions = { write?: boolean };
@@ -51,6 +52,7 @@ export async function requireAuth(
 
   const membership = await db.query.member.findFirst({
     where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+    with: { organization: { columns: { name: true } } },
   });
 
   if (!membership) {
@@ -76,6 +78,7 @@ export async function requireAuth(
     userId: session.user.id,
     organizationId,
     role: membership.role,
+    orgName: membership.organization.name,
   };
 }
 
@@ -90,15 +93,18 @@ export async function requireSessionWithOrg() {
 
   let organizationId = session.session.activeOrganizationId;
   let role: string | undefined;
+  let orgName: string | undefined;
 
   if (!organizationId && isAutoInviteEnabled()) {
     const membership = await db.query.member.findFirst({
       where: eq(member.userId, session.user.id),
+      with: { organization: { columns: { name: true } } },
     });
     if (!membership) redirect("/sign-in");
 
     organizationId = membership.organizationId;
     role = membership.role;
+    orgName = membership.organization.name;
     await auth.api.setActiveOrganization({
       headers: reqHeaders,
       body: { organizationId },
@@ -110,12 +116,14 @@ export async function requireSessionWithOrg() {
   if (!role) {
     const membership = await db.query.member.findFirst({
       where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+      with: { organization: { columns: { name: true } } },
     });
     if (!membership) redirect("/sign-in");
     role = membership.role;
+    orgName = membership.organization.name;
   }
 
-  return { session, user: session.user, organizationId, role };
+  return { session, user: session.user, organizationId, role, orgName: orgName! };
 }
 
 type PipelineRow = typeof pipelines.$inferSelect;

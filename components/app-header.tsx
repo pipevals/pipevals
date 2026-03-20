@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Moon01Icon, Sun01Icon, WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
+import { Logout01Icon, Moon01Icon, Sun01Icon, WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -16,6 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useOrgRoleStore } from "@/lib/stores/org-role";
+import { signOut } from "@/lib/auth-client";
 
 function ThemeMenuItems() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -55,6 +57,9 @@ interface AppHeaderProps {
 
 export function AppHeader({ user }: AppHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const orgName = useOrgRoleStore((s) => s.orgName);
+  const role = useOrgRoleStore((s) => s.role);
 
   const initials = user?.name
     ? user.name
@@ -130,8 +135,32 @@ export function AppHeader({ user }: AppHeaderProps) {
                   )}
                 </div>
               </DropdownMenuLabel>
+              {orgName && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs truncate">{orgName}</span>
+                      {role && (
+                        <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          {role}
+                        </span>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                </>
+              )}
               <DropdownMenuSeparator />
               <ThemeMenuItems />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  signOut({ fetchOptions: { onSuccess: () => router.push("/sign-in") } })
+                }
+              >
+                <HugeiconsIcon icon={Logout01Icon} size={16} />
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

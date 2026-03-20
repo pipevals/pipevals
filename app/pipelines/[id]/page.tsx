@@ -27,10 +27,10 @@ export default async function PipelineEditorPage({ params }: Props) {
   const result = await requirePipeline(id);
   if ("error" in result) redirect("/pipelines");
 
-  const { pipeline, session, role } = result;
+  const { pipeline, session, role, orgName } = result;
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <RoleInit readOnly={role === "guest"} />
+      <RoleInit role={role} orgName={orgName} />
       <AppHeader user={session.user} />
       <PipelineSubNav
         pipelineId={id}
