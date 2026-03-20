@@ -2,7 +2,17 @@
 
 Build LLM evaluation pipelines visually. Connect model calls, human scoring, data transforms, and automated metrics into composable graphs — then run them against datasets to track quality over time.
 
-<!-- TODO: Add demo GIF here -->
+### Build
+
+https://github.com/user-attachments/assets/94e5cba8-5753-4f19-a707-70eb16690963
+
+### Run
+
+https://github.com/user-attachments/assets/eb034608-dcf0-48c7-9698-da702b27c123
+
+### Measure
+
+https://github.com/user-attachments/assets/c11afaf2-c54b-439d-a2fb-a2fa7e0d0d6c
 
 ## Features
 
