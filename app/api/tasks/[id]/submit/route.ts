@@ -11,7 +11,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const authResult = await requireAuth();
+  const authResult = await requireAuth({ write: true });
   if ("error" in authResult) return authResult.error;
 
   // Look up the task with org verification

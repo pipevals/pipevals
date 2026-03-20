@@ -8,7 +8,7 @@ type RouteParams = { params: Promise<{ id: string; itemId: string }> };
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   const { id, itemId } = await params;
-  const result = await requireDataset(id);
+  const result = await requireDataset(id, { write: true });
   if ("error" in result) return result.error;
 
   const deleted = await db

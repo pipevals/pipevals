@@ -10,7 +10,7 @@ type RouteParams = { params: Promise<{ id: string; runId: string }> };
 
 export async function POST(_request: Request, { params }: RouteParams) {
   const { id, runId } = await params;
-  const result = await requirePipeline(id);
+  const result = await requirePipeline(id, { write: true });
   if ("error" in result) return result.error;
 
   const run = await db.query.pipelineRuns.findFirst({

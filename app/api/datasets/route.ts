@@ -7,7 +7,7 @@ import { parsePagination } from "@/lib/api/pagination";
 import { validateItemsAgainstSchema } from "@/lib/api/validate-dataset-items";
 
 export async function POST(request: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireAuth({ write: true });
   if ("error" in authResult) return authResult.error;
 
   const body = await request.json().catch(() => null);

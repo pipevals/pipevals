@@ -7,7 +7,7 @@ import { requireAuth } from "@/lib/api/auth";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const authResult = await requireAuth();
+  const authResult = await requireAuth({ write: true });
   if ("error" in authResult) return authResult.error;
 
   const { id } = await params;

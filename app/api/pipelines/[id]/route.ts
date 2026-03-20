@@ -80,7 +80,7 @@ const updatePipelineSchema = z.object({
 
 export async function PUT(request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requirePipeline(id);
+  const result = await requirePipeline(id, { write: true });
   if ("error" in result) return result.error;
 
   const parsed = updatePipelineSchema.safeParse(await request.json());
@@ -264,7 +264,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requirePipeline(id);
+  const result = await requirePipeline(id, { write: true });
   if ("error" in result) return result.error;
 
   await db.delete(pipelines).where(eq(pipelines.id, id));

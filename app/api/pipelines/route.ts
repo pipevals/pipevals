@@ -28,7 +28,7 @@ const createPipelineSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireAuth({ write: true });
   if ("error" in authResult) return authResult.error;
   const { userId, organizationId } = authResult;
 

@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 export async function PUT(request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requireDataset(id);
+  const result = await requireDataset(id, { write: true });
   if ("error" in result) return result.error;
 
   const body = await request.json().catch(() => null);
@@ -53,7 +53,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requireDataset(id);
+  const result = await requireDataset(id, { write: true });
   if ("error" in result) return result.error;
 
   await db.delete(datasets).where(eq(datasets.id, id));

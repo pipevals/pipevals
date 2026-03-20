@@ -7,20 +7,20 @@
 
 ## 2. Route Handlers — Apply Write Gating
 
-- [ ] 2.1 `POST /api/pipelines` — use `requireAuth({ write: true })`
-- [ ] 2.2 `PUT /api/pipelines/[id]` — use `requirePipeline(id, { write: true })`
-- [ ] 2.3 `DELETE /api/pipelines/[id]` — use `requirePipeline(id, { write: true })`
-- [ ] 2.4 `POST /api/pipelines/[id]/runs` — use `requirePipeline(id, { write: true })`
-- [ ] 2.5 `POST /api/pipelines/[id]/runs/[runId]/cancel` — use `requirePipeline(id, { write: true })`
-- [ ] 2.6 `POST /api/pipelines/[id]/eval-runs` — use `requirePipeline(id, { write: true })`
-- [ ] 2.7 `POST /api/datasets` — use `requireAuth({ write: true })`
-- [ ] 2.8 `PUT /api/datasets/[id]` — use `requireDataset(id, { write: true })`
-- [ ] 2.9 `DELETE /api/datasets/[id]` — use `requireDataset(id, { write: true })`
-- [ ] 2.10 `POST /api/datasets/[id]/items` — use `requireDataset(id, { write: true })`
-- [ ] 2.11 `DELETE /api/datasets/[id]/items/[itemId]` — use `requireDataset(id, { write: true })`
-- [ ] 2.12 `POST /api/templates` — use `requireAuth({ write: true })`
-- [ ] 2.13 `DELETE /api/templates/[id]` — use `requireAuth({ write: true })`
-- [ ] 2.14 `POST /api/tasks/[id]/submit` — use `requireAuth({ write: true })`
+- [x] 2.1 `POST /api/pipelines` — use `requireAuth({ write: true })`
+- [x] 2.2 `PUT /api/pipelines/[id]` — use `requirePipeline(id, { write: true })`
+- [x] 2.3 `DELETE /api/pipelines/[id]` — use `requirePipeline(id, { write: true })`
+- [x] 2.4 `POST /api/pipelines/[id]/runs` — use `requirePipeline(id, { write: true, withGraph: true })`
+- [x] 2.5 `POST /api/pipelines/[id]/runs/[runId]/cancel` — use `requirePipeline(id, { write: true })`
+- [x] 2.6 `POST /api/pipelines/[id]/eval-runs` — use `requirePipeline(id, { write: true, withGraph: true })`
+- [x] 2.7 `POST /api/datasets` — use `requireAuth({ write: true })`
+- [x] 2.8 `PUT /api/datasets/[id]` — use `requireDataset(id, { write: true })`
+- [x] 2.9 `DELETE /api/datasets/[id]` — use `requireDataset(id, { write: true })`
+- [x] 2.10 `POST /api/datasets/[id]/items` — use `requireDataset(id, { write: true })`
+- [x] 2.11 `DELETE /api/datasets/[id]/items/[itemId]` — use `requireDataset(id, { write: true })`
+- [x] 2.12 `POST /api/templates` — use `requireAuth({ write: true })`
+- [x] 2.13 `DELETE /api/templates/[id]` — use `requireAuth({ write: true })`
+- [x] 2.14 `POST /api/tasks/[id]/submit` — use `requireAuth({ write: true })`
 
 ## 3. Pages — Pass Role and Disable Mutation UI
 

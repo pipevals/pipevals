@@ -9,7 +9,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: RouteParams) {
   const { id } = await params;
-  const result = await requireDataset(id);
+  const result = await requireDataset(id, { write: true });
   if ("error" in result) return result.error;
 
   const body = await request.json().catch(() => null);
