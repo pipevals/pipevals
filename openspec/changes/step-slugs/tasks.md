@@ -30,13 +30,13 @@
 
 ## 5. Pipeline Builder Store & UI
 
-- [ ] 5.1 Add `slug` to `PipelineNodeData` in the Zustand store
-- [ ] 5.2 Add `updateNodeSlug(nodeId, slug)` action to the store
-- [ ] 5.3 Auto-derive slug from label in `updateNodeLabel` — call `stepSlugify` and set slug when label changes
-- [ ] 5.4 Pass `sourceSlug` instead of `sourceLabel` when calling `autoWireInputs` from the store's `onConnect`
-- [ ] 5.5 Add slug input field to config panel below label — auto-derived, editable
-- [ ] 5.6 Add dot-path hint below slug field (`"Reference as: steps.<slug>.<outputKey>"`) — only for node types with output ports
-- [ ] 5.7 Add inline validation error on slug field when duplicate detected in current pipeline
+- [x] 5.1 Add `slug` to `PipelineNodeData` in the Zustand store
+- [x] 5.2 Add `updateNodeSlug(nodeId, slug)` action to the store
+- [x] 5.3 Auto-derive slug from label in `updateNodeLabel` — call `stepSlugify` and set slug when label changes
+- [x] 5.4 Pass `sourceSlug` instead of `sourceLabel` when calling `autoWireInputs` from the store's `onConnect`
+- [x] 5.5 Add slug input field to config panel below label — auto-derived, editable
+- [x] 5.6 Add dot-path hint below slug field (`"Reference as: steps.<slug>.<outputKey>"`) — only for node types with output ports
+- [x] 5.7 Add inline validation error on slug field when duplicate detected in current pipeline
 
 ## 6. Seed Templates
 

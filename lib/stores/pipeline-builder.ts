@@ -16,10 +16,12 @@ import type {
 } from "@/lib/pipeline/types";
 import { defaultConfigs } from "@/lib/pipeline/types";
 import { autoWireInputs } from "@/lib/pipeline/auto-wire";
+import { stepSlugify } from "@/lib/slugify";
 import { handleApiError } from "@/lib/handle-api-error";
 
 export interface PipelineNodeData {
   label: string | null;
+  slug: string | null;
   config: Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -55,6 +57,7 @@ export interface PipelineBuilderState {
   addNode: (type: StepType, position: { x: number; y: number }) => void;
   updateNodeConfig: (nodeId: string, config: Record<string, unknown>) => void;
   updateNodeLabel: (nodeId: string, label: string) => void;
+  updateNodeSlug: (nodeId: string, slug: string) => void;
   deleteSelected: () => void;
   markClean: () => void;
 
@@ -81,7 +84,7 @@ function makeTriggerNode(position = TRIGGER_NODE_DEFAULT_POSITION): PipelineNode
     id: TRIGGER_NODE_ID,
     type: "trigger",
     position,
-    data: { label: "Trigger", config: {} },
+    data: { label: "Trigger", slug: null, config: {} },
     deletable: false,
   };
 }
@@ -183,7 +186,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
         const patch = autoWireInputs(
           sourceNode.type ?? "",
-          sourceNode.data.label,
+          sourceNode.data.slug,
           sourceNode.id,
           targetNode.type ?? "",
           targetNode.data.config,
@@ -214,12 +217,14 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     addNode: (type, position) => {
       const config = { ...defaultConfigs[type] } as NodeConfig;
+      const label = STEP_LABELS[type];
       const node: PipelineNode = {
         id: crypto.randomUUID(),
         type,
         position,
         data: {
-          label: STEP_LABELS[type],
+          label,
+          slug: stepSlugify(label),
           config: config as unknown as Record<string, unknown>,
         },
       };
@@ -246,7 +251,19 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       set((state) => ({
         nodes: state.nodes.map((n) =>
           n.id === nodeId
-            ? { ...n, data: { ...n.data, label } }
+            ? { ...n, data: { ...n.data, label, slug: stepSlugify(label) || n.data.slug } }
+            : n,
+        ),
+        dirty: true,
+        saveError: null,
+      }));
+    },
+
+    updateNodeSlug: (nodeId, slug) => {
+      set((state) => ({
+        nodes: state.nodes.map((n) =>
+          n.id === nodeId
+            ? { ...n, data: { ...n.data, slug } }
             : n,
         ),
         dirty: true,

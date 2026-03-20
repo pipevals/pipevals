@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { usePipelineBuilderStore, TRIGGER_NODE_ID } from "@/lib/stores/pipeline-builder";
 import { TriggerInputsPanel } from "./trigger-inputs-panel";
 import { ModelCombobox } from "./model-combobox";
+import { portRegistry } from "@/lib/pipeline/steps/ports";
+import type { StepType } from "@/lib/pipeline/types";
 import type { GatewayModel } from "@/lib/pipeline/types";
 import type {
   ApiRequestConfig,
@@ -638,11 +640,52 @@ function HumanReviewFields({
   );
 }
 
+function SlugField({
+  node,
+  nodes,
+  onSlugChange,
+}: {
+  node: { id: string; type?: string; data: { slug: string | null } };
+  nodes: { id: string; data: { slug: string | null } }[];
+  onSlugChange: (slug: string) => void;
+}) {
+  const slug = node.data.slug ?? "";
+  const isDuplicate =
+    slug !== "" &&
+    nodes.some((n) => n.id !== node.id && n.data.slug === slug);
+
+  const ports = node.type ? portRegistry[node.type as StepType] : null;
+  const primaryOutputKey = ports?.outputs[0]?.key;
+
+  return (
+    <>
+      <Field label="Slug">
+        <Input
+          value={slug}
+          onChange={onSlugChange}
+          placeholder="auto-derived from label"
+        />
+        {isDuplicate && (
+          <p className="mt-0.5 text-[10px] text-destructive">
+            Duplicate slug &mdash; another node already uses &ldquo;{slug}&rdquo;
+          </p>
+        )}
+      </Field>
+      {slug && primaryOutputKey && (
+        <p className="-mt-2 text-[10px] text-muted-foreground">
+          Reference as: <code className="text-[10px]">steps.{slug}.{primaryOutputKey}</code>
+        </p>
+      )}
+    </>
+  );
+}
+
 export function ConfigPanel() {
   const selectedNodeId = usePipelineBuilderStore((s) => s.selectedNodeId);
   const nodes = usePipelineBuilderStore((s) => s.nodes);
   const updateNodeConfig = usePipelineBuilderStore((s) => s.updateNodeConfig);
   const updateNodeLabel = usePipelineBuilderStore((s) => s.updateNodeLabel);
+  const updateNodeSlug = usePipelineBuilderStore((s) => s.updateNodeSlug);
 
   const node = nodes.find((n) => n.id === selectedNodeId);
 
@@ -677,6 +720,12 @@ export function ConfigPanel() {
             placeholder="Node label"
           />
         </Field>
+
+        <SlugField
+          node={node}
+          nodes={nodes}
+          onSlugChange={(v) => updateNodeSlug(node.id, v)}
+        />
 
         {type === "api_request" && (
           <ApiRequestFields config={config as unknown as ApiRequestConfig} onUpdate={onUpdate} />
