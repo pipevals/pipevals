@@ -47,5 +47,5 @@
 
 ## 7. Graph Snapshot & Run Compatibility
 
-- [ ] 7.1 Ensure `graph_snapshot` in pipeline runs includes node slugs (update snapshot serialization if needed)
-- [ ] 7.2 Verify walker's `loadGraph` populates `slug` on `WalkerNode` from snapshot data
+- [x] 7.1 Ensure `graph_snapshot` in pipeline runs includes node slugs (update snapshot serialization if needed)
+- [x] 7.2 Verify walker's `loadGraph` populates `slug` on `WalkerNode` from snapshot data

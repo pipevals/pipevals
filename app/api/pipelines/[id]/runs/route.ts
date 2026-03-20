@@ -62,6 +62,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       id: n.id,
       type: n.type,
       label: n.label,
+      slug: n.slug,
       config: n.config,
       positionX: n.positionX,
       positionY: n.positionY,
