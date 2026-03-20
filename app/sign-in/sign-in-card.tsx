@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
+import { storeUpdatesPreference } from "@/lib/updates-preference";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -86,7 +88,15 @@ function DevSignInForm() {
   );
 }
 
-export function SignInCard({ devAuthEnabled }: { devAuthEnabled: boolean }) {
+export function SignInCard({
+  devAuthEnabled,
+  showUpdatesCheckbox,
+}: {
+  devAuthEnabled: boolean;
+  showUpdatesCheckbox?: boolean;
+}) {
+  const [receiveUpdates, setReceiveUpdates] = useState(true);
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
@@ -100,13 +110,27 @@ export function SignInCard({ devAuthEnabled }: { devAuthEnabled: boolean }) {
           variant="outline"
           size="lg"
           className="w-full"
-          onClick={() =>
-            signIn.social({ provider: "github", callbackURL: "/pipelines" })
-          }
+          onClick={() => {
+            if (showUpdatesCheckbox) storeUpdatesPreference(receiveUpdates);
+            signIn.social({ provider: "github", callbackURL: "/pipelines" });
+          }}
         >
           <GitHubIcon />
           Sign in with GitHub
         </Button>
+
+        {showUpdatesCheckbox && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={receiveUpdates}
+              onCheckedChange={(v) => setReceiveUpdates(v === true)}
+            />
+            <span className="text-xs text-muted-foreground">
+              Receive product updates from us
+            </span>
+          </label>
+        )}
+
         {devAuthEnabled && (
           <>
             <div className="relative">
