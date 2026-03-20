@@ -370,8 +370,28 @@ describe("pipeline CRUD (PGlite integration)", () => {
   describe("POST /api/pipelines with templateId", () => {
     const templateSnapshot = {
       nodes: [
-        { id: "tmpl-n1", type: "trigger", label: "Trigger", config: {}, positionX: 0, positionY: 0 },
-        { id: "tmpl-n2", type: "ai_sdk", label: "Gen", config: { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "trigger.prompt" }, positionX: 300, positionY: 0 },
+        {
+          id: "tmpl-n1",
+          type: "trigger",
+          label: "Trigger",
+          slug: null,
+          config: {},
+          positionX: 0,
+          positionY: 0,
+        },
+        {
+          id: "tmpl-n2",
+          type: "ai_sdk",
+          label: "Gen",
+          slug: "generator",
+          config: {
+            type: "ai_sdk",
+            model: "openai/gpt-4o",
+            promptTemplate: "trigger.prompt",
+          },
+          positionX: 300,
+          positionY: 0,
+        },
       ],
       edges: [
         { id: "tmpl-e1", sourceNodeId: "tmpl-n1", sourceHandle: null, targetNodeId: "tmpl-n2", targetHandle: null },
@@ -409,6 +429,8 @@ describe("pipeline CRUD (PGlite integration)", () => {
       expect(pipeline.nodes.length).toBe(2);
       expect(pipeline.edges.length).toBe(1);
       expect(pipeline.triggerSchema).toEqual({ prompt: "" });
+      const gen = pipeline.nodes.find((n: { data: { slug?: string | null } }) => n.data.slug === "generator");
+      expect(gen).toBeDefined();
     });
 
     test("fresh UUIDs — no collision between two pipelines from same template", async () => {

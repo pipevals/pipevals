@@ -95,6 +95,10 @@ export async function POST(request: Request) {
               pipelineId: pipeline.id,
               type: n.type as PipelineNodeType,
               label: (n.label as string) ?? null,
+              slug:
+                typeof n.slug === "string" && n.slug.length > 0
+                  ? n.slug
+                  : null,
               config: (n.config as Record<string, unknown>) ?? {},
               positionX: n.positionX as number,
               positionY: n.positionY as number,

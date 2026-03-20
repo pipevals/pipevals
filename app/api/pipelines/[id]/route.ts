@@ -53,6 +53,7 @@ const nodeSchema = z.object({
     "condition",
     "transform",
     "metric_capture",
+    "human_review",
     "trigger",
   ]),
   position: z.object({ x: z.number(), y: z.number() }),
