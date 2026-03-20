@@ -1,18 +1,17 @@
-export const DEFAULT_ORG_SLUG = "demo";
+import type { db } from "./db";
+import { isAutoInviteAllowedHostname } from "./app-hosts";
 
-const AUTO_INVITE_HOSTS = new Set(["localhost", "pipevals.com"]);
+export const DEFAULT_ORG_SLUG = "demo";
 
 export function isAutoInviteEnabled(): boolean {
   const url = process.env.BETTER_AUTH_URL;
   if (!url) return false;
   try {
-    return AUTO_INVITE_HOSTS.has(new URL(url).hostname);
+    return isAutoInviteAllowedHostname(new URL(url).hostname);
   } catch {
     return false;
   }
 }
-
-import type { db } from "./db";
 
 type OrgQueryDb = Pick<typeof db, "query">;
 

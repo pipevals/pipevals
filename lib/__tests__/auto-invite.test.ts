@@ -61,6 +61,11 @@ describe("isAutoInviteEnabled", () => {
     expect(isAutoInviteEnabled()).toBe(true);
   });
 
+  test("returns true for www.pipevals.com", () => {
+    process.env.BETTER_AUTH_URL = "https://www.pipevals.com";
+    expect(isAutoInviteEnabled()).toBe(true);
+  });
+
   test("returns false for a non-allowed hostname (6.3)", () => {
     process.env.BETTER_AUTH_URL = "https://staging.other-domain.com";
     expect(isAutoInviteEnabled()).toBe(false);

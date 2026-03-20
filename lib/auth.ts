@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { apikey } from "./db/auth-schema";
 import { guestRole, createGuestHooks } from "./auth-guest";
+import { SITE_TRUSTED_ORIGINS } from "./app-hosts";
 import { createAutoInviteHook } from "./auto-invite";
 
 type AddMemberParams = {
@@ -28,6 +29,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
   secret,
+  trustedOrigins: [...SITE_TRUSTED_ORIGINS],
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
