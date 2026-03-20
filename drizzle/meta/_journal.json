@@ -43,6 +43,13 @@
       "when": 1774006108910,
       "tag": "0005_romantic_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774014339675,
+      "tag": "0006_apikey_table",
+      "breakpoints": true
     }
   ]
 }

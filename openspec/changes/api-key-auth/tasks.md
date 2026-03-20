@@ -1,9 +1,9 @@
 ## 1. Dependencies & Database
 
-- [ ] 1.1 Install `@better-auth/api-key` package
-- [ ] 1.2 Add the `apiKey` plugin to `lib/auth.ts` with user-scoped references, `x-api-key` header, per-key rate limiting (60 req/60s), and 90-day default expiration
-- [ ] 1.3 Run `npx @better-auth/cli@latest generate` to generate the Drizzle migration for the `apiKey` table
-- [ ] 1.4 Apply the migration and verify the `apiKey` table exists
+- [x] 1.1 Install `@better-auth/api-key` package
+- [x] 1.2 Add the `apiKey` plugin to `lib/auth.ts` with user-scoped references, `x-api-key` header, per-key rate limiting (60 req/60s), and 90-day default expiration
+- [x] 1.3 Run `npx @better-auth/cli@latest generate` to generate the Drizzle migration for the `apiKey` table
+- [x] 1.4 Apply the migration and verify the `apiKey` table exists
 
 ## 2. Auth Layer
 

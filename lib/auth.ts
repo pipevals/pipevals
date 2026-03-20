@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins/organization";
 import { admin } from "better-auth/plugins/admin";
-import { bearer } from "better-auth/plugins/bearer";
+import { apiKey } from "@better-auth/api-key";
 import { db } from "./db";
 import { guestRole, createGuestHooks } from "./auth-guest";
 import { createAutoInviteHook } from "./auto-invite";
@@ -29,6 +29,15 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  user: {
+    additionalFields: {
+      receiveUpdates: {
+        type: "boolean",
+        defaultValue: false,
+        required: true,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: !isProduction,
   },
@@ -60,7 +69,17 @@ export const auth = betterAuth({
       roles: { guest: guestRole },
     }),
     admin(),
-    bearer(),
+    apiKey({
+      apiKeyHeaders: ["x-api-key"],
+      keyExpiration: {
+        defaultExpiresIn: 1000 * 60 * 60 * 24 * 90, // 90 days in ms
+      },
+      rateLimit: {
+        enabled: true,
+        timeWindow: 60_000, // 1 minute
+        maxRequests: 60, // 60 req/min per key
+      },
+    }),
     nextCookies(),
   ],
 });

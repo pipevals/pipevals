@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { organization, admin, bearer, testUtils } from "better-auth/plugins";
+import { organization, admin, testUtils } from "better-auth/plugins";
 import type { TestHelpers } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
 import { guestRole, createGuestHooks } from "@/lib/auth-guest";
@@ -15,7 +15,7 @@ function createAuth(db: DrizzleDb, baseURL = "http://localhost:3000") {
     secret: "test-secret-at-least-32-characters-long",
     baseURL,
     database: drizzleAdapter(db, { provider: "pg" }),
-    plugins: [organization(), admin(), bearer(), testUtils()],
+    plugins: [organization(), admin(), testUtils()],
   });
 }
 
@@ -70,7 +70,6 @@ function createAuthWithGuestHooks(db: DrizzleDb, baseURL: string) {
     plugins: [
       organization({ roles: { guest: guestRole } }),
       admin(),
-      bearer(),
       testUtils(),
     ],
   });
