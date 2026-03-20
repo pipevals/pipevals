@@ -1,6 +1,6 @@
 ## 1. Auth Client
 
-- [ ] 1.1 Add `apiKeyClient` plugin from `@better-auth/api-key/client` to `lib/auth-client.ts`
+- [x] 1.1 Add `apiKeyClient` plugin from `@better-auth/api-key/client` to `lib/auth-client.ts`
 
 ## 2. Settings Layout
 
