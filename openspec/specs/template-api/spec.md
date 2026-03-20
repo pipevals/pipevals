@@ -14,7 +14,11 @@ The system SHALL expose `GET /api/templates` to list all templates visible to th
 - **THEN** the system returns 401
 
 ### Requirement: Create org-scoped template
-The system SHALL expose `POST /api/templates` to create a template scoped to the user's active organization. The request body MUST include `name` (string), `graphSnapshot` (object with `nodes` and `edges` arrays), and `triggerSchema` (object). `description` is optional. The system SHALL generate a `slug` from the name using the `slugify` utility. The `organizationId` SHALL be set from the authenticated session. The `createdBy` SHALL be set to the authenticated user's ID.
+The system SHALL expose `POST /api/templates` to create a template scoped to the user's active organization. The request body MUST include `name` (string), `graphSnapshot` (object with `nodes` and `edges` arrays), and `triggerSchema` (object). `description` is optional. The system SHALL generate a `slug` from the name using the `slugify` utility. The `organizationId` SHALL be set from the authenticated session. The `createdBy` SHALL be set to the authenticated user's ID. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to create template
+- **WHEN** a guest user sends `POST /api/templates`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Create org-scoped template
 - **WHEN** an authenticated user sends `POST /api/templates` with `{ "name": "My RAG Eval", "graphSnapshot": { "nodes": [...], "edges": [...] }, "triggerSchema": { "query": "" } }`
@@ -29,7 +33,11 @@ The system SHALL expose `POST /api/templates` to create a template scoped to the
 - **THEN** the system returns 400 with a validation error
 
 ### Requirement: Delete org-scoped template
-The system SHALL expose `DELETE /api/templates/:id` to delete a template. The system SHALL only allow deletion of templates where `organizationId` matches the user's active organization. Built-in templates (`organizationId = NULL`) SHALL NOT be deletable via this endpoint.
+The system SHALL expose `DELETE /api/templates/:id` to delete a template. The system SHALL only allow deletion of templates where `organizationId` matches the user's active organization. Built-in templates (`organizationId = NULL`) SHALL NOT be deletable via this endpoint. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to delete template
+- **WHEN** a guest user sends `DELETE /api/templates/[id]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Delete org-scoped template
 - **WHEN** an authenticated user sends `DELETE /api/templates/:id` for a template belonging to their org

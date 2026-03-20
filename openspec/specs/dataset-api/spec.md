@@ -8,7 +8,11 @@ The system SHALL define a `dataset_item` table with columns: `id` (text PK, auto
 - **THEN** both `dataset` and `dataset_item` tables exist with all specified columns, constraints, and indexes
 
 ### Requirement: Create dataset
-The system SHALL expose `POST /api/datasets` to create a new dataset. The request body MUST include `name` (string) and `schema` (record of key names to empty-string defaults). The request body MAY include `description` (string) and `items` (array of objects conforming to the schema). The dataset MUST be scoped to the authenticated user's active organization. If `items` are provided, they MUST be validated against the schema and inserted as `dataset_item` rows with sequential `index` values starting at 0.
+The system SHALL expose `POST /api/datasets` to create a new dataset. The request body MUST include `name` (string) and `schema` (record of key names to empty-string defaults). The request body MAY include `description` (string) and `items` (array of objects conforming to the schema). The dataset MUST be scoped to the authenticated user's active organization. If `items` are provided, they MUST be validated against the schema and inserted as `dataset_item` rows with sequential `index` values starting at 0. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to create dataset
+- **WHEN** a guest user sends `POST /api/datasets`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Create dataset with schema only
 - **WHEN** an authenticated user sends `POST /api/datasets` with `{ "name": "Golden Set", "schema": { "prompt": "", "expected": "" } }`
@@ -49,7 +53,11 @@ The system SHALL expose `GET /api/datasets/:id` to retrieve a dataset with all i
 - **THEN** the system returns 404
 
 ### Requirement: Update dataset metadata
-The system SHALL expose `PUT /api/datasets/:id` to update a dataset's name and description. The schema MUST NOT be changeable after creation (to avoid invalidating existing items).
+The system SHALL expose `PUT /api/datasets/:id` to update a dataset's name and description. The schema MUST NOT be changeable after creation (to avoid invalidating existing items). The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to update dataset
+- **WHEN** a guest user sends `PUT /api/datasets/[id]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Update dataset name
 - **WHEN** an authenticated user sends `PUT /api/datasets/:id` with `{ "name": "Updated Name" }`
@@ -60,14 +68,22 @@ The system SHALL expose `PUT /api/datasets/:id` to update a dataset's name and d
 - **THEN** the system ignores the schema field and only updates name/description
 
 ### Requirement: Delete dataset
-The system SHALL expose `DELETE /api/datasets/:id` to delete a dataset and all its items via cascade. The system MUST verify the dataset belongs to the authenticated user's organization.
+The system SHALL expose `DELETE /api/datasets/:id` to delete a dataset and all its items via cascade. The system MUST verify the dataset belongs to the authenticated user's organization. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to delete dataset
+- **WHEN** a guest user sends `DELETE /api/datasets/[id]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Delete dataset
 - **WHEN** an authenticated user sends `DELETE /api/datasets/:id`
 - **THEN** the dataset and all items are deleted and the system returns 204
 
 ### Requirement: Add items to dataset
-The system SHALL expose `POST /api/datasets/:id/items` to add items to an existing dataset. The request body MUST be an array of objects. Each object MUST be validated against the dataset's schema. Items MUST be appended with `index` values continuing from the current maximum index.
+The system SHALL expose `POST /api/datasets/:id/items` to add items to an existing dataset. The request body MUST be an array of objects. Each object MUST be validated against the dataset's schema. Items MUST be appended with `index` values continuing from the current maximum index. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to add items
+- **WHEN** a guest user sends `POST /api/datasets/[id]/items`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Add items to dataset
 - **WHEN** a dataset has 5 items (indexes 0-4) and the user sends 3 new items
@@ -78,7 +94,11 @@ The system SHALL expose `POST /api/datasets/:id/items` to add items to an existi
 - **THEN** the system returns 400 with a validation error and no items are inserted
 
 ### Requirement: Delete item from dataset
-The system SHALL expose `DELETE /api/datasets/:id/items/:itemId` to remove a single item from a dataset. The system MUST NOT re-index remaining items (gaps in index values are acceptable).
+The system SHALL expose `DELETE /api/datasets/:id/items/:itemId` to remove a single item from a dataset. The system MUST NOT re-index remaining items (gaps in index values are acceptable). The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to delete item
+- **WHEN** a guest user sends `DELETE /api/datasets/[id]/items/[itemId]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Delete single item
 - **WHEN** an authenticated user deletes an item from a dataset with 5 items

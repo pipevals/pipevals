@@ -13,7 +13,7 @@ The `pipeline_run` table MUST gain a nullable `evalRunId` column (text FK to eva
 - **THEN** all existing pipeline_run rows have `evalRunId = null` and continue to function normally
 
 ### Requirement: Trigger eval run
-The system SHALL expose `POST /api/pipelines/:id/eval-runs` to trigger an evaluation run. The request body MUST include `datasetId` (string). The endpoint MUST:
+The system SHALL expose `POST /api/pipelines/:id/eval-runs` to trigger an evaluation run. The request body MUST include `datasetId` (string). The endpoint SHALL require write permission and return 403 for guest users. The endpoint MUST:
 1. Load the pipeline with its current graph and triggerSchema
 2. Load the dataset with its schema and all items
 3. Validate that the dataset schema keys exactly match the pipeline triggerSchema keys; reject with 400 if they do not match
@@ -23,6 +23,10 @@ The system SHALL expose `POST /api/pipelines/:id/eval-runs` to trigger an evalua
 7. For each dataset item, create a `pipeline_run` record with the item's `data` as `triggerPayload`, the shared `graphSnapshot`, and `evalRunId` set to the eval run's id
 8. Start a Vercel Workflow for each pipeline run concurrently via `Promise.all`
 9. Return 202 with the eval run id
+
+#### Scenario: Guest tries to start eval run
+- **WHEN** a guest user sends `POST /api/pipelines/[id]/eval-runs`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Trigger eval run successfully
 - **WHEN** an authenticated user sends `POST /api/pipelines/:id/eval-runs` with `{ "datasetId": "ds-123" }` and the dataset has 5 items with matching schema

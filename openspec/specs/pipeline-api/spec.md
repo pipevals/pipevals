@@ -7,7 +7,11 @@ The system SHALL expose `POST /api/pipelines` to create a new pipeline. The requ
 3. Generate fresh UUIDs for all nodes and edges from the template's `graphSnapshot`, remapping edge `sourceNodeId` and `targetNodeId` references to the new node UUIDs
 4. Insert the pipeline, nodes, and edges atomically in a single transaction
 
-The response MUST return the created pipeline with its id and slug. The pipeline MUST be scoped to the authenticated user's active organization.
+The response MUST return the created pipeline with its id and slug. The pipeline MUST be scoped to the authenticated user's active organization. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to create pipeline
+- **WHEN** a guest user sends `POST /api/pipelines`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Create pipeline from template
 - **WHEN** an authenticated user sends `POST /api/pipelines` with `{ "name": "My Eval", "templateId": "abc-123" }` and template `abc-123` exists and is visible
@@ -56,7 +60,11 @@ The system SHALL expose `GET /api/pipelines/:id` to retrieve a pipeline with its
 - **THEN** the system returns 404
 
 ### Requirement: Update pipeline graph
-The system SHALL expose `PUT /api/pipelines/:id` to update a pipeline's metadata and full graph. The request body MUST accept name, description, nodes array, edges array, and an optional `triggerSchema` field (`Record<string, unknown>`). The system MUST validate that `triggerSchema`, if provided, is a plain JSON object (not an array). Node IDs MUST be client-generated and stable. The system MUST validate the graph is a valid DAG before persisting. The update MUST be atomic. The system MUST execute independent database queries in parallel using `Promise.all`.
+The system SHALL expose `PUT /api/pipelines/:id` to update a pipeline's metadata and full graph. The request body MUST accept name, description, nodes array, edges array, and an optional `triggerSchema` field (`Record<string, unknown>`). The system MUST validate that `triggerSchema`, if provided, is a plain JSON object (not an array). Node IDs MUST be client-generated and stable. The system MUST validate the graph is a valid DAG before persisting. The update MUST be atomic. The system MUST execute independent database queries in parallel using `Promise.all`. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to update pipeline
+- **WHEN** a guest user sends `PUT /api/pipelines/[id]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Save pipeline graph
 - **WHEN** a user sends a PUT with updated nodes and edges that form a valid DAG
@@ -91,14 +99,22 @@ The system SHALL expose `PUT /api/pipelines/:id` to update a pipeline's metadata
 - **THEN** both queries execute concurrently rather than sequentially
 
 ### Requirement: Delete pipeline
-The system SHALL expose `DELETE /api/pipelines/:id` to delete a pipeline and all its nodes, edges, runs, and step results via cascade.
+The system SHALL expose `DELETE /api/pipelines/:id` to delete a pipeline and all its nodes, edges, runs, and step results via cascade. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to delete pipeline
+- **WHEN** a guest user sends `DELETE /api/pipelines/[id]`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Delete pipeline
 - **WHEN** an authenticated user sends `DELETE /api/pipelines/:id`
 - **THEN** the pipeline and all related data are deleted and the system returns 204
 
 ### Requirement: Trigger pipeline run
-The system SHALL expose `POST /api/pipelines/:id/runs` to trigger a new pipeline run. The request body MUST accept an optional trigger payload (JSON object). The endpoint MUST load the current pipeline graph, serialize it as the run's graph_snapshot, create a pipeline_run row, invoke the Vercel Workflow, and return the run id immediately (async execution). The graph_snapshot MUST capture the complete graph at trigger time so the run is isolated from subsequent pipeline edits.
+The system SHALL expose `POST /api/pipelines/:id/runs` to trigger a new pipeline run. The request body MUST accept an optional trigger payload (JSON object). The endpoint MUST load the current pipeline graph, serialize it as the run's graph_snapshot, create a pipeline_run row, invoke the Vercel Workflow, and return the run id immediately (async execution). The graph_snapshot MUST capture the complete graph at trigger time so the run is isolated from subsequent pipeline edits. The endpoint SHALL accept authentication via either session cookies or a valid `x-api-key` header. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to start run
+- **WHEN** a guest user sends `POST /api/pipelines/[id]/runs`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 #### Scenario: Trigger a run
 - **WHEN** a user sends `POST /api/pipelines/:id/runs` with payload `{ "prompt": "explain quantum computing" }`
@@ -107,6 +123,21 @@ The system SHALL expose `POST /api/pipelines/:id/runs` to trigger a new pipeline
 #### Scenario: Trigger run on empty pipeline
 - **WHEN** a user triggers a run on a pipeline with no nodes
 - **THEN** the system returns 400 indicating the pipeline has no nodes to execute
+
+#### Scenario: Trigger run via API key
+- **WHEN** an external client sends `POST /api/pipelines/:id/runs` with a valid `x-api-key` header and the API key user is a non-guest member of the pipeline's organization
+- **THEN** the system authenticates via API key, snapshots the graph, creates the run, and returns 202
+
+#### Scenario: Trigger run via API key with invalid key
+- **WHEN** an external client sends `POST /api/pipelines/:id/runs` with an invalid `x-api-key` header
+- **THEN** the system returns 401
+
+### Requirement: Cancel pipeline run
+The system SHALL allow authenticated users to cancel a running pipeline via `POST /api/pipelines/:id/runs/:runId/cancel`. The endpoint SHALL require write permission and return 403 for guest users.
+
+#### Scenario: Guest tries to cancel run
+- **WHEN** a guest user sends `POST /api/pipelines/[id]/runs/[runId]/cancel`
+- **THEN** the system returns 403 with `{ error: "Insufficient permissions" }`
 
 ### Requirement: Get run status
 The system SHALL expose `GET /api/pipelines/:pipelineId/runs/:runId` to retrieve a run's status, graph snapshot, and all step results. The response MUST include the run's status, trigger_payload, graph_snapshot (the graph as it was when the run was triggered), timestamps, and a step_results array with each node's status, input, output, error, and duration.
