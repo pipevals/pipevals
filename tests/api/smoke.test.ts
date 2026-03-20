@@ -282,8 +282,8 @@ describe("API smoke tests (PGlite)", () => {
           n.data.label === "Collect Responses",
       );
       expect(collect.data.config.mapping).toEqual({
-        response_a: "steps.Model A.text",
-        response_b: "steps.Model B.text",
+        response_a: "steps.model_a.text",
+        response_b: "steps.model_b.text",
       });
     });
   });

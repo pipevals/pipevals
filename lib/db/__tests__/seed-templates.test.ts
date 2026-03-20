@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { seedPipelineDefinitions } from "../seed-templates";
+import { validateNodeSlugs } from "../../pipeline/validate-slugs";
 
 describe("seed template definitions", () => {
   test("all definitions produce valid graphSnapshot shape", () => {
@@ -40,5 +41,14 @@ describe("seed template definitions", () => {
   test("all slugs are unique", () => {
     const slugs = seedPipelineDefinitions.map((d) => d.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
+  });
+
+  test("all seed node slugs pass validateNodeSlugs", () => {
+    for (const def of seedPipelineDefinitions) {
+      const errors = validateNodeSlugs(
+        def.nodes.map((n) => ({ id: n.id, slug: n.slug })),
+      );
+      expect(errors).toEqual([]);
+    }
   });
 });

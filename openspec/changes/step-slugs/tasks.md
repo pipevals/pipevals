@@ -40,10 +40,10 @@
 
 ## 6. Seed Templates
 
-- [ ] 6.1 Add `slug` field to `SeedNode` interface in `seed-templates.ts`
-- [ ] 6.2 Add explicit slugs to all seed nodes (trigger nodes get `null`, step nodes get slugified labels)
-- [ ] 6.3 Update all dot-path references in seed configs to use slug-based paths (e.g. `steps.Generator.text` → `steps.generator.text`)
-- [ ] 6.4 Update seed template tests to verify slug validity via `validateNodeSlugs`
+- [x] 6.1 Add `slug` field to `SeedNode` interface in `seed-templates.ts`
+- [x] 6.2 Add explicit slugs to all seed nodes (trigger nodes get `null`, step nodes get slugified labels)
+- [x] 6.3 Update all dot-path references in seed configs to use slug-based paths (e.g. `steps.Generator.text` → `steps.generator.text`)
+- [x] 6.4 Update seed template tests to verify slug validity via `validateNodeSlugs`
 
 ## 7. Graph Snapshot & Run Compatibility
 

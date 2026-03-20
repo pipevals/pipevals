@@ -18,6 +18,7 @@ interface SeedNode {
   id: string;
   type: PipelineNodeType;
   label: string;
+  slug: string | null;
   config: Record<string, unknown>;
   positionX: number;
   positionY: number;
@@ -59,7 +60,7 @@ const JUDGE_PROMPT = [
   "",
   "Prompt: ${trigger.prompt}",
   "",
-  "Response to evaluate: ${steps.Generator.text}",
+  "Response to evaluate: ${steps.generator.text}",
 ].join("\n");
 
 const aiAsAJudge: SeedPipelineDefinition = {
@@ -75,6 +76,7 @@ const aiAsAJudge: SeedPipelineDefinition = {
       id: "seed-judge-trigger",
       type: "trigger",
       label: "Trigger",
+      slug: null,
       config: {},
       positionX: 0,
       positionY: 150,
@@ -83,9 +85,10 @@ const aiAsAJudge: SeedPipelineDefinition = {
       id: "seed-judge-generator",
       type: "ai_sdk",
       label: "Generator",
+      slug: "generator",
       config: {
         type: "ai_sdk",
-        model: "openai/gpt-4o",
+        model: "meta/llama-4-scout",
         promptTemplate: "trigger.prompt",
         temperature: 0.7,
       },
@@ -96,6 +99,7 @@ const aiAsAJudge: SeedPipelineDefinition = {
       id: "seed-judge-judge",
       type: "ai_sdk",
       label: "Judge",
+      slug: "judge",
       config: {
         type: "ai_sdk",
         model: "openai/gpt-4o",
@@ -120,13 +124,14 @@ const aiAsAJudge: SeedPipelineDefinition = {
       id: "seed-judge-metrics",
       type: "metric_capture",
       label: "Metrics",
+      slug: "metrics",
       config: {
         type: "metric_capture",
         metrics: {
-          relevance: "steps.Judge.object.relevance",
-          coherence: "steps.Judge.object.coherence",
-          score: "steps.Judge.object.score",
-          reasoning: "steps.Judge.object.reasoning",
+          relevance: "steps.judge.object.relevance",
+          coherence: "steps.judge.object.coherence",
+          score: "steps.judge.object.score",
+          reasoning: "steps.judge.object.reasoning",
         },
       },
       positionX: 900,
@@ -169,9 +174,9 @@ const COMPARISON_JUDGE_PROMPT = [
   "",
   "Original prompt: ${trigger.prompt}",
   "",
-  "Response A: ${steps.Collect Responses.response_a}",
+  "Response A: ${steps.collect_responses.response_a}",
   "",
-  "Response B: ${steps.Collect Responses.response_b}",
+  "Response B: ${steps.collect_responses.response_b}",
   "",
   "Score each response 1-5 and pick a winner.",
 ].join("\n");
@@ -189,6 +194,7 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-trigger",
       type: "trigger",
       label: "Trigger",
+      slug: null,
       config: {},
       positionX: 0,
       positionY: 200,
@@ -197,9 +203,10 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-model-a",
       type: "ai_sdk",
       label: "Model A",
+      slug: "model_a",
       config: {
         type: "ai_sdk",
-        model: "openai/gpt-4o",
+        model: "meta/llama-4-scout",
         promptTemplate: "trigger.prompt",
         temperature: 0.7,
       },
@@ -210,9 +217,10 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-model-b",
       type: "ai_sdk",
       label: "Model B",
+      slug: "model_b",
       config: {
         type: "ai_sdk",
-        model: "anthropic/claude-sonnet-4-5",
+        model: "mistral/mistral-small",
         promptTemplate: "trigger.prompt",
         temperature: 0.7,
       },
@@ -223,11 +231,12 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-collect",
       type: "transform",
       label: "Collect Responses",
+      slug: "collect_responses",
       config: {
         type: "transform",
         mapping: {
-          response_a: "steps.Model A.text",
-          response_b: "steps.Model B.text",
+          response_a: "steps.model_a.text",
+          response_b: "steps.model_b.text",
         },
       },
       positionX: 600,
@@ -237,6 +246,7 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-judge",
       type: "ai_sdk",
       label: "Judge",
+      slug: "judge",
       config: {
         type: "ai_sdk",
         model: "openai/gpt-4o",
@@ -261,13 +271,14 @@ const modelAbComparison: SeedPipelineDefinition = {
       id: "seed-ab-metrics",
       type: "metric_capture",
       label: "Metrics",
+      slug: "metrics",
       config: {
         type: "metric_capture",
         metrics: {
-          score_a: "steps.Judge.object.score_a",
-          score_b: "steps.Judge.object.score_b",
-          winner: "steps.Judge.object.winner",
-          reasoning: "steps.Judge.object.reasoning",
+          score_a: "steps.judge.object.score_a",
+          score_b: "steps.judge.object.score_b",
+          winner: "steps.judge.object.winner",
+          reasoning: "steps.judge.object.reasoning",
         },
       },
       positionX: 1200,
@@ -337,6 +348,7 @@ const humanInTheLoop: SeedPipelineDefinition = {
       id: "seed-hitl-trigger",
       type: "trigger",
       label: "Trigger",
+      slug: null,
       config: {},
       positionX: 0,
       positionY: 150,
@@ -345,9 +357,10 @@ const humanInTheLoop: SeedPipelineDefinition = {
       id: "seed-hitl-generator",
       type: "ai_sdk",
       label: "Generator",
+      slug: "generator",
       config: {
         type: "ai_sdk",
-        model: "openai/gpt-4o",
+        model: "meta/llama-4-scout",
         promptTemplate: "trigger.prompt",
         temperature: 0.7,
       },
@@ -358,17 +371,35 @@ const humanInTheLoop: SeedPipelineDefinition = {
       id: "seed-hitl-review",
       type: "human_review",
       label: "Human Review",
+      slug: "human_review",
       config: {
         type: "human_review",
         display: {
           Prompt: "trigger.prompt",
-          "AI Response": "steps.Generator.text",
+          "AI Response": "steps.generator.text",
         },
         rubric: [
-          { name: "accuracy", type: "rating", min: 1, max: 5, label: "Accuracy" },
+          {
+            name: "accuracy",
+            type: "rating",
+            min: 1,
+            max: 5,
+            label: "Accuracy",
+          },
           { name: "tone", type: "rating", min: 1, max: 5, label: "Tone" },
-          { name: "helpfulness", type: "rating", min: 1, max: 5, label: "Helpfulness" },
-          { name: "notes", type: "text", label: "Notes", placeholder: "Any additional feedback..." },
+          {
+            name: "helpfulness",
+            type: "rating",
+            min: 1,
+            max: 5,
+            label: "Helpfulness",
+          },
+          {
+            name: "notes",
+            type: "text",
+            label: "Notes",
+            placeholder: "Any additional feedback...",
+          },
         ],
         requiredReviewers: 1,
       },
@@ -379,12 +410,13 @@ const humanInTheLoop: SeedPipelineDefinition = {
       id: "seed-hitl-metrics",
       type: "metric_capture",
       label: "Metrics",
+      slug: "metrics",
       config: {
         type: "metric_capture",
         metrics: {
-          accuracy: "steps.Human Review.scores.accuracy",
-          tone: "steps.Human Review.scores.tone",
-          helpfulness: "steps.Human Review.scores.helpfulness",
+          accuracy: "steps.human_review.scores.accuracy",
+          tone: "steps.human_review.scores.tone",
+          helpfulness: "steps.human_review.scores.helpfulness",
         },
       },
       positionX: 900,
@@ -495,7 +527,10 @@ const generalPromptDataset: SeedDatasetDefinition = {
     { prompt: "Explain the difference between TCP and UDP to a 10-year-old" },
     { prompt: "List three common logical fallacies with examples" },
     { prompt: "How does photosynthesis work?" },
-    { prompt: "Write a short product description for noise-canceling headphones" },
+    {
+      prompt:
+        "Write a short product description for noise-canceling headphones",
+    },
     { prompt: "What causes inflation in an economy?" },
     { prompt: "Compare and contrast REST and GraphQL APIs" },
   ],
@@ -553,7 +588,9 @@ export async function seedDatasets(
         );
       }
 
-      console.log(`  ✔ Created dataset "${def.name}" (${dataset.id}, ${def.items.length} items)`);
+      console.log(
+        `  ✔ Created dataset "${def.name}" (${dataset.id}, ${def.items.length} items)`,
+      );
     });
   }
 }
@@ -604,6 +641,7 @@ export async function seedPipelines(
             pipelineId: pipeline.id,
             type: n.type,
             label: n.label,
+            slug: n.slug,
             config: n.config,
             positionX: n.positionX,
             positionY: n.positionY,
