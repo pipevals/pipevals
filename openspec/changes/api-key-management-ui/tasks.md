@@ -16,10 +16,10 @@
 
 ## 4. Create Key Dialog
 
-- [ ] 4.1 Create `components/settings/create-api-key-dialog.tsx` — Dialog with name Input, Create Button, and two states: form and key-reveal
-- [ ] 4.2 In key-reveal state, display the full key in monospace with a copy-to-clipboard Button and a warning that the key won't be shown again
-- [ ] 4.3 On dialog close after creation, clear the key from state and refresh the key list
-- [ ] 4.4 Validate that name is non-empty before submission
+- [x] 4.1 Create `components/settings/create-api-key-dialog.tsx` — Dialog with name Input, Create Button, and two states: form and key-reveal
+- [x] 4.2 In key-reveal state, display the full key in monospace with a copy-to-clipboard Button and a warning that the key won't be shown again
+- [x] 4.3 On dialog close after creation, clear the key from state and refresh the key list
+- [x] 4.4 Validate that name is non-empty before submission
 
 ## 5. Revoke Key
 
