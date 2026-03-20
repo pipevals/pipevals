@@ -4,6 +4,7 @@ export interface WalkerNode {
   id: string;
   type: StepType;
   label: string | null;
+  slug: string | null;
   config: Record<string, unknown>;
 }
 
@@ -36,6 +37,7 @@ export function loadGraph(snapshot: {
       id: n.id as string,
       type: n.type as StepType,
       label: (n.label as string) ?? null,
+      slug: (n.slug as string) ?? null,
       config: (n.config as Record<string, unknown>) ?? {},
     };
   });

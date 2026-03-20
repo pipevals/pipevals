@@ -21,12 +21,12 @@
 
 ## 4. Auto-wire & Input Resolver
 
-- [ ] 4.1 Update `autoWireInputs` signature to accept `sourceSlug: string | null` instead of `sourceLabel`
-- [ ] 4.2 Update `resolveSourceDotPath` to use `sourceSlug ?? sourceId` instead of `sourceLabel?.trim() ?? sourceId`
-- [ ] 4.3 Update `input-resolver.ts` to key by `sourceNode.slug` instead of `sourceNode.label`
-- [ ] 4.4 Update `WalkerNode` type in `graph-loader.ts` to include `slug` field
-- [ ] 4.5 Update auto-wire tests to use slug parameter
-- [ ] 4.6 Update input-resolver tests — verify keying by slug, verify null slug keys by ID only
+- [x] 4.1 Update `autoWireInputs` signature to accept `sourceSlug: string | null` instead of `sourceLabel`
+- [x] 4.2 Update `resolveSourceDotPath` to use `sourceSlug ?? sourceId` instead of `sourceLabel?.trim() ?? sourceId`
+- [x] 4.3 Update `input-resolver.ts` to key by `sourceNode.slug` instead of `sourceNode.label`
+- [x] 4.4 Update `WalkerNode` type in `graph-loader.ts` to include `slug` field
+- [x] 4.5 Update auto-wire tests to use slug parameter
+- [x] 4.6 Update input-resolver tests — verify keying by slug, verify null slug keys by ID only
 
 ## 5. Pipeline Builder Store & UI
 

@@ -190,7 +190,7 @@ describe("autoWireInputs", () => {
   test("trigger → ai_sdk: uses first schema key", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "ai_sdk",
       { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
@@ -203,7 +203,7 @@ describe("autoWireInputs", () => {
   test("trigger source with empty schema uses bare 'trigger' prefix", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "ai_sdk",
       { type: "ai_sdk", model: "openai/gpt-4o", promptTemplate: "" },
@@ -216,7 +216,7 @@ describe("autoWireInputs", () => {
   test("trigger → api_request: adds entry to bodyTemplate", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "api_request",
       { type: "api_request", url: "https://api.example.com", method: "POST", bodyTemplate: {} },
@@ -230,7 +230,7 @@ describe("autoWireInputs", () => {
   test("trigger → sandbox (node): sets bracket-notation code template", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "sandbox",
       { type: "sandbox", runtime: "node", code: "", timeout: 30000 },
@@ -243,7 +243,7 @@ describe("autoWireInputs", () => {
   test("trigger → sandbox (python): sets bracket-notation code template without semicolon", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "sandbox",
       { type: "sandbox", runtime: "python", code: "", timeout: 30000 },
@@ -256,7 +256,7 @@ describe("autoWireInputs", () => {
   test("trigger → condition: populates expression with default comparison", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "condition",
       { type: "condition", expression: "", handles: ["true", "false"] },
@@ -269,7 +269,7 @@ describe("autoWireInputs", () => {
   test("trigger → transform: adds entry to mapping", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "transform",
       { type: "transform", mapping: {} },
@@ -283,7 +283,7 @@ describe("autoWireInputs", () => {
   test("trigger → metric_capture: adds entry to metrics map", () => {
     const result = autoWireInputs(
       "trigger",
-      "Trigger",
+      null,
       "trigger-source",
       "metric_capture",
       { type: "metric_capture", metrics: {} },
@@ -344,9 +344,9 @@ describe("autoWireInputs", () => {
     expect(result).toBeNull();
   });
 
-  // --- label fallback ---
+  // --- slug fallback ---
 
-  test("uses sourceId as fallback when label is empty", () => {
+  test("uses sourceId as fallback when slug is empty", () => {
     const result = autoWireInputs(
       "ai_sdk",
       "",

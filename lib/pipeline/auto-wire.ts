@@ -13,7 +13,7 @@ export interface AutoWirePatch {
  */
 export function autoWireInputs(
   sourceType: string,
-  sourceLabel: string | null | undefined,
+  sourceSlug: string | null | undefined,
   sourceId: string,
   targetType: string,
   targetConfig: Record<string, unknown>,
@@ -22,7 +22,7 @@ export function autoWireInputs(
   // 1. Resolve source dot-path from output port declarations
   const dotPath = resolveSourceDotPath(
     sourceType,
-    sourceLabel,
+    sourceSlug,
     sourceId,
     triggerSchema,
   );
@@ -41,7 +41,7 @@ export function autoWireInputs(
 
 function resolveSourceDotPath(
   sourceType: string,
-  sourceLabel: string | null | undefined,
+  sourceSlug: string | null | undefined,
   sourceId: string,
   triggerSchema: Record<string, unknown>,
 ): string | null {
@@ -56,8 +56,8 @@ function resolveSourceDotPath(
   const primaryOutput = sourcePorts.outputs[0];
   if (!primaryOutput) return null;
 
-  const label = sourceLabel?.trim() || sourceId;
-  return `steps.${label}.${primaryOutput.key}`;
+  const identifier = sourceSlug || sourceId;
+  return `steps.${identifier}.${primaryOutput.key}`;
 }
 
 function applyPort(
