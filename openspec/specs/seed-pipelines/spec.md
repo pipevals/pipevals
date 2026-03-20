@@ -2,10 +2,10 @@
 
 ### Requirement: AI-as-a-Judge seed pipeline definition
 The system SHALL include a seed pipeline named "AI-as-a-Judge Scoring" with slug `ai-as-a-judge-scoring` containing exactly four nodes wired in sequence:
-1. **Trigger** node with a trigger schema defining `{ prompt: string }`
-2. **AI SDK** node labeled "Generator" configured with a model (e.g. `openai/gpt-4o`), a prompt template that incorporates `trigger.prompt`, and temperature 0.7
-3. **AI SDK** node labeled "Judge" configured with a model (e.g. `openai/gpt-4o`), a prompt template that scores the generator's output on relevance and coherence using a 1-5 scale, temperature 0, and a response format requesting structured JSON with `score` and `reasoning` fields
-4. **Metric Capture** node that captures `score` from the judge's structured output
+1. **Trigger** node with a trigger schema defining `{ prompt: string }` and slug `null`
+2. **AI SDK** node labeled "Generator" with slug `"generator"`, configured with a model (e.g. `openai/gpt-4o`), a prompt template that incorporates `trigger.prompt`, and temperature 0.7
+3. **AI SDK** node labeled "Judge" with slug `"judge"`, configured with a model (e.g. `openai/gpt-4o`), a prompt template that scores the generator's output on relevance and coherence using a 1-5 scale, temperature 0, and a response format requesting structured JSON with `score` and `reasoning` fields. The prompt template MUST reference the generator's output using the slug-based path `steps.generator.text` (via interpolation syntax).
+4. **Metric Capture** node labeled "Metrics" with slug `"metrics"` that captures `score` from the judge's structured output using slug-based paths (e.g. `steps.judge.object.relevance`)
 
 The nodes SHALL be positioned in a left-to-right layout with ~300px horizontal spacing.
 
@@ -17,14 +17,18 @@ The nodes SHALL be positioned in a left-to-right layout with ~300px horizontal s
 - **WHEN** the AI-as-a-Judge pipeline is inspected
 - **THEN** the Judge node's prompt template SHALL include evaluation criteria (relevance, coherence), a 1-5 scoring scale, and instructions to output structured JSON
 
+#### Scenario: Dot-paths use slugs
+- **WHEN** the AI-as-a-Judge pipeline's node configs are inspected
+- **THEN** all step references use slug-based dot-paths (e.g. `steps.generator.text`, `steps.judge.object.relevance`) not label-based paths
+
 ### Requirement: Model A/B Comparison seed pipeline definition
 The system SHALL include a seed pipeline named "Model A/B Comparison" with slug `model-ab-comparison` containing exactly six nodes:
-1. **Trigger** node with a trigger schema defining `{ prompt: string }`
-2. **AI SDK** node labeled "Model A" configured with model `openai/gpt-4o` and a prompt template incorporating `trigger.prompt`
-3. **AI SDK** node labeled "Model B" configured with model `anthropic/claude-sonnet-4-5-20250514` and a prompt template incorporating `trigger.prompt`
-4. **Transform** node labeled "Collect Responses" that maps both model outputs into a single object with keys `response_a` and `response_b`
-5. **AI SDK** node labeled "Judge" configured to compare both responses and output a structured verdict with `winner` (A or B), `score_a` (1-5), `score_b` (1-5), and `reasoning`
-6. **Metric Capture** node that captures `score_a`, `score_b`, and `winner`
+1. **Trigger** node with a trigger schema defining `{ prompt: string }` and slug `null`
+2. **AI SDK** node labeled "Model A" with slug `"model_a"`, configured with model `openai/gpt-4o` and a prompt template incorporating `trigger.prompt`
+3. **AI SDK** node labeled "Model B" with slug `"model_b"`, configured with model `anthropic/claude-sonnet-4-5-20250514` and a prompt template incorporating `trigger.prompt`
+4. **Transform** node labeled "Collect Responses" with slug `"collect_responses"` that maps both model outputs into a single object with keys `response_a` and `response_b` using slug-based paths (`steps.model_a.text`, `steps.model_b.text`)
+5. **AI SDK** node labeled "Judge" with slug `"judge"`, configured to compare both responses using slug-based references (`steps.collect_responses.response_a`, `steps.collect_responses.response_b`) and output a structured verdict with `winner`, `score_a`, `score_b`, and `reasoning`
+6. **Metric Capture** node labeled "Metrics" with slug `"metrics"` that captures `score_a`, `score_b`, and `winner` using slug-based paths
 
 Model A and Model B nodes SHALL execute in parallel (both wired from trigger, converging at the transform). Nodes SHALL be positioned in a diamond/fork layout.
 
@@ -35,6 +39,10 @@ Model A and Model B nodes SHALL execute in parallel (both wired from trigger, co
 #### Scenario: Parallel execution of models
 - **WHEN** the Model A/B Comparison pipeline is examined
 - **THEN** Model A and Model B nodes SHALL both have incoming edges from the trigger node (enabling parallel execution by the walker)
+
+#### Scenario: All dot-paths are slug-based
+- **WHEN** the Model A/B Comparison pipeline's node configs are inspected
+- **THEN** all step references use slug-based paths (e.g. `steps.model_a.text` not `steps.Model A.text`)
 
 ### Requirement: Seed script CLI interface
 The system SHALL provide a script at `scripts/seed-templates.ts` runnable via `bun run scripts/seed-templates.ts` that:
@@ -63,8 +71,12 @@ The system SHALL provide a script at `scripts/seed-templates.ts` runnable via `b
 > **Migration:** Run `bun run scripts/seed-templates.ts` instead of `bun run scripts/seed-pipelines.ts --org <id>`. Existing pipelines created by the old seeder remain in the database unchanged.
 
 ### Requirement: Seed pipeline graph validity
-All seed pipelines SHALL pass the existing `validateGraph` function without errors. Node configs SHALL conform to their respective Zod schemas (`aiSdkConfigSchema`, `metricCaptureConfigSchema`, `transformConfigSchema`).
+All seed pipelines SHALL pass the existing `validateGraph` function without errors. Node configs SHALL conform to their respective Zod schemas (`aiSdkConfigSchema`, `metricCaptureConfigSchema`, `transformConfigSchema`). All seed nodes with non-null labels MUST have a corresponding non-null slug that passes `validateNodeSlugs`.
 
 #### Scenario: Seed graphs are valid
 - **WHEN** the seed pipeline node and edge data is passed to `validateGraph`
 - **THEN** validation returns `{ valid: true }` with no errors
+
+#### Scenario: Seed node slugs are valid
+- **WHEN** the seed pipeline nodes are passed to `validateNodeSlugs`
+- **THEN** validation returns an empty array (no errors)
