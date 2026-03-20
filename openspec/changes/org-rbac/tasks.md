@@ -32,6 +32,6 @@
 
 ## 4. Tests
 
-- [ ] 4.1 Add unit tests for `requireAuth({ write: true })` — verify guest gets 403, member passes
-- [ ] 4.2 Add unit tests for `requirePipeline(id, { write: true })` — verify guest gets 403
-- [ ] 4.3 Add unit tests for `requireDataset(id, { write: true })` — verify guest gets 403
+- [x] 4.1 Add unit tests for `requireAuth({ write: true })` — verify guest gets 403, member passes
+- [x] 4.2 Add unit tests for `requirePipeline(id, { write: true })` — verify guest gets 403
+- [x] 4.3 Add unit tests for `requireDataset(id, { write: true })` — verify guest gets 403

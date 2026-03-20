@@ -209,3 +209,35 @@ export async function createAuthenticatedUser(): Promise<TestContext> {
     headers: loginResult.headers,
   };
 }
+
+/**
+ * Creates a guest user in the given organization and returns
+ * authenticated headers for that guest session.
+ */
+export async function createGuestInOrg(organizationId: string): Promise<{
+  userId: string;
+  headers: Headers;
+}> {
+  const { auth, test } = await setupTestDb();
+
+  const user = test.createUser({ email: `guest-${crypto.randomUUID()}@example.com` });
+  const savedUser = await test.saveUser(user);
+
+  await test.addMember!({
+    userId: savedUser.id,
+    organizationId,
+    role: "guest",
+  });
+
+  const loginResult = await test.login({ userId: savedUser.id });
+
+  await (auth.api as any).setActiveOrganization({
+    headers: loginResult.headers,
+    body: { organizationId },
+  });
+
+  return {
+    userId: savedUser.id,
+    headers: loginResult.headers,
+  };
+}
