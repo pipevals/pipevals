@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "db:migrate:deploy": "bun run lib/db/migrate.ts",
+    "build": "npm run db:migrate:deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
