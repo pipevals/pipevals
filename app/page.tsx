@@ -44,7 +44,7 @@ export default function Home() {
               GitHub
             </a>
             <Link
-              href="/sign-in"
+              href="/pipelines"
               className="hover:text-[#00F0FF] transition-colors"
             >
               Demo
