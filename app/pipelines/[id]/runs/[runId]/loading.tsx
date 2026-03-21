@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PipelineEditorLoading() {
+export default function RunDetailLoading() {
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-screen flex-col">
       {/* AppHeader skeleton */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-8">
         <div className="flex items-center gap-6">
@@ -32,13 +32,11 @@ export default function PipelineEditorLoading() {
         </div>
       </div>
 
-      {/* Editor 3-panel layout */}
+      {/* Run viewer skeleton */}
       <div className="flex min-h-0 flex-1">
-        <div className="w-56 shrink-0 border-r border-border bg-background" />
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-muted/30">
-          <p className="text-xs text-muted-foreground">Loading canvas…</p>
+        <div className="flex min-w-0 flex-1 items-center justify-center">
+          <p className="text-xs text-muted-foreground">Loading run…</p>
         </div>
-        <div className="w-72 shrink-0 border-l border-border bg-background" />
       </div>
     </div>
   );

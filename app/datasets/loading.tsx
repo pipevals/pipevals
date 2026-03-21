@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PipelinesLoading() {
+export default function DatasetsLoading() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* AppHeader skeleton */}
@@ -33,8 +33,11 @@ export default function PipelinesLoading() {
               className="flex items-center border-b border-border py-4 -mx-2 px-2"
             >
               <div className="flex flex-col gap-1.5 flex-1">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-64" />
+                <Skeleton className="h-4 w-36" />
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
               </div>
             </div>
           ))}
