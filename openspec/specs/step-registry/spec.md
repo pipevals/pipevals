@@ -2,7 +2,9 @@
 
 ### Requirement: Step handler interface
 
-The system SHALL define a common handler interface for all step types. Each handler MUST accept a typed config object and a `StepInput` (the resolved upstream outputs) and return a `Promise<StepOutput>` (a JSON-serializable object). Handlers MUST be pure async functions with no shared mutable state.
+The system SHALL use the `StepHandler` type from the `@pipevals/workflow-walker` package: `(config: Record<string, unknown>, input: StepInput) => Promise<StepOutput>`. The `StepInput` and `StepOutput` types SHALL also be imported from the package.
+
+Pipevals' existing handlers SHALL conform to this interface without modification, as they already match the signature.
 
 #### Scenario: Handler receives resolved inputs
 
@@ -12,7 +14,7 @@ The system SHALL define a common handler interface for all step types. Each hand
 #### Scenario: Handler returns JSON-serializable output
 
 - **WHEN** a handler completes execution
-- **THEN** it returns a plain JSON object that can be stored in the step_results table and piped to downstream nodes
+- **THEN** it returns a plain JSON object compatible with the package's `StepOutput` type
 
 ### Requirement: API request step
 
@@ -95,17 +97,19 @@ The system SHALL provide a `metric_capture` step type that records one or more e
 
 ### Requirement: Step registry extensibility
 
-The system SHALL organize step types as a registry (a typed record mapping step type strings to `StepDefinition` objects). Each `StepDefinition` MUST include a `handler` function and a `ports` declaration (input and output ports). Adding a new step type MUST only require: creating a handler function file with its port declarations, adding the type to the StepType enum, adding the config Zod schema, and registering the `StepDefinition` in the registry — no other files need modification. In particular, adding a step type MUST NOT require editing auto-wire logic.
+The system SHALL construct a `StepRegistry` (a `Record<string, { handler: StepHandler }>`) at the application level and pass it to `createWalker()`. Adding a new step type SHALL only require: creating a handler function, and adding it to the registry object — the walker package does not need modification.
+
+The pipevals-specific `StepDefinition` type (which includes `ports`) SHALL remain in pipevals for builder UI purposes. The walker package's `StepRegistry` only requires the `handler` field.
 
 #### Scenario: Add a new step type
 
-- **WHEN** a developer adds a new "webhook" step type
-- **THEN** they create one file containing the handler function and port declarations, add the type to the enum, define a config schema, and register the StepDefinition — no other files need modification
+- **WHEN** a developer adds a new "webhook" step type to pipevals
+- **THEN** they create the handler function, add it to the registry passed to `createWalker()`, and add port declarations to pipevals' local port registry — the walker package is unmodified
 
-#### Scenario: New step type auto-wires without touching auto-wire.ts
+#### Scenario: Consumer in another project registers custom steps
 
-- **WHEN** a developer registers a new step type with output port `{ key: "result" }` and a downstream step has a scalar input port on `dataField`
-- **THEN** connecting them in the builder auto-wires `steps.<label>.result` into `dataField` with no changes to auto-wire.ts
+- **WHEN** another project needs only `condition`, `transform`, and a custom `validator` step
+- **THEN** they construct a registry with three entries and pass it to `createWalker()` — no unused handler code is loaded
 
 ### Requirement: Human review step registration
 

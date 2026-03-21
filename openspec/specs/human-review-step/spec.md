@@ -28,35 +28,47 @@ Each rubric field's `name` MUST be unique within the rubric array.
 
 ### Requirement: Human review step handler
 
-The system SHALL provide a handler for the `human_review` step type that does NOT execute inside a `"use step"` boundary. Instead, it SHALL operate at the workflow level to support hook-based suspension. The handler MUST:
+The system SHALL implement the `human_review` suspension logic via a `HookAdapter` provided to `createWalker()`, rather than hardcoding it in the walker's orchestration loop.
 
-1. Resolve display data by evaluating all dot-path expressions in the `display` config against the step's input context
-2. Create N task records (one per required reviewer) in the `tasks` table, each with a unique hook token
-3. Update the step result status to `awaiting_review`
-4. Update the run status to `awaiting_review`
-5. Create N workflow hooks using `defineHook`/`.create()` and await all of them with `Promise.all`
-6. When all hooks are resumed (all reviewers have submitted), aggregate the results
-7. Update the step result to `completed` with the aggregated output
-8. Update the run status back to `running`
+Pipevals' `HookAdapter` implementation SHALL:
+1. Return `true` from `shouldSuspend()` for nodes with `type === "human_review"`
+2. Implement `executeSuspendable()` with the existing three-phase logic:
+   - Phase 1 (`"use step"`): Resolve display data, create task records in the `tasks` table, record step as `awaiting_review`, update run status to `awaiting_review`
+   - Phase 2 (workflow level): Create N hooks via `defineHook().create()`, await all with `Promise.all` (workflow suspends)
+   - Phase 3 (`"use step"`): Aggregate reviewer scores, record step as `completed`, update run status to `running`
 
-The step output MUST be a JSON object with:
-- `reviews`: an array of individual reviewer submissions, each containing `reviewerId`, `reviewerIndex`, `scores` (object mapping rubric field names to values), and any text field responses
-- `scores`: an object mapping each numeric rubric field name to the mean value across all reviewers
+The step output SHALL remain identical: `{ reviews: [...], scores: { ... } }` with mean aggregation for rating fields.
 
 #### Scenario: Single reviewer completes review
 
 - **WHEN** a `human_review` step with `requiredReviewers: 1` is reached and the reviewer submits `{ accuracy: 4, notes: "Good" }`
-- **THEN** the step resumes and outputs `{ reviews: [{ reviewerId: "user_1", reviewerIndex: 0, scores: { accuracy: 4 }, notes: "Good" }], scores: { accuracy: 4 } }`
+- **THEN** the hook adapter's `executeSuspendable` returns `{ reviews: [{ reviewerId: "user_1", reviewerIndex: 0, scores: { accuracy: 4 } }], scores: { accuracy: 4 } }`
 
 #### Scenario: Multiple reviewers complete reviews
 
 - **WHEN** a `human_review` step with `requiredReviewers: 3` is reached and three reviewers submit accuracy scores of 4, 5, and 3
-- **THEN** the step resumes only after all three submit, and outputs `scores: { accuracy: 4 }` (mean of 4, 5, 3)
+- **THEN** `executeSuspendable` returns only after all three submit, with `scores: { accuracy: 4 }` (mean)
 
 #### Scenario: Workflow suspends until reviews arrive
 
 - **WHEN** a `human_review` step creates its hooks and no reviewer has submitted yet
-- **THEN** the workflow remains suspended and no downstream nodes execute
+- **THEN** the workflow remains suspended inside `executeSuspendable` and no downstream nodes execute
+
+### Requirement: Human review hook adapter is pipevals-specific
+
+The `HookAdapter` implementation for human review SHALL remain in the pipevals codebase, not in the extracted walker package. It depends on pipevals' `tasks` table, `pipelineRuns` table, `reviewHook` definition, and `aggregateReviews` logic — all of which are pipevals-specific.
+
+The walker package SHALL only define the `HookAdapter` interface. The implementation is the consumer's responsibility.
+
+#### Scenario: Another project implements a different suspendable step
+
+- **WHEN** another project needs an `approval_gate` step that suspends until a manager approves
+- **THEN** they implement `HookAdapter` with `shouldSuspend` returning true for `approval_gate` nodes, and `executeSuspendable` creating a single hook that resumes on manager action — no changes to the walker package
+
+#### Scenario: Pipevals upgrades walker package
+
+- **WHEN** pipevals upgrades to a new version of the walker package
+- **THEN** the `HookAdapter` implementation in pipevals continues to work as long as the `HookAdapter` interface is unchanged
 
 ### Requirement: Human review step port declarations
 

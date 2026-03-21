@@ -56,17 +56,15 @@ The system SHALL support conditional branching by evaluating condition nodes and
 
 The system SHALL execute each node as a named `step.run()` call within a Vercel Workflow. The step name MUST be `node-${nodeId}` to ensure deterministic replay. If the workflow process crashes and restarts, completed steps MUST return their cached results and execution MUST resume from the first uncached step.
 
-For `human_review` nodes, the system SHALL NOT execute the node inside a `"use step"` boundary. Instead, the walker MUST detect `human_review` nodes and route them to a dedicated workflow-level execution path that:
-1. Calls `"use step"` functions for database operations (creating tasks, recording status)
-2. Creates workflow hooks at the workflow level using `defineHook`/`.create()`
-3. Awaits all hooks with `Promise.all` at the workflow level (causing workflow suspension)
-4. Calls `"use step"` functions for recording completion after all hooks resolve
+The walker function SHALL be produced by the `createWalker` factory from the `@pipevals/workflow-walker` package, not defined inline in the pipevals codebase. Pipevals SHALL provide a `PersistenceAdapter` implementation backed by its Drizzle schema and a `StepRegistry` populated from its existing step handlers.
 
-All other node types MUST continue to execute via the existing `executeNode` `"use step"` path unchanged.
+For suspendable nodes (identified by the `HookAdapter.shouldSuspend()` predicate), the walker SHALL delegate to `HookAdapter.executeSuspendable()` at the workflow level instead of the normal `executeNode` path. Pipevals SHALL provide a `HookAdapter` that returns true for `human_review` nodes and implements the existing three-phase suspension logic (create tasks → create hooks → aggregate results).
+
+All other node types MUST continue to execute via the step registry path.
 
 #### Scenario: Normal execution
 
-- **WHEN** a pipeline with 5 nodes (none are human_review) runs to completion
+- **WHEN** a pipeline with 5 nodes (none are suspendable) runs to completion
 - **THEN** 5 `step.run()` calls are made, each with a unique `node-${nodeId}` name
 
 #### Scenario: Resume after crash
@@ -77,38 +75,49 @@ All other node types MUST continue to execute via the existing `executeNode` `"u
 #### Scenario: Human review node suspends workflow
 
 - **WHEN** the walker reaches a `human_review` node at a given topological level
-- **THEN** the walker creates task records via a step, creates hooks at workflow level, and the workflow suspends until all hooks are resumed
+- **THEN** the hook adapter's `shouldSuspend` returns true, and `executeSuspendable` creates task records via a step, creates hooks at workflow level, and the workflow suspends until all hooks are resumed
 
 #### Scenario: Mixed level with human review and regular nodes
 
 - **WHEN** a topological level contains both a `human_review` node and a regular `ai_sdk` node
-- **THEN** both execute in parallel via `Promise.allSettled` — the `ai_sdk` node runs through `executeNode` and the `human_review` node runs through the dedicated workflow-level path
+- **THEN** both execute in parallel via `Promise.allSettled` — the `ai_sdk` node runs through the step registry and the `human_review` node runs through the hook adapter
 
 ### Requirement: Step result recording
-The system SHALL write a `step_results` row to the database for each node as execution progresses. The status MUST transition: `running` when execution begins → `completed` with output on success → `failed` with error details on failure. The duration_ms MUST be recorded for completed and failed steps.
+
+The system SHALL record step execution state via the `PersistenceAdapter` interface methods rather than direct database calls. The adapter's `recordStepRunning` SHALL be called when execution begins, `recordStepCompleted` with output and duration on success, and `recordStepFailed` with error and duration on failure.
+
+Pipevals SHALL implement these adapter methods with its existing Drizzle queries against the `step_results` table, preserving identical database behavior.
 
 #### Scenario: Record running status
+
 - **WHEN** a node begins execution
-- **THEN** a step_result row is inserted with status `running` and started_at timestamp
+- **THEN** the walker calls `persistence.recordStepRunning(runId, nodeId)` and pipevals' adapter inserts a step_result row with status `running`
 
 #### Scenario: Record completion
+
 - **WHEN** a node finishes successfully with output `{ "score": 0.9 }`
-- **THEN** the step_result row is updated to status `completed` with the output, duration_ms, and completed_at
+- **THEN** the walker calls `persistence.recordStepCompleted(runId, nodeId, input, output, durationMs)` and pipevals' adapter updates the row
 
 #### Scenario: Record failure
+
 - **WHEN** a node throws an error during execution
-- **THEN** the step_result row is updated to status `failed` with the error serialized in the error column
+- **THEN** the walker calls `persistence.recordStepFailed(runId, nodeId, input, error, durationMs)` and pipevals' adapter updates the row with the serialized error
 
 ### Requirement: Run status management
-The system SHALL update the pipeline_run status throughout execution. The status MUST transition: `pending` → `running` when the walker begins → `completed` when all terminal nodes complete → `failed` if any non-skipped node fails without a fallback path.
+
+The system SHALL update the run status via `PersistenceAdapter.updateRunStatus()` rather than direct database calls. The lifecycle transitions remain: `pending` → `running` → `completed` or `failed`.
+
+Pipevals SHALL implement `updateRunStatus` with its existing Drizzle query against the `pipeline_runs` table.
 
 #### Scenario: Successful run
+
 - **WHEN** all nodes in the pipeline execute successfully
-- **THEN** the run status transitions to `completed` with completed_at set
+- **THEN** the walker calls `persistence.updateRunStatus(runId, "completed")`
 
 #### Scenario: Failed run
-- **WHEN** a node fails and there is no alternative path to complete the pipeline
-- **THEN** the run status transitions to `failed` with completed_at set
+
+- **WHEN** a node fails and there is no alternative path
+- **THEN** the walker calls `persistence.updateRunStatus(runId, "failed")` and throws the error
 
 ### Requirement: Graph size limit
 The system SHALL enforce a maximum of 50 nodes per pipeline to stay within Vercel Workflow step limits. Pipelines exceeding this limit MUST be rejected at save time with a clear error.

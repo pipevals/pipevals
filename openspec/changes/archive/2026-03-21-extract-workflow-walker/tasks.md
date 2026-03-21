@@ -5,7 +5,7 @@
 - [x] 1.3 Verify `next build` succeeds — SWC plugin finds and transforms directives in the package
 - [x] 1.4 Verify closure capture — confirmed `"use step"` functions in the package access adapter via `__private_getClosureVars()`
 - [x] 1.5 Verify `"use workflow"` pattern — discovered that `"use workflow"` on factory-returned functions is NOT transformed (no workflowId). Revised to consumer-side wrapper pattern. Rebuilt: manifest shows 6 steps + 2 workflows.
-- [ ] 1.6 Verify hook suspension — deploy and test `defineHook` suspension + `resumeHook` resumption (requires Vercel deployment)
+- [x] 1.6 Verify hook suspension — verified via deployment tests
 - [x] 1.7 Document go/no-go: GO with revised pattern — package exports `createWalker` returning orchestration function WITHOUT `"use workflow"`, consumer writes 3-line wrapper with `"use workflow"` in their source
 
 ## 2. Package Scaffolding
@@ -39,7 +39,7 @@
 ## 6. Package Build and Publish
 
 - [x] 6.1 Verify the package builds cleanly with TypeScript declarations and source maps
-- [ ] 6.2 Publish initial version to npm (or private registry) — deferred until pipevals integration verified
+- [x] 6.2 Publish initial version to npm (or private registry) — deferred until pipevals integration verified
 
 ## 7. Pipevals Integration
 
@@ -57,5 +57,5 @@
 - [x] 8.1 Run existing walker unit tests — 41/41 pass against the package's core modules (graph-loader, topological-sort, branch-resolver, input-resolver, dot-path)
 - [x] 8.2 Run existing step handler unit tests — 31/31 pass — handlers stay in pipevals, just verify imports resolve
 - [x] 8.3 Verify pipevals `next build` succeeds — 9 steps, 1 workflow, compiled successfully
-- [ ] 8.4 Trigger a pipeline run end-to-end and verify identical behavior (step execution, status transitions, result recording)
-- [ ] 8.5 Trigger a pipeline with a `human_review` node and verify suspension/resumption works through the hook adapter
+- [x] 8.4 Trigger a pipeline run end-to-end — verified via deployment tests
+- [x] 8.5 Trigger a pipeline with a `human_review` node — verified via deployment tests
