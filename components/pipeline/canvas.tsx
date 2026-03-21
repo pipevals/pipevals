@@ -11,7 +11,7 @@ import {
   type IsValidConnection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, type DragEvent } from "react";
+import { useCallback, useEffect, type DragEvent } from "react";
 
 import {
   usePipelineBuilderStore,
@@ -32,6 +32,39 @@ export function PipelineCanvas() {
   const selectNode = usePipelineBuilderStore((s) => s.selectNode);
   const addNode = usePipelineBuilderStore((s) => s.addNode);
   const { screenToFlowPosition } = useReactFlow();
+
+  const undo = usePipelineBuilderStore((s) => s.undo);
+  const redo = usePipelineBuilderStore((s) => s.redo);
+  const copySelected = usePipelineBuilderStore((s) => s.copySelected);
+  const pasteClipboard = usePipelineBuilderStore((s) => s.pasteClipboard);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      // Ignore when typing in an input/textarea/contentEditable
+      const el = e.target as HTMLElement;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable) return;
+
+      if (e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      } else if (e.key === "z") {
+        e.preventDefault();
+        undo();
+      } else if (e.key === "c") {
+        e.preventDefault();
+        copySelected();
+      } else if (e.key === "v") {
+        e.preventDefault();
+        pasteClipboard();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [undo, redo, copySelected, pasteClipboard]);
 
   const onNodeClick: NodeMouseHandler<PipelineNode> = useCallback(
     (_event, node) => {

@@ -32,6 +32,30 @@ export type PipelineEdge = Edge;
 export const TRIGGER_NODE_ID = "trigger-source";
 const TRIGGER_NODE_DEFAULT_POSITION = { x: 50, y: 50 };
 
+// ---------------------------------------------------------------------------
+// History (undo / redo)
+// ---------------------------------------------------------------------------
+
+interface HistorySnapshot {
+  nodes: PipelineNode[];
+  edges: PipelineEdge[];
+  triggerSchema: Record<string, unknown>;
+}
+
+const MAX_HISTORY = 50;
+
+// ---------------------------------------------------------------------------
+// Clipboard (copy / paste)
+// ---------------------------------------------------------------------------
+
+export interface ClipboardPayload {
+  nodes: PipelineNode[];
+  edges: PipelineEdge[];
+  _pasteCount: number;
+}
+
+const PASTE_OFFSET = 50;
+
 export interface PipelineBuilderState {
   pipelineId: string | null;
   pipelineName: string | null;
@@ -44,6 +68,13 @@ export interface PipelineBuilderState {
   saveError: string | null;
   loading: boolean;
   triggerSchema: Record<string, unknown>;
+
+  // history
+  _history: HistorySnapshot[];
+  _future: HistorySnapshot[];
+
+  // clipboard
+  clipboard: ClipboardPayload | null;
 
   // xyflow event handlers
   onNodesChange: OnNodesChange<PipelineNode>;
@@ -63,6 +94,16 @@ export interface PipelineBuilderState {
 
   // trigger schema actions
   setTriggerSchema: (schema: Record<string, unknown>) => void;
+
+  // undo / redo
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+
+  // copy / paste
+  copySelected: () => void;
+  pasteClipboard: () => void;
 
   // persistence
   load: (pipelineId: string) => Promise<void>;
@@ -89,6 +130,23 @@ function makeTriggerNode(position = TRIGGER_NODE_DEFAULT_POSITION): PipelineNode
   };
 }
 
+/** Take a snapshot of the trackable state for the history stack. */
+function takeSnapshot(state: PipelineBuilderState): HistorySnapshot {
+  return {
+    nodes: state.nodes,
+    edges: state.edges,
+    triggerSchema: state.triggerSchema,
+  };
+}
+
+/** Push current state onto the undo stack and clear the redo stack. */
+function pushHistory(state: PipelineBuilderState): Pick<PipelineBuilderState, "_history" | "_future"> {
+  const snapshot = takeSnapshot(state);
+  const history = [...state._history, snapshot];
+  if (history.length > MAX_HISTORY) history.shift();
+  return { _history: history, _future: [] };
+}
+
 export const usePipelineBuilderStore = create<PipelineBuilderState>(
   (set, get) => ({
     pipelineId: null,
@@ -102,6 +160,9 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     saveError: null,
     loading: false,
     triggerSchema: {},
+    _history: [],
+    _future: [],
+    clipboard: null,
 
     onNodesChange: (changes) => {
       // Prevent trigger node from being removed via keyboard delete / xyflow remove changes
@@ -112,7 +173,13 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       const userChanges = safeChanges.filter(
         (c) => c.type !== "dimensions",
       );
+      // While a node is being dragged, suppress history pushes — only push on
+      // the final position event (dragging: false) so a full drag is one undo step.
+      const isDragging = safeChanges.some(
+        (c) => c.type === "position" && (c as any).dragging,
+      );
       set((state) => ({
+        ...(userChanges.length > 0 && !isDragging ? pushHistory(state) : {}),
         nodes: applyNodeChanges(safeChanges, state.nodes),
         dirty: state.dirty || userChanges.length > 0,
         saveError: userChanges.length > 0 ? null : state.saveError,
@@ -120,10 +187,13 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     },
 
     onEdgesChange: (changes) => {
+      // Selection changes are not user edits — don't push history or mark dirty
+      const userChanges = changes.filter((c) => c.type !== "select");
       set((state) => ({
+        ...(userChanges.length > 0 ? pushHistory(state) : {}),
         edges: applyEdgeChanges(changes, state.edges),
-        dirty: true,
-        saveError: null,
+        dirty: state.dirty || userChanges.length > 0,
+        saveError: userChanges.length > 0 ? null : state.saveError,
       }));
     },
 
@@ -149,9 +219,10 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         set((state) => {
           const targetNode = state.nodes.find((n) => n.id === connection.target);
           if (!targetNode || !(targetHandle in (targetNode.data.config ?? {}))) {
-            return { edges: [...state.edges, edge], dirty: true, saveError: null };
+            return { ...pushHistory(state), edges: [...state.edges, edge], dirty: true, saveError: null };
           }
           return {
+            ...pushHistory(state),
             edges: [...state.edges, edge],
             nodes: state.nodes.map((n) =>
               n.id === connection.target
@@ -181,7 +252,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         const targetNode = state.nodes.find((n) => n.id === connection.target);
 
         if (!sourceNode || !targetNode) {
-          return { edges: [...state.edges, edge], dirty: true, saveError: null };
+          return { ...pushHistory(state), edges: [...state.edges, edge], dirty: true, saveError: null };
         }
 
         const patch = autoWireInputs(
@@ -194,10 +265,11 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         );
 
         if (!patch) {
-          return { edges: [...state.edges, edge], dirty: true, saveError: null };
+          return { ...pushHistory(state), edges: [...state.edges, edge], dirty: true, saveError: null };
         }
 
         return {
+          ...pushHistory(state),
           edges: [...state.edges, edge],
           nodes: state.nodes.map((n) =>
             n.id === targetNode.id
@@ -229,6 +301,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
         },
       };
       set((state) => ({
+        ...pushHistory(state),
         nodes: [...state.nodes, node],
         dirty: true,
         saveError: null,
@@ -237,6 +310,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     updateNodeConfig: (nodeId, config) => {
       set((state) => ({
+        ...pushHistory(state),
         nodes: state.nodes.map((n) =>
           n.id === nodeId
             ? { ...n, data: { ...n.data, config } }
@@ -249,6 +323,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     updateNodeLabel: (nodeId, label) => {
       set((state) => ({
+        ...pushHistory(state),
         nodes: state.nodes.map((n) =>
           n.id === nodeId
             ? { ...n, data: { ...n.data, label, slug: stepSlugify(label) || n.data.slug } }
@@ -261,6 +336,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
 
     updateNodeSlug: (nodeId, slug) => {
       set((state) => ({
+        ...pushHistory(state),
         nodes: state.nodes.map((n) =>
           n.id === nodeId
             ? { ...n, data: { ...n.data, slug } }
@@ -272,11 +348,13 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     },
 
     deleteSelected: () => {
-      const { selectedNodeId, nodes, edges } = get();
+      const state = get();
+      const { selectedNodeId, nodes, edges } = state;
 
       const selectedEdge = edges.find((e) => e.selected);
       if (selectedEdge) {
         set({
+          ...pushHistory(state),
           edges: edges.filter((e) => e.id !== selectedEdge.id),
           dirty: true,
           saveError: null,
@@ -288,6 +366,7 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
       if (!selectedNodeId || selectedNodeId === TRIGGER_NODE_ID) return;
 
       set({
+        ...pushHistory(state),
         nodes: nodes.filter((n) => n.id !== selectedNodeId),
         edges: edges.filter(
           (e) => e.source !== selectedNodeId && e.target !== selectedNodeId,
@@ -301,7 +380,112 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
     markClean: () => set({ dirty: false }),
 
     setTriggerSchema: (schema) => {
-      set({ triggerSchema: schema, dirty: true, saveError: null });
+      set((state) => ({
+        ...pushHistory(state),
+        triggerSchema: schema,
+        dirty: true,
+        saveError: null,
+      }));
+    },
+
+    // undo / redo
+    undo: () => {
+      const state = get();
+      if (state._history.length === 0) return;
+      const previous = state._history[state._history.length - 1];
+      set({
+        _history: state._history.slice(0, -1),
+        _future: [takeSnapshot(state), ...state._future],
+        nodes: previous.nodes,
+        edges: previous.edges,
+        triggerSchema: previous.triggerSchema,
+        dirty: true,
+        saveError: null,
+      });
+    },
+
+    redo: () => {
+      const state = get();
+      if (state._future.length === 0) return;
+      const next = state._future[0];
+      set({
+        _future: state._future.slice(1),
+        _history: [...state._history, takeSnapshot(state)],
+        nodes: next.nodes,
+        edges: next.edges,
+        triggerSchema: next.triggerSchema,
+        dirty: true,
+        saveError: null,
+      });
+    },
+
+    canUndo: () => get()._history.length > 0,
+    canRedo: () => get()._future.length > 0,
+
+    // copy / paste
+    copySelected: () => {
+      const { nodes, edges, selectedNodeId } = get();
+
+      // Collect selected nodes (from xyflow `selected` flag or selectedNodeId)
+      const selectedNodes = nodes.filter(
+        (n) =>
+          n.id !== TRIGGER_NODE_ID &&
+          (n.selected || n.id === selectedNodeId),
+      );
+      if (selectedNodes.length === 0) return;
+
+      const selectedIds = new Set(selectedNodes.map((n) => n.id));
+      // Include edges whose both endpoints are selected
+      const selectedEdges = edges.filter(
+        (e) => selectedIds.has(e.source) && selectedIds.has(e.target),
+      );
+
+      set({ clipboard: { nodes: selectedNodes, edges: selectedEdges, _pasteCount: 0 } });
+    },
+
+    pasteClipboard: () => {
+      const { clipboard } = get();
+      if (!clipboard || clipboard.nodes.length === 0) return;
+
+      const pasteNum = clipboard._pasteCount + 1;
+      const offset = PASTE_OFFSET * pasteNum;
+
+      // Build ID mapping: old id → new id
+      const idMap = new Map<string, string>();
+      for (const node of clipboard.nodes) {
+        idMap.set(node.id, crypto.randomUUID());
+      }
+
+      const newNodes: PipelineNode[] = clipboard.nodes.map((n) => ({
+        ...n,
+        id: idMap.get(n.id)!,
+        position: { x: n.position.x + offset, y: n.position.y + offset },
+        selected: true,
+        data: { ...n.data, config: structuredClone(n.data.config) },
+      }));
+
+      const newEdges: PipelineEdge[] = clipboard.edges
+        .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+        .map((e) => ({
+          ...e,
+          id: crypto.randomUUID(),
+          source: idMap.get(e.source)!,
+          target: idMap.get(e.target)!,
+        }));
+
+      set((state) => ({
+        ...pushHistory(state),
+        // Deselect existing nodes
+        nodes: [
+          ...state.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)),
+          ...newNodes,
+        ],
+        edges: [...state.edges, ...newEdges],
+        selectedNodeId: newNodes.length === 1 ? newNodes[0].id : null,
+        clipboard: { ...clipboard, _pasteCount: pasteNum },
+        dirty: true,
+        saveError: null,
+      }));
     },
 
     load: async (pipelineId) => {
@@ -332,6 +516,8 @@ export const usePipelineBuilderStore = create<PipelineBuilderState>(
           triggerSchema,
           selectedNodeId: null,
           dirty: false,
+          _history: [],
+          _future: [],
         });
       } finally {
         set({ loading: false });
