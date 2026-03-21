@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+packages/*/node_modules
+
+# package build output
+packages/*/dist
 /.pnp
 .pnp.*
 .yarn/*
@@ -16,6 +20,7 @@ tests/e2e/screenshots/
 
 # next.js
 /.next/
+packages/*/.next/
 /out/
 
 # production

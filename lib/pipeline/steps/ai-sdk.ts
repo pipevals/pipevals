@@ -1,13 +1,14 @@
 import { generateText, generateObject, gateway, jsonSchema } from "ai";
 import type { AiSdkConfig, StepHandler } from "../types";
-import { resolveTemplate } from "../dot-path";
+import { resolveTemplate } from "@pipevals/workflow-walker";
 
 export const aiSdkHandler: StepHandler<AiSdkConfig> = async (config, input) => {
+  "use step";
   const context = { steps: input.steps, trigger: input.trigger };
   const prompt = String(resolveTemplate(config.promptTemplate, context));
   const model = gateway(config.model);
 
-  const start = performance.now();
+  const start = Date.now();
 
   if (config.responseFormat) {
     const resolvedSchema = resolveTemplate(
@@ -21,7 +22,7 @@ export const aiSdkHandler: StepHandler<AiSdkConfig> = async (config, input) => {
       temperature: config.temperature,
       maxOutputTokens: config.maxTokens,
     });
-    const latencyMs = Math.round(performance.now() - start);
+    const latencyMs = Math.round(Date.now() - start);
 
     return {
       object: result.object,
@@ -36,7 +37,7 @@ export const aiSdkHandler: StepHandler<AiSdkConfig> = async (config, input) => {
     temperature: config.temperature,
     maxOutputTokens: config.maxTokens,
   });
-  const latencyMs = Math.round(performance.now() - start);
+  const latencyMs = Math.round(Date.now() - start);
 
   return {
     text: result.text,

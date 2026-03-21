@@ -36,24 +36,35 @@ Investigation of `@workflow/next`, `@workflow/builders`, and `@workflow/swc-plug
 
 ## Decisions
 
-### 1. Factory function pattern for adapter injection
+### 1. Factory + consumer wrapper pattern for adapter injection
 
-The package exports a `createWalker()` factory that accepts adapters and returns a workflow function:
+**Spike finding:** The SWC plugin only transforms `"use workflow"` on statically exported functions — not on functions returned from factories. It cannot add the required `workflowId` property to dynamically created functions. However, `"use step"` functions in packages ARE transformed, including closure capture via `__private_getClosureVars()`.
+
+The package exports a `createWalker()` factory that returns an orchestration function **without** `"use workflow"`. The consumer wraps it with a 3-line function that carries `"use workflow"`:
 
 ```typescript
+// In the package (no "use workflow"):
 import { createWalker } from "@pipevals/workflow-walker";
 
-const runPipeline = createWalker({
+const orchestrate = createWalker({
   persistence: myDrizzleAdapter,
   steps: myStepRegistry,
   hooks: myHookAdapter,    // optional
 });
 
+// In the consumer's source (has "use workflow"):
+export async function runPipeline(runId: string) {
+  "use workflow";
+  return orchestrate(runId);
+}
+
 // In API route:
 await start(runPipeline, [runId]);
 ```
 
-**Why over class-based:** The walker is a single function, not an object with methods. A factory matches the Vercel Workflow model where you pass a function to `start()`. Classes would add unnecessary ceremony.
+**Why this split:** The SWC plugin needs `"use workflow"` on a statically analyzable exported function to set `workflowId` (required by `start()`). Steps don't have this constraint — `"use step"` functions in packages are transformed and registered globally with namespaced IDs like `step//package-name@version//factoryName/stepName`.
+
+**Why over class-based:** The walker is a single function, not an object with methods. Classes would add unnecessary ceremony.
 
 **Why over dependency injection container:** The walker has exactly 3 dependencies. A DI container is overkill. Named parameters on a factory are clear and type-safe.
 
@@ -119,8 +130,9 @@ Before full extraction, a minimal spike verifies that the factory pattern works 
 
 ## Risks / Trade-offs
 
-**[Closure capture in `"use step"` may fail]** → The SWC plugin transforms `"use step"` functions for deterministic replay. If it doesn't preserve closure variables from the factory scope, the adapter pattern breaks.
-→ *Mitigation:* Spike verifies this before any production code moves. Fallback: pass adapters as explicit arguments to each step function, or use module-level `setAdapter()` initialization.
+**[~~Closure capture in `"use step"` may fail~~]** → RESOLVED by spike. The SWC plugin extracts closure variables via `__private_getClosureVars()` and makes them available to the step function at replay time. Confirmed in compiled output.
+
+**[`"use workflow"` cannot be in the package]** → RESOLVED by revised pattern. The SWC plugin only transforms `"use workflow"` on statically exported functions. The consumer writes a 3-line wrapper in their own source tree. This is minimal boilerplate and gives the consumer explicit control over the workflow entry point.
 
 **[Vercel Workflow version coupling]** → The package peer-depends on a specific `workflow` version range. Breaking changes in the Workflow SDK could break the walker.
 → *Mitigation:* Use a permissive peer dep range (`^4.x`). The walker's surface area on the Workflow API is small (`"use workflow"`, `"use step"`, `defineHook`, `start`).

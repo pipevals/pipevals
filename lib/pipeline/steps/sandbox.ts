@@ -17,6 +17,7 @@ export const sandboxHandler: StepHandler<SandboxConfig> = async (
   config,
   input,
 ) => {
+  "use step";
   const runtime = RUNTIME_MAP[config.runtime];
   const sandbox = await Sandbox.create({
     runtime,

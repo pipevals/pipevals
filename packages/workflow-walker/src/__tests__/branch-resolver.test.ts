@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { BranchResolver } from "../../walker/branch-resolver";
-import { loadGraph } from "../../walker/graph-loader";
+import { BranchResolver } from "../core/branch-resolver";
+import { loadGraph } from "../core/graph-loader";
 
 function makeGraph(
   nodes: { id: string; type?: string }[],

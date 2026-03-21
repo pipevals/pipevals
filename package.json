@@ -16,6 +16,7 @@
     "workflow:web": "npx workflow web"
   },
   "dependencies": {
+    "@pipevals/workflow-walker": "file:./packages/workflow-walker",
     "@better-auth/api-key": "^1.5.5",
     "@dagrejs/graphlib": "^4.0.1",
     "@hugeicons/core-free-icons": "^4.0.0",

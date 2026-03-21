@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { resolveInputs } from "../../walker/input-resolver";
-import { loadGraph } from "../../walker/graph-loader";
-import type { WalkerNode } from "../../walker/graph-loader";
+import { resolveInputs } from "../core/input-resolver";
+import { loadGraph } from "../core/graph-loader";
 
 function makeGraph(
   nodes: { id: string; label?: string; slug?: string }[],

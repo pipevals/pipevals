@@ -23,19 +23,26 @@ The package SHALL NOT export step handler implementations. Consumers bring their
 
 ### Requirement: createWalker factory function
 
-The package SHALL export a `createWalker` function that accepts a configuration object with `persistence` (required), `steps` (required), and `hooks` (optional) properties, and returns an async function compatible with Vercel Workflow's `start()`.
+The package SHALL export a `createWalker` function that accepts a configuration object with `persistence` (required), `steps` (required), and `hooks` (optional) properties, and returns an async orchestration function.
 
-The returned function SHALL carry the `"use workflow"` directive and implement the full orchestration loop: load run data, topological sort, level-by-level execution with branch resolution, and final status update.
+The returned function SHALL NOT carry the `"use workflow"` directive. The consumer SHALL wrap the returned function in their own exported function with `"use workflow"` in their source tree. This is required because the Vercel Workflow SWC plugin only transforms `"use workflow"` on statically exported functions — it cannot set `workflowId` on dynamically returned functions.
+
+The returned function SHALL contain `"use step"` functions internally for persistence calls. These `"use step"` functions access the adapter via closure capture, which the SWC plugin handles via `__private_getClosureVars()`.
 
 #### Scenario: Create walker with minimal config
 
 - **WHEN** `createWalker({ persistence: myAdapter, steps: myRegistry })` is called
-- **THEN** it returns a function `(runId: string) => Promise<Record<string, Record<string, unknown>>>` that can be passed to `start()`
+- **THEN** it returns a function `(runId: string) => Promise<Record<string, Record<string, unknown>>>` that the consumer wraps with `"use workflow"`
+
+#### Scenario: Consumer wraps with "use workflow"
+
+- **WHEN** the consumer defines `export async function run(id: string) { "use workflow"; return orchestrate(id); }` using the returned function
+- **THEN** `start(run, [id])` works because the SWC plugin sets `workflowId` on the consumer's exported function
 
 #### Scenario: Create walker with hook adapter
 
 - **WHEN** `createWalker({ persistence, steps, hooks: myHookAdapter })` is called
-- **THEN** the returned workflow function delegates suspendable nodes to `hooks.executeSuspendable()` instead of the normal step execution path
+- **THEN** the returned orchestration function delegates suspendable nodes to `hooks.executeSuspendable()` instead of the normal step execution path
 
 #### Scenario: Walker without hook adapter skips suspension
 

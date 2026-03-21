@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { resolveDotPath, resolveTemplate, DotPathError } from "../../dot-path";
+import { resolveDotPath, resolveTemplate, DotPathError } from "../core/dot-path";
 
 describe("resolveDotPath", () => {
   test("resolves nested path", () => {
@@ -113,8 +113,6 @@ describe("resolveTemplate", () => {
 
   test("string starting with steps. but containing extra text is not a whole-string dot-path", () => {
     const ctx = { steps: { foo: { bar: "val" } }, trigger: {} };
-    // "steps.foo.bar extra text" should NOT be treated as a dot-path —
-    // it should pass through as a literal (no interpolation markers either)
     expect(resolveTemplate("steps.foo.bar extra text", ctx)).toBe("steps.foo.bar extra text");
   });
 

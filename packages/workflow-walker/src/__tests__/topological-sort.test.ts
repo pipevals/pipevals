@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { topologicalSort } from "../../walker/topological-sort";
-import { loadGraph } from "../../walker/graph-loader";
+import { topologicalSort } from "../core/topological-sort";
+import { loadGraph } from "../core/graph-loader";
 
 function makeSnapshot(
   nodes: { id: string; type?: string }[],

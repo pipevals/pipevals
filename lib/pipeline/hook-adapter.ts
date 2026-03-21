@@ -2,53 +2,52 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns, stepResults, tasks } from "@/lib/db/pipeline-schema";
 import { resolveDotPath } from "@pipevals/workflow-walker";
-import type { HumanReviewConfig, StepInput } from "../types";
-import { recordStepAwaitingReview } from "./step-recorder";
-import { reviewHook, type ReviewHookPayload } from "./review-hook";
+import type { HookAdapter, StepInput, WalkerNode } from "@pipevals/workflow-walker";
+import type { HumanReviewConfig } from "./types";
+import { recordStepAwaitingReview } from "./walker/step-recorder";
+import { reviewHook, type ReviewHookPayload } from "./walker/review-hook";
 
-/**
- * Executes a human_review node at the **workflow level** (NOT inside "use step").
- *
- * Orchestration:
- * 1. Resolve display data + create task records  ("use step")
- * 2. Create N hooks and await them               (workflow level — suspends)
- * 3. Aggregate results and record completion      ("use step")
- */
-export async function executeHumanReview(
-  runId: string,
-  nodeId: string,
-  config: HumanReviewConfig,
-  input: StepInput,
-): Promise<Record<string, unknown>> {
-  const start = Date.now();
-  const inputSnapshot = { steps: input.steps, trigger: input.trigger };
+export const hookAdapter: HookAdapter = {
+  shouldSuspend(node: WalkerNode): boolean {
+    return node.type === "human_review";
+  },
 
-  // Step 1: Resolve display data, create tasks, mark step as awaiting_review
-  const hookTokens = await createReviewTasks(
-    runId,
-    nodeId,
-    config,
-    input,
-    inputSnapshot,
-  );
+  async executeSuspendable(
+    runId: string,
+    node: WalkerNode,
+    input: StepInput,
+  ): Promise<Record<string, unknown>> {
+    const config = node.config as unknown as HumanReviewConfig;
+    const start = Date.now();
+    const inputSnapshot = { steps: input.steps, trigger: input.trigger };
 
-  // Step 2: Create hooks and suspend workflow (workflow-level, NOT a step)
-  const hooks = hookTokens.map((token) => reviewHook.create({ token }));
-  const reviews: ReviewHookPayload[] = await Promise.all(hooks);
+    // Phase 1 ("use step"): Create review tasks + mark awaiting_review
+    const hookTokens = await createReviewTasks(
+      runId,
+      node.id,
+      config,
+      input,
+      inputSnapshot,
+    );
 
-  // Step 3: Aggregate and record completion
-  const durationMs = Date.now() - start;
-  const output = aggregateReviews(reviews, config);
-  await recordHumanReviewCompleted(
-    runId,
-    nodeId,
-    inputSnapshot,
-    output,
-    durationMs,
-  );
+    // Phase 2 (workflow level): Create hooks and suspend
+    const hooks = hookTokens.map((token) => reviewHook.create({ token }));
+    const reviews: ReviewHookPayload[] = await Promise.all(hooks);
 
-  return output;
-}
+    // Phase 3 ("use step"): Aggregate and record completion
+    const durationMs = Date.now() - start;
+    const output = aggregateReviews(reviews, config);
+    await recordHumanReviewCompleted(
+      runId,
+      node.id,
+      inputSnapshot,
+      output,
+      durationMs,
+    );
+
+    return output;
+  },
+};
 
 // --- "use step" functions for DB operations ---
 
@@ -61,10 +60,8 @@ async function createReviewTasks(
 ): Promise<string[]> {
   "use step";
 
-  // Resolve display data from dot-paths
   const displayData = resolveDisplayData(config.display, input);
 
-  // Look up pipelineId from the run
   const run = await db.query.pipelineRuns.findFirst({
     where: eq(pipelineRuns.id, runId),
     columns: { pipelineId: true },
@@ -74,9 +71,6 @@ async function createReviewTasks(
   const n = config.requiredReviewers ?? 1;
   const hookTokens: string[] = [];
 
-  // Create N task records. Tokens are deterministic so the workflow runtime
-  // can match hooks on replay. onConflictDoNothing makes re-execution safe
-  // if the step retries after tasks were already created.
   for (let i = 0; i < n; i++) {
     const hookToken = `review:${runId}:${nodeId}:${i}`;
     hookTokens.push(hookToken);
@@ -96,10 +90,8 @@ async function createReviewTasks(
       .onConflictDoNothing({ target: [tasks.hookToken] });
   }
 
-  // Mark step as awaiting_review
   await recordStepAwaitingReview(runId, nodeId, inputSnapshot);
 
-  // Mark run as awaiting_review
   await db
     .update(pipelineRuns)
     .set({ status: "awaiting_review" })
@@ -128,20 +120,15 @@ async function recordHumanReviewCompleted(
     })
     .where(and(eq(stepResults.runId, runId), eq(stepResults.nodeId, nodeId)));
 
-  // Restore run to running so the walker continues
   await db
     .update(pipelineRuns)
     .set({ status: "running" })
     .where(eq(pipelineRuns.id, runId));
 }
 
-// --- Pure helper functions ---
+// --- Pure helpers ---
 
-/**
- * Resolves display config dot-paths against the step input context.
- * Returns null for any paths that fail to resolve.
- */
-export function resolveDisplayData(
+function resolveDisplayData(
   display: Record<string, string>,
   input: StepInput,
 ): Record<string, unknown> {
@@ -157,9 +144,7 @@ export function resolveDisplayData(
   return result;
 }
 
-// --- Pure aggregation logic ---
-
-export function aggregateReviews(
+function aggregateReviews(
   reviews: ReviewHookPayload[],
   config: HumanReviewConfig,
 ): Record<string, unknown> {
@@ -167,7 +152,6 @@ export function aggregateReviews(
     .filter((f) => f.type === "rating")
     .map((f) => f.name);
 
-  // Compute mean for each rating field
   const scores: Record<string, number> = {};
   for (const fieldName of ratingFields) {
     const values = reviews

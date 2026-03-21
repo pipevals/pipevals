@@ -8,6 +8,10 @@ import { metricCaptureHandler } from "./metric-capture";
 import { humanReviewHandler } from "./human-review";
 import { portRegistry } from "./ports";
 
+/**
+ * Full step definitions with ports — used by the pipeline builder UI
+ * for auto-wiring, validation, and port declarations.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stepRegistry: Record<StepType, StepDefinition<any>> = {
   ai_sdk: {
@@ -45,3 +49,4 @@ export const stepRegistry: Record<StepType, StepDefinition<any>> = {
     ports: portRegistry.human_review,
   },
 };
+

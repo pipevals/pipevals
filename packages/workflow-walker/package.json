@@ -1,0 +1,32 @@
+{
+  "name": "@pipevals/workflow-walker",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  },
+  "peerDependencies": {
+    "workflow": "^4.x"
+  },
+  "devDependencies": {
+    "@types/lodash.get": "^4.4.9",
+    "typescript": "^5",
+    "workflow": "^4.2.0-beta.70"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

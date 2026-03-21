@@ -1,8 +1,6 @@
-import type { StepType } from "../types";
-
 export interface WalkerNode {
   id: string;
-  type: StepType;
+  type: string;
   label: string | null;
   slug: string | null;
   config: Record<string, unknown>;
@@ -35,7 +33,7 @@ export function loadGraph(snapshot: {
     const n = raw as Record<string, unknown>;
     return {
       id: n.id as string,
-      type: n.type as StepType,
+      type: n.type as string,
       label: (n.label as string) ?? null,
       slug: (n.slug as string) ?? null,
       config: (n.config as Record<string, unknown>) ?? {},

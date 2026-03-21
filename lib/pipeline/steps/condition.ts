@@ -1,5 +1,5 @@
 import type { ConditionConfig, StepHandler } from "../types";
-import { resolveDotPath } from "../dot-path";
+import { resolveDotPath } from "@pipevals/workflow-walker";
 
 type ComparisonOp = "==" | "!=" | ">" | "<" | ">=" | "<=";
 
@@ -71,6 +71,7 @@ export const conditionHandler: StepHandler<ConditionConfig> = async (
   config,
   input,
 ) => {
+  "use step";
   const context = { steps: input.steps, trigger: input.trigger };
   const { left, op, right } = parseExpression(config.expression);
 

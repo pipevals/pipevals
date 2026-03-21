@@ -9,6 +9,7 @@
         "@dagrejs/graphlib": "^4.0.1",
         "@hugeicons/core-free-icons": "^4.0.0",
         "@hugeicons/react": "^1.1.6",
+        "@pipevals/workflow-walker": "file:./packages/workflow-walker",
         "@vercel/sandbox": "^1.8.1",
         "@visual-json/core": "^0.3.1",
         "@visual-json/react": "^0.3.1",
@@ -531,6 +532,8 @@
     "@open-draft/until": ["@open-draft/until@2.1.0", "", {}, "sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg=="],
 
     "@opentelemetry/api": ["@opentelemetry/api@1.9.0", "", {}, "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="],
+
+    "@pipevals/workflow-walker": ["@pipevals/workflow-walker@file:packages/workflow-walker", { "dependencies": { "lodash.get": "^4.4.2" }, "devDependencies": { "@types/lodash.get": "^4.4.9", "typescript": "^5", "workflow": "^4.2.0-beta.70" }, "peerDependencies": { "workflow": "^4.x" } }],
 
     "@radix-ui/number": ["@radix-ui/number@1.1.1", "", {}, "sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g=="],
 

@@ -1,10 +1,11 @@
 import type { ApiRequestConfig, StepHandler } from "../types";
-import { resolveTemplate } from "../dot-path";
+import { resolveTemplate } from "@pipevals/workflow-walker";
 
 export const apiRequestHandler: StepHandler<ApiRequestConfig> = async (
   config,
   input,
 ) => {
+  "use step";
   const context = { steps: input.steps, trigger: input.trigger };
 
   const url = typeof config.url === "string"
