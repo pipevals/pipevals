@@ -11,9 +11,7 @@ const JsonEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-40 items-center justify-center">
-        <p className="text-xs text-muted-foreground">Loading editor…</p>
-      </div>
+      <div className="h-40 animate-pulse rounded-md bg-muted" />
     ),
   },
 );

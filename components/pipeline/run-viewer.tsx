@@ -6,15 +6,20 @@ import { ResultPanel } from "./result-panel";
 import { RunSummary } from "./run-summary";
 import { useRunLoader } from "./use-run-loader";
 
+function RunViewerSkeleton() {
+  return (
+    <div className="flex min-h-0 flex-1">
+      <div className="min-w-0 flex-1 bg-muted/30" />
+      <div className="w-80 shrink-0 border-l border-border bg-background" />
+    </div>
+  );
+}
+
 const RunViewerCanvas = dynamic(
   () => import("./run-viewer-canvas").then((m) => m.RunViewerCanvas),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-muted/30">
-        <p className="text-xs text-muted-foreground">Loading canvas…</p>
-      </div>
-    ),
+    loading: () => <RunViewerSkeleton />,
   },
 );
 
@@ -28,11 +33,7 @@ export function RunViewer({
   const { loading, error } = useRunLoader(pipelineId, runId);
 
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-xs text-muted-foreground">Loading run…</p>
-      </div>
-    );
+    return <RunViewerSkeleton />;
   }
 
   if (error) {

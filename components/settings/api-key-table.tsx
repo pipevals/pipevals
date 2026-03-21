@@ -108,8 +108,19 @@ export function ApiKeyTable() {
 
   if (loading) {
     return (
-      <div className="py-16 text-center text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
+          >
+            <div className="flex flex-col gap-1">
+              <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="h-8 w-16 animate-pulse rounded-md bg-muted" />
+          </div>
+        ))}
       </div>
     );
   }

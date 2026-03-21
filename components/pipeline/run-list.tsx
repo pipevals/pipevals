@@ -107,8 +107,19 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
   return (
     <div className="flex flex-col gap-8">
       {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-xs text-muted-foreground">Loading runs…</p>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-5 w-5 animate-pulse rounded-full bg-muted" />
+                <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+              </div>
+              <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+            </div>
+          ))}
         </div>
       )}
 

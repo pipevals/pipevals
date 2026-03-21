@@ -181,8 +181,17 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-xs text-muted-foreground">Loading metrics…</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex flex-col gap-2 rounded-lg border border-border p-4"
+          >
+            <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+            <div className="h-6 w-16 animate-pulse rounded bg-muted" />
+            <div className="mt-2 h-24 w-full animate-pulse rounded bg-muted" />
+          </div>
+        ))}
       </div>
     );
   }

@@ -25,9 +25,7 @@ export default function PipelineEditorLoading() {
       {/* Editor 3-panel layout */}
       <div className="flex min-h-0 flex-1">
         <div className="w-56 shrink-0 border-r border-border bg-background" />
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-muted/30">
-          <p className="text-xs text-muted-foreground">Loading canvas…</p>
-        </div>
+        <div className="min-w-0 flex-1 bg-muted/30" />
         <div className="w-72 shrink-0 border-l border-border bg-background" />
       </div>
     </div>
