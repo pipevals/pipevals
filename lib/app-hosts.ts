@@ -1,12 +1,19 @@
-/** Production hostnames (apex + www). Single source for CSRF trusted origins and auto-invite allowlist. */
+/** Single source for CSRF trusted origins and auto-invite allowlist. */
 export const SITE_HOSTNAMES = ["pipevals.com", "www.pipevals.com"] as const;
 
-export const SITE_TRUSTED_ORIGINS: string[] = SITE_HOSTNAMES.map(
-  (h) => `https://${h}`,
-);
+function buildTrustedOrigins(): string[] {
+  const origins: string[] = SITE_HOSTNAMES.map((h) => `https://${h}`);
+  if (process.env.NODE_ENV !== "production") {
+    const dev = process.env.BETTER_AUTH_URL;
+    if (dev) origins.push(dev);
+  }
+  return origins;
+}
+
+export const SITE_TRUSTED_ORIGINS: string[] = buildTrustedOrigins();
 
 const AUTO_INVITE_ALLOWED_HOSTNAMES = new Set<string>([
-  "localhost",
+  ...(process.env.NODE_ENV !== "production" ? ["localhost"] : []),
   ...SITE_HOSTNAMES,
 ]);
 
