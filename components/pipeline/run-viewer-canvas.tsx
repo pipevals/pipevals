@@ -10,6 +10,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback } from "react";
+
 import { useRunViewerStore, type RunNode } from "@/lib/stores/run-viewer";
 import { nodeTypes } from "./nodes";
 
@@ -42,6 +43,7 @@ export function RunViewerCanvas() {
         elementsSelectable={true}
         fitView
         deleteKeyCode={null}
+
         className="bg-background"
       >
         <Background

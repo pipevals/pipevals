@@ -12,6 +12,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, type DragEvent } from "react";
+
 import {
   usePipelineBuilderStore,
   TRIGGER_NODE_ID,
@@ -91,6 +92,7 @@ export function PipelineCanvas() {
         onDrop={onDrop}
         fitView
         deleteKeyCode={["Backspace", "Delete"]}
+
         className="bg-background"
       >
         <Background

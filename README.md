@@ -93,7 +93,7 @@ This project's specifications were built with [OpenSpec](https://openspec.dev).
 
 ## Tech Stack
 
-Next.js 16 · React 19 · Vercel Workflow · xyflow · AI SDK · Zustand · Better Auth · Drizzle · PostgreSQL · shadcn/ui · Tailwind CSS
+See the full cast at [`/credits`](http://localhost:3000/credits/)
 
 ## License
 

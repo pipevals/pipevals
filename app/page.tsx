@@ -337,6 +337,12 @@ export default function Home() {
             >
               Built with OpenSpec
             </a>
+            <Link
+              href="/credits"
+              className="hover:text-[#00F0FF] transition-colors"
+            >
+              Credits
+            </Link>
           </div>
         </div>
       </footer>
