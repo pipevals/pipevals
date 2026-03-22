@@ -43,22 +43,22 @@ export async function POST(_request: Request, { params }: RouteParams) {
 
   const now = new Date();
 
-  // Mark the run as cancelled
-  await db
-    .update(pipelineRuns)
-    .set({ status: "cancelled", completedAt: now })
-    .where(eq(pipelineRuns.id, runId));
-
-  // Mark any in-flight steps as cancelled
-  await db
-    .update(stepResults)
-    .set({ status: "failed", completedAt: now })
-    .where(
-      and(
-        eq(stepResults.runId, runId),
-        eq(stepResults.status, "running"),
+  // Mark the run as cancelled and any in-flight steps as failed
+  await Promise.all([
+    db
+      .update(pipelineRuns)
+      .set({ status: "cancelled", completedAt: now })
+      .where(eq(pipelineRuns.id, runId)),
+    db
+      .update(stepResults)
+      .set({ status: "failed", completedAt: now })
+      .where(
+        and(
+          eq(stepResults.runId, runId),
+          eq(stepResults.status, "running"),
+        ),
       ),
-    );
+  ]);
 
   return NextResponse.json({ status: "cancelled" });
 }

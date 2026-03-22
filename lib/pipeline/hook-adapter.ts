@@ -69,26 +69,26 @@ async function createReviewTasks(
   if (!run) throw new Error(`Run "${runId}" not found`);
 
   const n = config.requiredReviewers ?? 1;
-  const hookTokens: string[] = [];
+  const hookTokens = Array.from(
+    { length: n },
+    (_, i) => `review:${runId}:${nodeId}:${i}`,
+  );
 
-  for (let i = 0; i < n; i++) {
-    const hookToken = `review:${runId}:${nodeId}:${i}`;
-    hookTokens.push(hookToken);
-
-    await db
-      .insert(tasks)
-      .values({
+  await db
+    .insert(tasks)
+    .values(
+      hookTokens.map((hookToken, i) => ({
         pipelineId: run.pipelineId,
         runId,
         nodeId,
         hookToken,
-        status: "pending",
+        status: "pending" as const,
         rubric: config.rubric as Record<string, unknown>[],
         displayData,
         reviewerIndex: i,
-      })
-      .onConflictDoNothing({ target: [tasks.hookToken] });
-  }
+      })),
+    )
+    .onConflictDoNothing({ target: [tasks.hookToken] });
 
   await recordStepAwaitingReview(runId, nodeId, inputSnapshot);
 
@@ -109,21 +109,22 @@ async function recordHumanReviewCompleted(
 ): Promise<void> {
   "use step";
 
-  await db
-    .update(stepResults)
-    .set({
-      status: "completed",
-      input: inputSnapshot,
-      output,
-      durationMs: Math.round(durationMs),
-      completedAt: new Date(),
-    })
-    .where(and(eq(stepResults.runId, runId), eq(stepResults.nodeId, nodeId)));
-
-  await db
-    .update(pipelineRuns)
-    .set({ status: "running" })
-    .where(eq(pipelineRuns.id, runId));
+  await Promise.all([
+    db
+      .update(stepResults)
+      .set({
+        status: "completed",
+        input: inputSnapshot,
+        output,
+        durationMs: Math.round(durationMs),
+        completedAt: new Date(),
+      })
+      .where(and(eq(stepResults.runId, runId), eq(stepResults.nodeId, nodeId))),
+    db
+      .update(pipelineRuns)
+      .set({ status: "running" })
+      .where(eq(pipelineRuns.id, runId)),
+  ]);
 }
 
 // --- Pure helpers ---
