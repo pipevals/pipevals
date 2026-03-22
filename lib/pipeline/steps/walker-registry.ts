@@ -18,7 +18,7 @@ import { metricCaptureHandler } from "./metric-capture";
 // Handlers use typed configs (AiSdkConfig, etc.) which are subtypes of
 // the package's generic Record<string, unknown>. The cast is safe since
 // the walker always passes the node's config object verbatim.
-const h = (fn: Function) => fn as StepHandler;
+const h = (fn: (...args: any[]) => any) => fn as StepHandler;
 
 export const walkerStepRegistry: StepRegistry = {
   ai_sdk: { handler: h(aiSdkHandler) },

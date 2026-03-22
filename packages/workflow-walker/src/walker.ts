@@ -97,14 +97,6 @@ export function createWalker(config: WalkerConfig) {
       if (failed) break;
     }
 
-    if (failed) {
-      await persistence.updateRunStatus(runId, "failed");
-      throw firstError;
-    }
-
-    await persistence.updateRunStatus(runId, "completed");
-    return Object.fromEntries(results);
-
     async function executeNode(
       rId: string,
       nodeId: string,
@@ -116,40 +108,40 @@ export function createWalker(config: WalkerConfig) {
       const start = Date.now();
       const inputSnapshot = { steps: input.steps, trigger: input.trigger };
 
-      let output: Record<string, unknown>;
-      let stepError: unknown;
-
       try {
         const entry = steps[nodeType];
         if (!entry) {
           throw new Error(`Unknown step type "${nodeType}"`);
         }
-        output = await entry.handler(nodeConfig, input);
+        const output = await entry.handler(nodeConfig, input);
+        const durationMs = Date.now() - start;
+        await persistence.recordStepCompleted(
+          rId,
+          nodeId,
+          inputSnapshot,
+          output,
+          durationMs,
+        );
+        return output;
       } catch (error) {
-        stepError = error;
-      }
-
-      const durationMs = Date.now() - start;
-
-      if (stepError !== undefined) {
+        const durationMs = Date.now() - start;
         await persistence.recordStepFailed(
           rId,
           nodeId,
           inputSnapshot,
-          stepError,
+          error,
           durationMs,
         );
-        throw stepError;
+        throw error;
       }
-
-      await persistence.recordStepCompleted(
-        rId,
-        nodeId,
-        inputSnapshot,
-        output!,
-        durationMs,
-      );
-      return output!;
     }
+
+    if (failed) {
+      await persistence.updateRunStatus(runId, "failed");
+      throw firstError;
+    }
+
+    await persistence.updateRunStatus(runId, "completed");
+    return Object.fromEntries(results);
   };
 }
