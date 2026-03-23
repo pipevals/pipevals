@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   datasets,
@@ -8,7 +8,7 @@ import {
   pipelineRuns,
 } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, paginatedResponse } from "@/lib/api/pagination";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 import { buildGraphSnapshot } from "@/lib/pipeline/build-graph-snapshot";
@@ -158,13 +158,21 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const { limit, offset } = parsePagination(new URL(request.url));
 
-  const rows = await db
-    .select()
-    .from(evalRuns)
-    .where(eq(evalRuns.pipelineId, id))
-    .orderBy(desc(evalRuns.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const evalRunFilter = eq(evalRuns.pipelineId, id);
 
-  return NextResponse.json(rows);
+  const [rows, [{ totalCount }]] = await Promise.all([
+    db
+      .select()
+      .from(evalRuns)
+      .where(evalRunFilter)
+      .orderBy(desc(evalRuns.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ totalCount: count() })
+      .from(evalRuns)
+      .where(evalRunFilter),
+  ]);
+
+  return paginatedResponse(rows, totalCount);
 }

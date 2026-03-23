@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/empty";
 import Link from "next/link";
 import { handleApiError } from "@/lib/handle-api-error";
+import type { PaginatedResponse } from "@/lib/api/pagination";
 
 interface DatasetRow {
   id: string;
@@ -45,9 +46,10 @@ export function DatasetPickerDialog({
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const { data: allDatasets } = useSWR<DatasetRow[]>(
+  const { data: datasetsPage } = useSWR<PaginatedResponse<DatasetRow>>(
     open ? "/api/datasets" : null,
   );
+  const allDatasets = datasetsPage?.data;
 
   // Filter to compatible datasets (exact key match)
   const pipelineKeys = Object.keys(triggerSchema).sort();

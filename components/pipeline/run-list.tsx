@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { computeDuration, formatDateTime, shortId } from "@/lib/format";
 import { isTerminalRunStatus, type RunStatus } from "@/lib/stores/run-viewer";
+import type { PaginatedResponse } from "@/lib/api/pagination";
 import { StatusDot } from "./run-status";
 import type { EvalRunSummary, DatasetInfo } from "@/lib/pipeline/types/shared";
 
@@ -43,31 +44,34 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
   const runsUrl = `/api/pipelines/${pipelineId}/runs`;
   const evalRunsUrl = `/api/pipelines/${pipelineId}/eval-runs`;
 
-  const { data: runs, error: runsError, isLoading: runsLoading } = useSWR<RunSummary[]>(
+  const { data: runsPage, error: runsError, isLoading: runsLoading } = useSWR<PaginatedResponse<RunSummary>>(
     runsUrl,
     {
       refreshInterval: (latestData) => {
         if (!latestData) return 0;
-        const hasActive = latestData.some((r) => !isTerminalRunStatus(r.status));
+        const hasActive = latestData.data.some((r) => !isTerminalRunStatus(r.status));
         return hasActive ? 3000 : 0;
       },
     },
   );
+  const runs = runsPage?.data;
 
-  const { data: evalRuns, error: evalError, isLoading: evalLoading } = useSWR<EvalRunSummary[]>(
+  const { data: evalRunsPage, error: evalError, isLoading: evalLoading } = useSWR<PaginatedResponse<EvalRunSummary>>(
     evalRunsUrl,
     {
       refreshInterval: (latestData) => {
         if (!latestData) return 0;
-        const hasActive = latestData.some(
+        const hasActive = latestData.data.some(
           (r) => r.status === "pending" || r.status === "running",
         );
         return hasActive ? 5000 : 0;
       },
     },
   );
+  const evalRuns = evalRunsPage?.data;
 
-  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets");
+  const { data: datasetsPage } = useSWR<PaginatedResponse<DatasetInfo>>("/api/datasets");
+  const datasets = datasetsPage?.data;
   const datasetMap = useMemo(
     () => new Map((datasets ?? []).map((d) => [d.id, d.name])),
     [datasets],

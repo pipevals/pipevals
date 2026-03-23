@@ -30,6 +30,7 @@ import {
   type MetricsResponse,
 } from "@/lib/pipeline/types/metrics";
 import type { EvalRunSummary, DatasetInfo } from "@/lib/pipeline/types/shared";
+import type { PaginatedResponse } from "@/lib/api/pagination";
 
 export type { MetricRunEntry };
 
@@ -101,11 +102,13 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
     `/api/pipelines/${pipelineId}/runs/metrics?scope=all`,
   );
 
-  const { data: evalRuns } = useSWR<EvalRunSummary[]>(
+  const { data: evalRunsPage } = useSWR<PaginatedResponse<EvalRunSummary>>(
     `/api/pipelines/${pipelineId}/eval-runs`,
   );
+  const evalRuns = evalRunsPage?.data;
 
-  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets");
+  const { data: datasetsPage } = useSWR<PaginatedResponse<DatasetInfo>>("/api/datasets");
+  const datasets = datasetsPage?.data;
 
   const datasetMap = useMemo(
     () => new Map((datasets ?? []).map((d) => [d.id, d.name])),

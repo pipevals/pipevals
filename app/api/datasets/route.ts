@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { datasets, datasetItems } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, paginatedResponse } from "@/lib/api/pagination";
 import { validateItemsAgainstSchema } from "@/lib/api/validate-dataset-items";
 import { getDatasetsForOrg } from "@/lib/api/datasets";
 
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
   if ("error" in authResult) return authResult.error;
 
   const pagination = parsePagination(new URL(request.url));
-  const rows = await getDatasetsForOrg(authResult.organizationId, pagination);
+  const { data, totalCount } = await getDatasetsForOrg(authResult.organizationId, pagination);
 
-  return NextResponse.json(rows);
+  return paginatedResponse(data, totalCount);
 }

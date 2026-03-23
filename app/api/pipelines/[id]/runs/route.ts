@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { desc, eq, and, isNull } from "drizzle-orm";
+import { desc, eq, and, isNull, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, paginatedResponse } from "@/lib/api/pagination";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 import { buildTriggerValidator } from "@/lib/pipeline/utils/build-trigger-validator";
@@ -82,20 +82,26 @@ export async function GET(request: Request, { params }: RouteParams) {
     ? and(eq(pipelineRuns.pipelineId, id), eq(pipelineRuns.evalRunId, evalRunId))
     : and(eq(pipelineRuns.pipelineId, id), isNull(pipelineRuns.evalRunId));
 
-  const runs = await db
-    .select({
-      id: pipelineRuns.id,
-      status: pipelineRuns.status,
-      triggerPayload: pipelineRuns.triggerPayload,
-      startedAt: pipelineRuns.startedAt,
-      completedAt: pipelineRuns.completedAt,
-      createdAt: pipelineRuns.createdAt,
-    })
-    .from(pipelineRuns)
-    .where(filter)
-    .orderBy(desc(pipelineRuns.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const [runs, [{ totalCount }]] = await Promise.all([
+    db
+      .select({
+        id: pipelineRuns.id,
+        status: pipelineRuns.status,
+        triggerPayload: pipelineRuns.triggerPayload,
+        startedAt: pipelineRuns.startedAt,
+        completedAt: pipelineRuns.completedAt,
+        createdAt: pipelineRuns.createdAt,
+      })
+      .from(pipelineRuns)
+      .where(filter)
+      .orderBy(desc(pipelineRuns.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ totalCount: count() })
+      .from(pipelineRuns)
+      .where(filter),
+  ]);
 
-  return NextResponse.json(runs);
+  return paginatedResponse(runs, totalCount);
 }

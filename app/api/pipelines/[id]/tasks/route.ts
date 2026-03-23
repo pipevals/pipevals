@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { tasks } from "@/lib/db/pipeline-schema";
 import { user } from "@/lib/db/auth-schema";
 import { requirePipeline } from "@/lib/api/auth";
-import { parsePagination } from "@/lib/api/pagination";
+import { parsePagination, paginatedResponse } from "@/lib/api/pagination";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -22,24 +22,32 @@ export async function GET(request: Request, { params }: RouteParams) {
     conditions.push(eq(tasks.status, statusFilter));
   }
 
-  const rows = await db
-    .select({
-      id: tasks.id,
-      runId: tasks.runId,
-      nodeId: tasks.nodeId,
-      status: tasks.status,
-      reviewerIndex: tasks.reviewerIndex,
-      reviewedBy: tasks.reviewedBy,
-      createdAt: tasks.createdAt,
-      completedAt: tasks.completedAt,
-      reviewerName: user.name,
-    })
-    .from(tasks)
-    .leftJoin(user, eq(tasks.reviewedBy, user.id))
-    .where(and(...conditions))
-    .orderBy(desc(tasks.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const where = and(...conditions);
 
-  return NextResponse.json(rows);
+  const [rows, [{ totalCount }]] = await Promise.all([
+    db
+      .select({
+        id: tasks.id,
+        runId: tasks.runId,
+        nodeId: tasks.nodeId,
+        status: tasks.status,
+        reviewerIndex: tasks.reviewerIndex,
+        reviewedBy: tasks.reviewedBy,
+        createdAt: tasks.createdAt,
+        completedAt: tasks.completedAt,
+        reviewerName: user.name,
+      })
+      .from(tasks)
+      .leftJoin(user, eq(tasks.reviewedBy, user.id))
+      .where(where)
+      .orderBy(desc(tasks.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ totalCount: count() })
+      .from(tasks)
+      .where(where),
+  ]);
+
+  return paginatedResponse(rows, totalCount);
 }

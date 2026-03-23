@@ -85,7 +85,8 @@ export function DatasetList({ initialDatasets }: DatasetListProps) {
     try {
       const res = await fetch("/api/datasets");
       if (!res.ok) throw new Error("Failed to load datasets");
-      setDatasets(await res.json());
+      const json = await res.json();
+      setDatasets(json.data);
     } catch (e) {
       await handleApiError(e);
     }

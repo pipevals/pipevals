@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 1000;
 
@@ -13,4 +15,18 @@ export function parsePagination(url: URL): { limit: number; offset: number } {
   if (isNaN(offset) || offset < 0) offset = 0;
 
   return { limit, offset };
+}
+
+/** Response shape for paginated endpoints. */
+export interface PaginatedResponse<T> {
+  data: T[];
+  totalCount: number;
+}
+
+/** Wrap a paginated result with totalCount metadata. */
+export function paginatedResponse<T>(
+  data: T[],
+  totalCount: number,
+): NextResponse {
+  return NextResponse.json({ data, totalCount } satisfies PaginatedResponse<T>);
 }

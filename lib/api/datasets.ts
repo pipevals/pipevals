@@ -6,6 +6,8 @@ export async function getDatasetsForOrg(
   organizationId: string,
   pagination?: { limit: number; offset: number },
 ) {
+  const filter = eq(datasets.organizationId, organizationId);
+
   let query = db
     .select({
       id: datasets.id,
@@ -20,7 +22,7 @@ export async function getDatasetsForOrg(
     })
     .from(datasets)
     .leftJoin(datasetItems, eq(datasetItems.datasetId, datasets.id))
-    .where(eq(datasets.organizationId, organizationId))
+    .where(filter)
     .groupBy(datasets.id)
     .orderBy(desc(datasets.createdAt))
     .$dynamic();
@@ -29,12 +31,21 @@ export async function getDatasetsForOrg(
     query = query.limit(pagination.limit).offset(pagination.offset);
   }
 
-  return query;
+  const rows = await query;
+
+  if (!pagination) return { data: rows, totalCount: rows.length };
+
+  const [{ totalCount }] = await db
+    .select({ totalCount: count() })
+    .from(datasets)
+    .where(filter);
+
+  return { data: rows, totalCount };
 }
 
 export type DatasetSummary = Awaited<
   ReturnType<typeof getDatasetsForOrg>
->[number];
+>["data"][number];
 
 export async function getDatasetWithItems(datasetId: string) {
   const dataset = await db.query.datasets.findFirst({

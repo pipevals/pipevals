@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import useSWR from "swr";
-
+import type { PaginatedResponse } from "@/lib/api/pagination";
 import {
   useTaskReviewStore,
   type TaskListItem,
@@ -18,11 +18,11 @@ export function useTaskLoader(pipelineId: string) {
     init(pipelineId);
   }, [pipelineId, init]);
 
-  const { isLoading, error, mutate } = useSWR<TaskListItem[]>(
+  const { isLoading, error, mutate } = useSWR<PaginatedResponse<TaskListItem>>(
     `/api/pipelines/${pipelineId}/tasks`,
     {
       refreshInterval: POLL_INTERVAL_MS,
-      onSuccess: (tasks) => setTasks(tasks),
+      onSuccess: (page) => setTasks(page.data),
     },
   );
 
