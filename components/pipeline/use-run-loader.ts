@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import {
   useRunViewerStore,
   snapshotToFlow,
@@ -17,14 +17,12 @@ export function useRunLoader(pipelineId: string, runId: string) {
 
   const { data, error, isLoading } = useSWR<RunData>(
     `/api/pipelines/${pipelineId}/runs/${runId}`,
-    fetcher,
     {
       refreshInterval: (latestData) => {
         if (isTerminalRunStatus(latestData?.status)) return 0;
         if (latestData?.status === "awaiting_review") return POLL_INTERVAL_SLOW_MS;
         return POLL_INTERVAL_MS;
       },
-      revalidateOnFocus: false,
       onSuccess: (run) => {
         const store = useRunViewerStore.getState();
         const { nodes, edges } = snapshotToFlow(

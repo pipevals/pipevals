@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import {
   useTaskReviewStore,
   type TaskListItem,
@@ -20,10 +20,8 @@ export function useTaskLoader(pipelineId: string) {
 
   const { isLoading, error, mutate } = useSWR<TaskListItem[]>(
     `/api/pipelines/${pipelineId}/tasks`,
-    fetcher,
     {
       refreshInterval: POLL_INTERVAL_MS,
-      revalidateOnFocus: false,
       onSuccess: (tasks) => setTasks(tasks),
     },
   );

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import {
   Empty,
   EmptyDescription,
@@ -98,16 +98,13 @@ function computeAggregates(data: MetricsResponse): MetricsAggregate {
 export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
   const { data, error, isLoading } = useSWR<MetricsResponse>(
     `/api/pipelines/${pipelineId}/runs/metrics?scope=all`,
-    fetcher,
-    { revalidateOnFocus: false },
   );
 
   const { data: evalRuns } = useSWR<EvalRunSummary[]>(
     `/api/pipelines/${pipelineId}/eval-runs`,
-    fetcher,
   );
 
-  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets", fetcher);
+  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets");
 
   const datasetMap = useMemo(
     () => new Map((datasets ?? []).map((d) => [d.id, d.name])),

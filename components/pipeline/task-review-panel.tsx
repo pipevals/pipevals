@@ -26,7 +26,6 @@ interface TaskDetail {
   reviewerName: string | null;
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 function isComplete(rubric: RubricField[], values: Record<string, unknown>): boolean {
   return rubric.every((field) => {
@@ -49,7 +48,6 @@ export function TaskReviewPanel({
 
   const { data: task, mutate } = useSWR<TaskDetail>(
     `/api/tasks/${taskId}`,
-    fetcher,
   );
 
   const [values, setValues] = useState<Record<string, unknown>>({});

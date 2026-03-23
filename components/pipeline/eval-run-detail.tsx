@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import { formatDateTime } from "@/lib/format";
 import {
   Table,
@@ -58,17 +58,15 @@ export function EvalRunDetail({
 
   const { data: evalRun } = useSWR<EvalRunData>(
     `/api/pipelines/${pipelineId}/eval-runs/${evalRunId}`,
-    fetcher,
     { refreshInterval: (data) => (data && isTerminal(data.status) ? 0 : 3000) },
   );
 
   const { data: metrics } = useSWR<EvalRunMetrics>(
     `/api/pipelines/${pipelineId}/eval-runs/${evalRunId}/metrics`,
-    fetcher,
-    { refreshInterval: (data) => {
+    { refreshInterval: () => {
       if (!evalRun) return 5000;
       return isTerminal(evalRun.status) ? 0 : 5000;
-    }},
+    } },
   );
 
   if (!evalRun) {

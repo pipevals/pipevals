@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SWRProvider } from "@/components/swr-provider";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -44,7 +45,9 @@ export default function RootLayout({
     >
       <body className="antialiased">
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <SWRProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </SWRProvider>
         </ThemeProvider>
         <Toaster />
       </body>

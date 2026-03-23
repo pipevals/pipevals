@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlayIcon } from "@hugeicons/core-free-icons";
 import {
@@ -45,20 +45,17 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
 
   const { data: runs, error: runsError, isLoading: runsLoading } = useSWR<RunSummary[]>(
     runsUrl,
-    fetcher,
     {
       refreshInterval: (latestData) => {
         if (!latestData) return 0;
         const hasActive = latestData.some((r) => !isTerminalRunStatus(r.status));
         return hasActive ? 3000 : 0;
       },
-      revalidateOnFocus: false,
     },
   );
 
   const { data: evalRuns, error: evalError, isLoading: evalLoading } = useSWR<EvalRunSummary[]>(
     evalRunsUrl,
-    fetcher,
     {
       refreshInterval: (latestData) => {
         if (!latestData) return 0;
@@ -67,11 +64,10 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
         );
         return hasActive ? 5000 : 0;
       },
-      revalidateOnFocus: false,
     },
   );
 
-  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets", fetcher);
+  const { data: datasets } = useSWR<DatasetInfo[]>("/api/datasets");
   const datasetMap = useMemo(
     () => new Map((datasets ?? []).map((d) => [d.id, d.name])),
     [datasets],

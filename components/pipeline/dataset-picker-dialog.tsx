@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,7 +47,6 @@ export function DatasetPickerDialog({
 
   const { data: allDatasets } = useSWR<DatasetRow[]>(
     open ? "/api/datasets" : null,
-    fetcher,
   );
 
   // Filter to compatible datasets (exact key match)
