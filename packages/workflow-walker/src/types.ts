@@ -16,7 +16,10 @@ export type StepHandler = (
 
 // --- Registry ---
 
-export type StepRegistry = Record<string, { handler: StepHandler }>;
+export type StepRegistry = Record<
+  string,
+  { handler: StepHandler; branches?: true }
+>;
 
 // --- Graph snapshot (consumer → walker contract) ---
 

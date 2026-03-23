@@ -43,7 +43,12 @@ export function createWalker(config: WalkerConfig) {
 
     const results = new Map<string, Record<string, unknown>>();
     const completedNodes = new Set<string>();
-    const branchResolver = new BranchResolver();
+    const branchingTypes = new Set(
+      Object.entries(steps)
+        .filter(([, entry]) => entry.branches)
+        .map(([type]) => type),
+    );
+    const branchResolver = new BranchResolver(branchingTypes);
 
     let failed = false;
     let firstError: unknown;
@@ -78,10 +83,10 @@ export function createWalker(config: WalkerConfig) {
           completedNodes.add(node.id);
 
           if (
-            node.type === "condition" &&
+            branchingTypes.has(node.type) &&
             typeof result.value.branch === "string"
           ) {
-            branchResolver.recordConditionResult(
+            branchResolver.recordBranchResult(
               node.id,
               result.value.branch,
             );

@@ -1,19 +1,24 @@
 import type { PipelineGraph, WalkerEdge } from "./graph-loader";
 
 /**
- * Tracks which branches are active after condition nodes evaluate.
+ * Tracks which branches are active after branching nodes evaluate.
  * Used by the walker to decide which downstream nodes to enqueue.
+ *
+ * Which step types branch is determined by the `branches` flag in the
+ * step registry — no type names are hardcoded here.
  */
 export class BranchResolver {
   /**
-   * Maps condition node ID → the active output handle (e.g. "true" or "false").
+   * Maps branching node ID → the active output handle (e.g. "true" or "false").
    */
   private activeHandles = new Map<string, string>();
 
+  constructor(private readonly branchingTypes: ReadonlySet<string>) {}
+
   /**
-   * Records which branch a condition node selected.
+   * Records which branch a node selected.
    */
-  recordConditionResult(nodeId: string, branch: string) {
+  recordBranchResult(nodeId: string, branch: string) {
     this.activeHandles.set(nodeId, branch);
   }
 
@@ -22,11 +27,11 @@ export class BranchResolver {
    * A node is ready when ALL of its active incoming edges have completed sources.
    *
    * An incoming edge is "active" if:
-   * - Its source is NOT a condition node (always active), OR
-   * - Its source IS a condition node AND the edge's sourceHandle matches the active branch
+   * - Its source is NOT a branching type (always active), OR
+   * - Its source IS a branching type AND the edge's sourceHandle matches the active branch
    *
    * An incoming edge is "inactive" (can be ignored) if:
-   * - Its source IS a condition node AND the edge's sourceHandle does NOT match the active branch
+   * - Its source IS a branching type AND the edge's sourceHandle does NOT match the active branch
    */
   isNodeReady(
     nodeId: string,
@@ -70,12 +75,12 @@ export class BranchResolver {
   }
 
   /**
-   * An edge is active if its source is not a condition node,
+   * An edge is active if its source is not a branching type,
    * or if it is and the edge's handle matches the active branch.
    */
   private isEdgeActive(edge: WalkerEdge, graph: PipelineGraph): boolean {
     const sourceNode = graph.nodeMap.get(edge.sourceNodeId);
-    if (!sourceNode || sourceNode.type !== "condition") return true;
+    if (!sourceNode || !this.branchingTypes.has(sourceNode.type)) return true;
 
     const activeBranch = this.activeHandles.get(edge.sourceNodeId);
     if (activeBranch === undefined) return true;

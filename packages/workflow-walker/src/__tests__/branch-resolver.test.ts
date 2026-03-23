@@ -26,6 +26,8 @@ function makeGraph(
   });
 }
 
+const BRANCHING = new Set(["condition"]);
+
 describe("BranchResolver", () => {
   //  ◇ cond ──true──→ a
   //         └─false─→ b
@@ -42,28 +44,28 @@ describe("BranchResolver", () => {
       ],
     );
 
-    const br = new BranchResolver();
+    const br = new BranchResolver(BRANCHING);
     const completed = new Set(["cond"]);
-    br.recordConditionResult("cond", "true");
+    br.recordBranchResult("cond", "true");
 
     expect(br.isNodeReady("a", graph, completed)).toBe(true);
     expect(br.isNodeReady("b", graph, completed)).toBe(false);
   });
 
   //  a → b
-  test("node after non-condition source is always reachable", () => {
+  test("node after non-branching source is always reachable", () => {
     const graph = makeGraph(
       [{ id: "a" }, { id: "b" }],
       [{ sourceNodeId: "a", targetNodeId: "b" }],
     );
 
-    const br = new BranchResolver();
+    const br = new BranchResolver(BRANCHING);
     expect(br.isNodeReady("b", graph, new Set(["a"]))).toBe(true);
   });
 
   //  ◇ cond ──true──→ x ─┐
   //         └─false─→ y ─┼→ merge
-  test("convergence after condition: merge node executes on active path only", () => {
+  test("convergence after branch: merge node executes on active path only", () => {
     const graph = makeGraph(
       [
         { id: "cond", type: "condition" },
@@ -79,8 +81,8 @@ describe("BranchResolver", () => {
       ],
     );
 
-    const br = new BranchResolver();
-    br.recordConditionResult("cond", "true");
+    const br = new BranchResolver(BRANCHING);
+    br.recordBranchResult("cond", "true");
 
     const completed = new Set(["cond", "x"]);
 
@@ -88,7 +90,7 @@ describe("BranchResolver", () => {
   });
 
   //  ◇ cond ──true──→ a       (cond not yet evaluated)
-  test("before condition evaluates, downstream nodes wait", () => {
+  test("before branching node evaluates, downstream nodes wait", () => {
     const graph = makeGraph(
       [
         { id: "cond", type: "condition" },
@@ -97,14 +99,37 @@ describe("BranchResolver", () => {
       [{ sourceNodeId: "cond", targetNodeId: "a", sourceHandle: "true" }],
     );
 
-    const br = new BranchResolver();
+    const br = new BranchResolver(BRANCHING);
     expect(br.isNodeReady("a", graph, new Set())).toBe(false);
   });
 
   //  a
   test("entry node is always ready", () => {
     const graph = makeGraph([{ id: "a" }], []);
-    const br = new BranchResolver();
+    const br = new BranchResolver(BRANCHING);
     expect(br.isNodeReady("a", graph, new Set())).toBe(true);
+  });
+
+  // Custom branching type
+  test("custom branching type is respected", () => {
+    const customBranching = new Set(["router"]);
+    const graph = makeGraph(
+      [
+        { id: "r", type: "router" },
+        { id: "a" },
+        { id: "b" },
+      ],
+      [
+        { sourceNodeId: "r", targetNodeId: "a", sourceHandle: "fast" },
+        { sourceNodeId: "r", targetNodeId: "b", sourceHandle: "slow" },
+      ],
+    );
+
+    const br = new BranchResolver(customBranching);
+    const completed = new Set(["r"]);
+    br.recordBranchResult("r", "fast");
+
+    expect(br.isNodeReady("a", graph, completed)).toBe(true);
+    expect(br.isNodeReady("b", graph, completed)).toBe(false);
   });
 });

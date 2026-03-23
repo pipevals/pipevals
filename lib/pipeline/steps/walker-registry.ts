@@ -24,7 +24,7 @@ export const walkerStepRegistry: StepRegistry = {
   ai_sdk: { handler: h(aiSdkHandler) },
   api_request: { handler: h(apiRequestHandler) },
   sandbox: { handler: h(sandboxHandler) },
-  condition: { handler: h(conditionHandler) },
+  condition: { handler: h(conditionHandler), branches: true },
   transform: { handler: h(transformHandler) },
   metric_capture: { handler: h(metricCaptureHandler) },
 };
