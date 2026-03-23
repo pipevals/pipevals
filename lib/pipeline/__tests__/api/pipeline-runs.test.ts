@@ -160,8 +160,9 @@ describe("run endpoints (PGlite integration)", () => {
       );
       expect(res.status).toBe(200);
 
-      const data = await res.json();
+      const { data, totalCount } = await res.json();
       expect(data.length).toBeGreaterThanOrEqual(2);
+      expect(totalCount).toBeGreaterThanOrEqual(2);
 
       const dates = data.map((r: { createdAt: string }) => new Date(r.createdAt).getTime());
       for (let i = 1; i < dates.length; i++) {

@@ -164,8 +164,9 @@ describe("eval run API (PGlite integration)", () => {
         makePipelineParams(pipelineId),
       );
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const { data, totalCount } = await res.json();
       expect(data.length).toBeGreaterThanOrEqual(1);
+      expect(totalCount).toBeGreaterThanOrEqual(1);
       expect(data[0].totalItems).toBeDefined();
       expect(data[0].datasetId).toBe(datasetId);
     });

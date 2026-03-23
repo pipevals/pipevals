@@ -193,7 +193,7 @@ describe("API smoke tests (PGlite)", () => {
       );
       expect(res.status).toBe(200);
 
-      const data = await res.json();
+      const { data } = await res.json();
       expect(data.length).toBeGreaterThanOrEqual(1);
       expect(["pending", "running", "completed", "failed"]).toContain(
         data[0].status,

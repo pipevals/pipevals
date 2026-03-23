@@ -116,11 +116,12 @@ describe("dataset CRUD (PGlite integration)", () => {
   });
 
   describe("GET /api/datasets", () => {
-    test("200 returns list with item counts", async () => {
+    test("200 returns list with item counts and totalCount", async () => {
       const res = await listDatasets(new Request("http://localhost/api/datasets"));
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const { data, totalCount } = await res.json();
       expect(data.length).toBeGreaterThanOrEqual(2);
+      expect(totalCount).toBeGreaterThanOrEqual(2);
       expect(data[0].itemCount).toBeDefined();
     });
   });
