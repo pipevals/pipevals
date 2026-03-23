@@ -2,13 +2,18 @@ import { eq, desc, asc, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { datasets, datasetItems } from "@/lib/db/pipeline-schema";
 
-export async function getDatasetsForOrg(organizationId: string) {
-  return db
+export async function getDatasetsForOrg(
+  organizationId: string,
+  pagination?: { limit: number; offset: number },
+) {
+  let query = db
     .select({
       id: datasets.id,
       name: datasets.name,
       description: datasets.description,
       schema: datasets.schema,
+      organizationId: datasets.organizationId,
+      createdBy: datasets.createdBy,
       createdAt: datasets.createdAt,
       updatedAt: datasets.updatedAt,
       itemCount: count(datasetItems.id),
@@ -17,7 +22,14 @@ export async function getDatasetsForOrg(organizationId: string) {
     .leftJoin(datasetItems, eq(datasetItems.datasetId, datasets.id))
     .where(eq(datasets.organizationId, organizationId))
     .groupBy(datasets.id)
-    .orderBy(desc(datasets.createdAt));
+    .orderBy(desc(datasets.createdAt))
+    .$dynamic();
+
+  if (pagination) {
+    query = query.limit(pagination.limit).offset(pagination.offset);
+  }
+
+  return query;
 }
 
 export type DatasetSummary = Awaited<

@@ -24,9 +24,10 @@ const EvalRunTrendsChart = dynamic(() =>
 const EvalRunSparklineCards = dynamic(() =>
   import("./charts/eval-run-sparkline-cards").then((m) => m.EvalRunSparklineCards),
 );
-import type {
-  MetricRunEntry,
-  MetricsResponse,
+import {
+  aggregateMetrics,
+  type MetricRunEntry,
+  type MetricsResponse,
 } from "@/lib/pipeline/types/metrics";
 import type { EvalRunSummary, DatasetInfo } from "@/lib/pipeline/types/shared";
 
@@ -131,29 +132,11 @@ export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
       const er = evalRunMap.get(evalRunId);
       if (!er) continue;
 
-      // Compute average of each numeric metric across completed runs
-      const completedRuns = runs.filter((r) => r.status === "completed");
-      const metricSums: Record<string, { sum: number; count: number }> = {};
-      for (const run of completedRuns) {
-        for (const [key, value] of Object.entries(run.metrics)) {
-          if (typeof value === "number") {
-            if (!metricSums[key]) metricSums[key] = { sum: 0, count: 0 };
-            metricSums[key].sum += value;
-            metricSums[key].count++;
-          }
-        }
-      }
-
-      const metrics: Record<string, number> = {};
-      for (const [key, { sum, count }] of Object.entries(metricSums)) {
-        metrics[key] = sum / count;
-      }
-
       points.push({
         evalRunId,
         datasetName: datasetMap.get(er.datasetId) ?? er.datasetId.slice(0, 8),
         date: new Date(er.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        metrics,
+        metrics: aggregateMetrics(runs),
       });
     }
 

@@ -1,34 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { or, isNull, eq, asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelineTemplates } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
 import { slugify } from "@/lib/slugify";
+import { getTemplatesForOrg } from "@/lib/api/pipelines";
 
 export async function GET() {
   const authResult = await requireAuth();
   if ("error" in authResult) return authResult.error;
 
-  const templates = await db
-    .select({
-      id: pipelineTemplates.id,
-      name: pipelineTemplates.name,
-      slug: pipelineTemplates.slug,
-      description: pipelineTemplates.description,
-      organizationId: pipelineTemplates.organizationId,
-      createdAt: pipelineTemplates.createdAt,
-      updatedAt: pipelineTemplates.updatedAt,
-    })
-    .from(pipelineTemplates)
-    .where(
-      or(
-        isNull(pipelineTemplates.organizationId),
-        eq(pipelineTemplates.organizationId, authResult.organizationId),
-      ),
-    )
-    .orderBy(asc(pipelineTemplates.name));
-
+  const templates = await getTemplatesForOrg(authResult.organizationId);
   return NextResponse.json(templates);
 }
 

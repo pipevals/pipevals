@@ -21,6 +21,8 @@ export async function getTemplatesForOrg(organizationId: string) {
       slug: pipelineTemplates.slug,
       description: pipelineTemplates.description,
       organizationId: pipelineTemplates.organizationId,
+      createdAt: pipelineTemplates.createdAt,
+      updatedAt: pipelineTemplates.updatedAt,
     })
     .from(pipelineTemplates)
     .where(

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { evalRuns, pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
 import { extractRunMetrics } from "@/lib/pipeline/extract-run-metrics";
+import { aggregateMetrics } from "@/lib/pipeline/types/metrics";
 
 type RouteParams = { params: Promise<{ id: string; evalRunId: string }> };
 
@@ -46,25 +47,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   });
 
   const entries = extractRunMetrics(runs);
-
-  // Compute aggregate: mean of each numeric metric across completed runs
-  const aggregate: Record<string, number> = {};
-  const metricSums: Record<string, { sum: number; count: number }> = {};
-
-  for (const entry of entries) {
-    if (entry.status !== "completed") continue;
-    for (const [key, value] of Object.entries(entry.metrics)) {
-      if (typeof value === "number") {
-        if (!metricSums[key]) metricSums[key] = { sum: 0, count: 0 };
-        metricSums[key].sum += value;
-        metricSums[key].count++;
-      }
-    }
-  }
-
-  for (const [key, { sum, count }] of Object.entries(metricSums)) {
-    aggregate[key] = sum / count;
-  }
+  const aggregate = aggregateMetrics(entries);
 
   return NextResponse.json({ runs: entries, aggregate });
 }

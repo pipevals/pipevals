@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { desc, eq, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { datasets, datasetItems } from "@/lib/db/pipeline-schema";
 import { requireAuth } from "@/lib/api/auth";
 import { parsePagination } from "@/lib/api/pagination";
 import { validateItemsAgainstSchema } from "@/lib/api/validate-dataset-items";
+import { getDatasetsForOrg } from "@/lib/api/datasets";
 
 export async function POST(request: Request) {
   const authResult = await requireAuth({ write: true });
@@ -78,27 +78,8 @@ export async function GET(request: Request) {
   const authResult = await requireAuth();
   if ("error" in authResult) return authResult.error;
 
-  const { limit, offset } = parsePagination(new URL(request.url));
-
-  const rows = await db
-    .select({
-      id: datasets.id,
-      name: datasets.name,
-      description: datasets.description,
-      schema: datasets.schema,
-      organizationId: datasets.organizationId,
-      createdBy: datasets.createdBy,
-      createdAt: datasets.createdAt,
-      updatedAt: datasets.updatedAt,
-      itemCount: count(datasetItems.id),
-    })
-    .from(datasets)
-    .leftJoin(datasetItems, eq(datasetItems.datasetId, datasets.id))
-    .where(eq(datasets.organizationId, authResult.organizationId))
-    .groupBy(datasets.id)
-    .orderBy(desc(datasets.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const pagination = parsePagination(new URL(request.url));
+  const rows = await getDatasetsForOrg(authResult.organizationId, pagination);
 
   return NextResponse.json(rows);
 }
