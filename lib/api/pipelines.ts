@@ -2,10 +2,20 @@ import { eq, or, isNull, desc, asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { pipelines, pipelineTemplates } from "@/lib/db/pipeline-schema";
 
-export async function getPipelinesForOrg(organizationId: string) {
+const DEFAULT_PAGE_LIMIT = 200;
+
+export async function getPipelinesForOrg(
+  organizationId: string,
+  pagination?: { limit: number; offset: number },
+) {
+  const limit = pagination?.limit ?? DEFAULT_PAGE_LIMIT;
+  const offset = pagination?.offset ?? 0;
+
   return db.query.pipelines.findMany({
     where: eq(pipelines.organizationId, organizationId),
     orderBy: desc(pipelines.updatedAt),
+    limit,
+    offset,
   });
 }
 

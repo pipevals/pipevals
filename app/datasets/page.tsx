@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function DatasetsPage() {
   const { user, organizationId, role } = await requireSessionWithOrg();
 
-  const { data: datasets } = await getDatasetsForOrg(organizationId);
+  const { data: datasets } = await getDatasetsForOrg(organizationId, { limit: 200, offset: 0 });
 
   return (
     <div className="flex min-h-screen flex-col">
