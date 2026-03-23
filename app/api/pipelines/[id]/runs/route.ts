@@ -7,6 +7,7 @@ import { parsePagination } from "@/lib/api/pagination";
 import { start } from "workflow/api";
 import { runPipelineWorkflow } from "@/lib/pipeline/walker/workflow";
 import { buildTriggerValidator } from "@/lib/pipeline/utils/build-trigger-validator";
+import { buildGraphSnapshot } from "@/lib/pipeline/build-graph-snapshot";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -15,14 +16,8 @@ export async function POST(request: Request, { params }: RouteParams) {
   const result = await requirePipeline(id, { withGraph: true, write: true, apiKey: true });
   if ("error" in result) return result.error;
 
-  const { nodes, edges } = result.pipeline;
-
-  const executableNodes = nodes.filter((n) => n.type !== "trigger");
-  const triggerNodeIds = new Set(
-    nodes.filter((n) => n.type === "trigger").map((n) => n.id),
-  );
-
-  if (executableNodes.length === 0) {
+  const graphSnapshot = buildGraphSnapshot(result.pipeline.nodes, result.pipeline.edges);
+  if (!graphSnapshot) {
     return NextResponse.json(
       { error: "Pipeline has no nodes to execute" },
       { status: 400 },
@@ -41,34 +36,6 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   const triggerPayload = parsed.data;
-
-  const snapshotEdges = edges
-    .filter(
-      (e) =>
-        !triggerNodeIds.has(e.sourceNodeId) &&
-        !triggerNodeIds.has(e.targetNodeId),
-    )
-    .map((e) => ({
-      id: e.id,
-      sourceNodeId: e.sourceNodeId,
-      sourceHandle: e.sourceHandle,
-      targetNodeId: e.targetNodeId,
-      targetHandle: e.targetHandle,
-      label: e.label,
-    }));
-
-  const graphSnapshot = {
-    nodes: executableNodes.map((n) => ({
-      id: n.id,
-      type: n.type,
-      label: n.label,
-      slug: n.slug,
-      config: n.config,
-      positionX: n.positionX,
-      positionY: n.positionY,
-    })),
-    edges: snapshotEdges,
-  };
 
   const [run] = await db
     .insert(pipelineRuns)
