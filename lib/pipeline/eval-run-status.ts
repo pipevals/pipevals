@@ -19,7 +19,7 @@ export function deriveEvalRunStatus(runs: RunStatus[]): DerivedStatus {
   for (const run of runs) {
     if (run.status === "completed") {
       completedItems++;
-    } else if (run.status === "failed") {
+    } else if (run.status === "failed" || run.status === "cancelled") {
       failedItems++;
     } else if (run.status === "running" || run.status === "awaiting_review") {
       hasRunning = true;

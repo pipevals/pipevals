@@ -52,6 +52,7 @@ export function SaveAsTemplateDialog({ open, onOpenChange }: SaveAsTemplateDialo
         id: n.id,
         type: n.type,
         label: n.data.label,
+        slug: n.data.slug,
         config: n.data.config,
         positionX: n.position.x,
         positionY: n.position.y,

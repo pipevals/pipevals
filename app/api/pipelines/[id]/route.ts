@@ -176,20 +176,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 
   await db.transaction(async (tx) => {
-    if (
-      name !== undefined ||
-      description !== undefined ||
-      triggerSchema !== undefined
-    ) {
-      await tx
-        .update(pipelines)
-        .set({
-          ...(name !== undefined ? { name } : {}),
-          ...(description !== undefined ? { description } : {}),
-          ...(triggerSchema !== undefined ? { triggerSchema } : {}),
-        })
-        .where(eq(pipelines.id, id));
-    }
+    await tx
+      .update(pipelines)
+      .set({
+        ...(name !== undefined ? { name } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(triggerSchema !== undefined ? { triggerSchema } : {}),
+        updatedAt: new Date(),
+      })
+      .where(eq(pipelines.id, id));
 
     if (incomingEdgeIds.length > 0) {
       await tx

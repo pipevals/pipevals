@@ -80,12 +80,24 @@ export async function POST(request: Request, { params }: RouteParams) {
     })
     .returning({ id: pipelineRuns.id });
 
-  const workflowRun = await start(runPipelineWorkflow, [run.id]);
+  try {
+    const workflowRun = await start(runPipelineWorkflow, [run.id]);
 
-  await db
-    .update(pipelineRuns)
-    .set({ workflowRunId: workflowRun.runId })
-    .where(eq(pipelineRuns.id, run.id));
+    await db
+      .update(pipelineRuns)
+      .set({ workflowRunId: workflowRun.runId })
+      .where(eq(pipelineRuns.id, run.id));
+  } catch {
+    await db
+      .update(pipelineRuns)
+      .set({ status: "failed", completedAt: new Date() })
+      .where(eq(pipelineRuns.id, run.id));
+
+    return NextResponse.json(
+      { error: "Failed to start pipeline workflow", runId: run.id },
+      { status: 502 },
+    );
+  }
 
   return NextResponse.json({ runId: run.id }, { status: 202 });
 }
