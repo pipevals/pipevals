@@ -61,9 +61,7 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
     {
       refreshInterval: (latestData) => {
         if (!latestData) return 0;
-        const hasActive = latestData.data.some(
-          (r) => r.status === "pending" || r.status === "running",
-        );
+        const hasActive = latestData.data.some((r) => !isTerminalRunStatus(r.status));
         return hasActive ? 5000 : 0;
       },
     },
@@ -242,7 +240,8 @@ export function RunList({ pipelineId }: { pipelineId: string }) {
                           {computeDuration(
                             run.startedAt,
                             run.completedAt,
-                            run.status === "running",
+                            run.status === "running" ||
+                              run.status === "awaiting_review",
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs text-muted-foreground">

@@ -14,6 +14,11 @@ export const STATUS_CONFIG: Record<
     dotClass: "bg-running motion-safe:animate-pulse",
     textClass: "text-running",
   },
+  awaiting_review: {
+    label: "Awaiting review",
+    dotClass: "bg-amber-500",
+    textClass: "text-amber-600 dark:text-amber-400",
+  },
   completed: {
     label: "Completed",
     dotClass: "bg-pass",
