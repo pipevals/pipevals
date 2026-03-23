@@ -97,7 +97,7 @@ function computeAggregates(data: MetricsResponse): MetricsAggregate {
 
 export function MetricsDashboard({ pipelineId }: { pipelineId: string }) {
   const { data, error, isLoading } = useSWR<MetricsResponse>(
-    `/api/pipelines/${pipelineId}/runs/metrics`,
+    `/api/pipelines/${pipelineId}/runs/metrics?scope=all`,
     fetcher,
     { revalidateOnFocus: false },
   );

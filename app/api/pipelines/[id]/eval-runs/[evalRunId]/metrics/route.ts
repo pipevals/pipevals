@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { evalRuns, pipelineRuns } from "@/lib/db/pipeline-schema";
 import { requirePipeline } from "@/lib/api/auth";
@@ -24,9 +24,25 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   const runs = await db.query.pipelineRuns.findMany({
-    where: eq(pipelineRuns.evalRunId, evalRunId),
+    where: and(
+      eq(pipelineRuns.evalRunId, evalRunId),
+      inArray(pipelineRuns.status, ["completed", "failed", "cancelled"]),
+    ),
+    columns: {
+      id: true,
+      status: true,
+      graphSnapshot: true,
+      evalRunId: true,
+      startedAt: true,
+      completedAt: true,
+      createdAt: true,
+    },
     orderBy: asc(pipelineRuns.createdAt),
-    with: { stepResults: true },
+    with: {
+      stepResults: {
+        columns: { nodeId: true, status: true, output: true, durationMs: true },
+      },
+    },
   });
 
   const entries = extractRunMetrics(runs);

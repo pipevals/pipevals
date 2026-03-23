@@ -9,7 +9,7 @@ import {
 import { requirePipeline } from "@/lib/api/auth";
 import { validateGraph } from "@/lib/pipeline/graph-validation";
 import { validateNodeSlugs } from "@/lib/pipeline/validate-slugs";
-import { eq, and, ne, notInArray, inArray } from "drizzle-orm";
+import { eq, and, ne, notInArray, inArray, sql } from "drizzle-orm";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -216,53 +216,57 @@ export async function PUT(request: Request, { params }: RouteParams) {
         .where(eq(pipelineNodes.pipelineId, id));
     }
 
-    for (const node of nodes) {
+    if (nodes.length > 0) {
       await tx
         .insert(pipelineNodes)
-        .values({
-          id: node.id,
-          pipelineId: id,
-          type: node.type,
-          label: node.data.label ?? null,
-          slug: node.data.slug ?? null,
-          config: (node.data.config as Record<string, unknown>) ?? {},
-          positionX: node.position.x,
-          positionY: node.position.y,
-        })
-        .onConflictDoUpdate({
-          target: pipelineNodes.id,
-          set: {
+        .values(
+          nodes.map((node) => ({
+            id: node.id,
+            pipelineId: id,
             type: node.type,
             label: node.data.label ?? null,
             slug: node.data.slug ?? null,
             config: (node.data.config as Record<string, unknown>) ?? {},
             positionX: node.position.x,
             positionY: node.position.y,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: pipelineNodes.id,
+          set: {
+            type: sql`excluded.type`,
+            label: sql`excluded.label`,
+            slug: sql`excluded.slug`,
+            config: sql`excluded.config`,
+            positionX: sql`excluded.position_x`,
+            positionY: sql`excluded.position_y`,
           },
           where: eq(pipelineNodes.pipelineId, id),
         });
     }
 
-    for (const edge of edges) {
+    if (edges.length > 0) {
       await tx
         .insert(pipelineEdges)
-        .values({
-          id: edge.id,
-          pipelineId: id,
-          sourceNodeId: edge.source,
-          sourceHandle: edge.sourceHandle ?? null,
-          targetNodeId: edge.target,
-          targetHandle: edge.targetHandle ?? null,
-          label: edge.label ?? null,
-        })
-        .onConflictDoUpdate({
-          target: pipelineEdges.id,
-          set: {
+        .values(
+          edges.map((edge) => ({
+            id: edge.id,
+            pipelineId: id,
             sourceNodeId: edge.source,
             sourceHandle: edge.sourceHandle ?? null,
             targetNodeId: edge.target,
             targetHandle: edge.targetHandle ?? null,
             label: edge.label ?? null,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: pipelineEdges.id,
+          set: {
+            sourceNodeId: sql`excluded.source_node_id`,
+            sourceHandle: sql`excluded.source_handle`,
+            targetNodeId: sql`excluded.target_node_id`,
+            targetHandle: sql`excluded.target_handle`,
+            label: sql`excluded.label`,
           },
           where: eq(pipelineEdges.pipelineId, id),
         });
