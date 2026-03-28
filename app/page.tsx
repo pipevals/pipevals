@@ -1,5 +1,6 @@
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
+import { CodeComparison } from "@/components/landing/code-comparison";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -35,14 +36,14 @@ export default function Home() {
             Pipevals
           </span>
           <div className="flex items-center gap-6 text-sm">
-            <a
+            <Link
               href="https://github.com/pipevals/pipevals"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#00F0FF] transition-colors"
             >
               GitHub
-            </a>
+            </Link>
             <Link
               href="/pipelines"
               className="hover:text-[#00F0FF] transition-colors"
@@ -70,15 +71,15 @@ export default function Home() {
             className="text-xl lg:text-2xl font-bold text-white mb-4"
             style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
           >
-            Pipevals is the visual pipeline builder for evaluation-driven AI
+            Pipevals is the pipeline builder for evaluation-driven AI
             development.
           </p>
           <p className="text-base text-[#94a3b8] mb-8">
-            Build evaluation graphs. Run them against datasets. Track quality
-            over time.
+            Evaluate any model, any prompt, any pipeline. Track quality over
+            time.
           </p>
 
-          <a
+          <Link
             href="https://github.com/pipevals/pipevals"
             target="_blank"
             rel="noopener noreferrer"
@@ -86,7 +87,137 @@ export default function Home() {
           >
             Get Started
             <span aria-hidden="true">&rarr;</span>
-          </a>
+          </Link>
+        </section>
+
+        {/* API Integration — Terminal Window */}
+        <section className="mb-24">
+          <h2
+            className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight mb-4"
+            style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+          >
+            Evaluate in-line, without changing your stack.
+          </h2>
+          <p className="text-sm text-[#94a3b8] max-w-xl mb-10">
+            Add a single API call after your existing LLM code. Your pipeline
+            evaluates every response — no SDK, no wrapper, just an HTTP POST.
+          </p>
+
+          <div className="border border-[#2d3135] bg-[#161819] overflow-hidden rounded-lg">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2d3135]">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+                <span className="ml-4 text-[10px] text-[#94a3b8] uppercase tracking-widest">
+                  pipevals_integration
+                </span>
+              </div>
+            </div>
+            <div className="p-6">
+              <CodeComparison dark />
+            </div>
+          </div>
+        </section>
+
+        {/* Product Capabilities — Option C */}
+        <section className="mb-24">
+          <h2
+            className="text-3xl font-extrabold text-white tracking-tight mb-12"
+            style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+          >
+            The platform.
+          </h2>
+
+          <div className="space-y-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
+                    01
+                  </span>
+                  <h3
+                    className="text-xl font-bold text-white"
+                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+                  >
+                    Visual Pipeline Builder
+                  </h3>
+                </div>
+                <p className="text-sm text-[#94a3b8] leading-relaxed">
+                  Drag steps onto a canvas and wire them together. Call models,
+                  reshape data, capture scores, or pause for human review — all
+                  without writing orchestration code.
+                </p>
+              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/build.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
+                    02
+                  </span>
+                  <h3
+                    className="text-xl font-bold text-white"
+                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+                  >
+                    Durable Execution Engine
+                  </h3>
+                </div>
+                <p className="text-sm text-[#94a3b8] leading-relaxed">
+                  Every run walks the full graph step by step. Model calls,
+                  transforms, scoring — with execution that survives failures.
+                  Inspect each step&apos;s input, output, and timing when it
+                  completes.
+                </p>
+              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/run.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
+                    03
+                  </span>
+                  <h3
+                    className="text-xl font-bold text-white"
+                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+                  >
+                    Metrics Dashboard
+                  </h3>
+                </div>
+                <p className="text-sm text-[#94a3b8] leading-relaxed">
+                  See where quality stands and where it&apos;s headed. Trend
+                  charts, score distributions, step durations, and pass rates —
+                  all populated automatically from your pipeline runs.
+                </p>
+              </div>
+              <video
+                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
+                src="/demo/measure.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
+          </div>
         </section>
 
         {/* Problem Cards */}
@@ -148,105 +279,6 @@ export default function Home() {
                 Everyone agrees you need evaluation pipelines. Somehow,
                 you&apos;re still expected to build them from scratch.
               </p>
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works */}
-        <section className="mb-24">
-          <h2
-            className="text-3xl font-extrabold text-white tracking-tight mb-12"
-            style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
-          >
-            Build. Run. Measure.
-          </h2>
-
-          <div className="space-y-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
-                    01
-                  </span>
-                  <h3
-                    className="text-xl font-bold text-white"
-                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
-                  >
-                    Build
-                  </h3>
-                </div>
-                <p className="text-sm text-[#94a3b8] leading-relaxed">
-                  Drag steps onto a canvas and wire them together. Call models,
-                  reshape data, capture scores, or pause for human review — all
-                  without writing orchestration code.
-                </p>
-              </div>
-              <video
-                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
-                src="/demo/build.mov"
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
-                    02
-                  </span>
-                  <h3
-                    className="text-xl font-bold text-white"
-                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
-                  >
-                    Run
-                  </h3>
-                </div>
-                <p className="text-sm text-[#94a3b8] leading-relaxed">
-                  Trigger pipelines one at a time or batch them against a
-                  dataset. Each item runs through the full graph, durably, with
-                  step-by-step results you can inspect after.
-                </p>
-              </div>
-              <video
-                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
-                src="/demo/run.mov"
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
-                    03
-                  </span>
-                  <h3
-                    className="text-xl font-bold text-white"
-                    style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
-                  >
-                    Measure
-                  </h3>
-                </div>
-                <p className="text-sm text-[#94a3b8] leading-relaxed">
-                  See where quality stands and where it&apos;s headed. Trend
-                  charts, score distributions, step durations, and pass rates —
-                  all populated automatically from your pipeline runs.
-                </p>
-              </div>
-              <video
-                className="aspect-video w-full border border-[#2d3135] bg-[#1a1c1e]"
-                src="/demo/measure.mov"
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
             </div>
           </div>
         </section>
@@ -316,27 +348,11 @@ export default function Home() {
           <span className="text-white font-bold">Pipevals</span>
           <div className="flex gap-6">
             <Link
-              href="/LICENSE"
+              href="https://github.com/pipevals/pipevals?tab=MIT-1-ov-file#readme"
               className="hover:text-[#00F0FF] transition-colors"
             >
               MIT License
             </Link>
-            <a
-              href="https://github.com/pipevals/pipevals"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#00F0FF] transition-colors"
-            >
-              GitHub
-            </a>
-            <a
-              href="https://openspec.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#00F0FF] transition-colors"
-            >
-              Built with OpenSpec
-            </a>
             <Link
               href="/credits"
               className="hover:text-[#00F0FF] transition-colors"
