@@ -1,6 +1,7 @@
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { CodeComparison } from "@/components/landing/code-comparison";
+import { PipevalsLogo } from "@/components/pipevals-logo";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -29,12 +30,15 @@ export default function Home() {
       {/* Nav */}
       <nav className="fixed top-0 w-full z-50 border-b border-[#2d3135] backdrop-blur-md bg-[#0a0a0a]/95">
         <div className="flex justify-between items-center px-6 h-14 max-w-6xl mx-auto">
-          <span
-            className="text-xl font-extrabold tracking-tighter text-white"
-            style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
-          >
-            Pipevals
-          </span>
+          <Link href="/" className="flex items-center gap-2 text-white">
+            <PipevalsLogo size={24} nodeFill="#0a0a0a" />
+            <span
+              className="text-xl font-extrabold tracking-tighter"
+              style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
+            >
+              Pipevals
+            </span>
+          </Link>
           <div className="flex items-center gap-6 text-sm">
             <Link
               href="https://github.com/pipevals/pipevals"

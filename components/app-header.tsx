@@ -6,7 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Logout01Icon, Moon01Icon, Sun01Icon, WorkflowSquare05Icon } from "@hugeicons/core-free-icons";
+import { Logout01Icon, Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons";
+import { PipevalsLogo } from "@/components/pipevals-logo";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -77,7 +78,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           href="/"
           className="flex items-center gap-2.5 text-foreground hover:opacity-80 transition-opacity"
         >
-          <HugeiconsIcon icon={WorkflowSquare05Icon} size={18} />
+          <PipevalsLogo size={18} />
         </Link>
 
         <nav className="flex items-center gap-5">
