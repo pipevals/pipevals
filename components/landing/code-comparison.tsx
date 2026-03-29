@@ -1,17 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 
 type Language = "python" | "node";
 
+// ─── Token types & parser ───────────────────────────────────────────
+
+type Token =
+  | { type: "text"; content: string }
+  | { type: "span"; color: string; content: string };
+
+function parseTokens(html: string): Token[] {
+  const re = /<span style="color:(#[0-9a-fA-F]{6})">([^<]*)<\/span>/g;
+  const tokens: Token[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = re.exec(html)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({
+        type: "text",
+        content: html.slice(lastIndex, match.index),
+      });
+    }
+    tokens.push({ type: "span", color: match[1], content: match[2] });
+    lastIndex = re.lastIndex;
+  }
+
+  if (lastIndex < html.length) {
+    tokens.push({ type: "text", content: html.slice(lastIndex) });
+  }
+
+  return tokens;
+}
+
+// ─── Pre-computed example data ──────────────────────────────────────
+
 const examples: Record<
   Language,
-  { label: string; before: string; after: string; commentPrefix: string }
+  {
+    label: string;
+    commentPrefix: string;
+    beforeTokens: Token[];
+    baseTokens: Token[];
+    diffTokens: Token[];
+  }
 > = {
   python: {
     label: "python",
     commentPrefix: "#",
-    before: `<span style="color:#569cd6">from</span> openai <span style="color:#569cd6">import</span> OpenAI
+    beforeTokens: parseTokens(
+      `<span style="color:#569cd6">from</span> openai <span style="color:#569cd6">import</span> OpenAI
 <span style="color:#569cd6">import</span> os
 
 client = <span style="color:#dcdcaa">OpenAI</span>(api_key=os.environ[<span style="color:#ce9178">"OPENAI_API_KEY"</span>])
@@ -25,7 +64,9 @@ response = client.responses.<span style="color:#dcdcaa">create</span>(
 
 output_text = response.output[<span style="color:#b5cea8">0</span>].content[<span style="color:#b5cea8">0</span>].text
 <span style="color:#dcdcaa">print</span>(output_text)`,
-    after: `<span style="color:#569cd6">from</span> openai <span style="color:#569cd6">import</span> OpenAI
+    ),
+    baseTokens: parseTokens(
+      `<span style="color:#569cd6">from</span> openai <span style="color:#569cd6">import</span> OpenAI
 <span style="color:#569cd6">import</span> requests
 <span style="color:#569cd6">import</span> os
 
@@ -38,7 +79,10 @@ response = client.responses.<span style="color:#dcdcaa">create</span>(
     input=prompt
 )
 
-output_text = response.output[<span style="color:#b5cea8">0</span>].content[<span style="color:#b5cea8">0</span>].text
+output_text = response.output[<span style="color:#b5cea8">0</span>].content[<span style="color:#b5cea8">0</span>].text`,
+    ),
+    diffTokens: parseTokens(
+      `
 
 <span style="color:#6a9955"># Trigger your evaluation pipeline</span>
 requests.<span style="color:#dcdcaa">post</span>(
@@ -49,11 +93,13 @@ requests.<span style="color:#dcdcaa">post</span>(
         <span style="color:#ce9178">"response"</span>: output_text,
     },
 )`,
+    ),
   },
   node: {
     label: "node.js",
     commentPrefix: "//",
-    before: `<span style="color:#569cd6">import</span> OpenAI <span style="color:#569cd6">from</span> <span style="color:#ce9178">"openai"</span>;
+    beforeTokens: parseTokens(
+      `<span style="color:#569cd6">import</span> OpenAI <span style="color:#569cd6">from</span> <span style="color:#ce9178">"openai"</span>;
 
 <span style="color:#569cd6">const</span> client = <span style="color:#569cd6">new</span> <span style="color:#dcdcaa">OpenAI</span>({
   apiKey: process.env.OPENAI_API_KEY,
@@ -70,7 +116,9 @@ requests.<span style="color:#dcdcaa">post</span>(
   response.output?.[<span style="color:#b5cea8">0</span>]?.content?.[<span style="color:#b5cea8">0</span>]?.text || <span style="color:#ce9178">""</span>;
 
 console.<span style="color:#dcdcaa">log</span>(outputText);`,
-    after: `<span style="color:#569cd6">import</span> OpenAI <span style="color:#569cd6">from</span> <span style="color:#ce9178">"openai"</span>;
+    ),
+    baseTokens: parseTokens(
+      `<span style="color:#569cd6">import</span> OpenAI <span style="color:#569cd6">from</span> <span style="color:#ce9178">"openai"</span>;
 
 <span style="color:#569cd6">const</span> client = <span style="color:#569cd6">new</span> <span style="color:#dcdcaa">OpenAI</span>({
   apiKey: process.env.OPENAI_API_KEY,
@@ -84,7 +132,10 @@ console.<span style="color:#dcdcaa">log</span>(outputText);`,
 });
 
 <span style="color:#569cd6">const</span> outputText =
-  response.output.[<span style="color:#b5cea8">0</span>].content.[<span style="color:#b5cea8">0</span>].text;
+  response.output.[<span style="color:#b5cea8">0</span>].content.[<span style="color:#b5cea8">0</span>].text;`,
+    ),
+    diffTokens: parseTokens(
+      `
 
 <span style="color:#6a9955">// Trigger your evaluation pipeline</span>
 <span style="color:#569cd6">await</span> <span style="color:#dcdcaa">fetch</span>(<span style="color:#ce9178">\`\${process.env.PIPEVALS_URL}/api/pipelines/\${process.env.ID}/runs\`</span>, {
@@ -98,15 +149,85 @@ console.<span style="color:#dcdcaa">log</span>(outputText);`,
     response: outputText,
   }),
 });`,
+    ),
   },
 };
+
+// ─── Render helpers ─────────────────────────────────────────────────
+
+function renderTokens(tokens: Token[]) {
+  return tokens.map((token, i) => {
+    if (token.type === "text") return token.content;
+    return (
+      <span key={i} style={{ color: token.color }}>
+        {token.content}
+      </span>
+    );
+  });
+}
+
+// ─── Typewriter hook ────────────────────────────────────────────────
+
+function useTypewriter(tokens: Token[], speed = 20) {
+  const [charIndex, setCharIndex] = useState(0);
+
+  const totalChars = useMemo(
+    () => tokens.reduce((sum, t) => sum + t.content.length, 0),
+    [tokens],
+  );
+
+  useEffect(() => {
+    setCharIndex(0);
+  }, [tokens]);
+
+  const playing = charIndex < totalChars;
+  const done = charIndex >= totalChars;
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setTimeout(() => setCharIndex((c) => c + 1), speed);
+    return () => clearTimeout(id);
+  }, [playing, charIndex, speed]);
+
+  const skip = useCallback(() => setCharIndex(totalChars), [totalChars]);
+  const replay = useCallback(() => setCharIndex(0), []);
+
+  const visibleTokens = useMemo(() => {
+    if (charIndex >= totalChars) return tokens;
+
+    const result: Token[] = [];
+    let remaining = charIndex;
+
+    for (const token of tokens) {
+      if (remaining <= 0) break;
+      if (remaining >= token.content.length) {
+        result.push(token);
+        remaining -= token.content.length;
+      } else {
+        result.push({ ...token, content: token.content.slice(0, remaining) });
+        break;
+      }
+    }
+
+    return result;
+  }, [tokens, charIndex, totalChars]);
+
+  return { visibleTokens, playing, done, skip, replay };
+}
+
+// ─── Component ──────────────────────────────────────────────────────
 
 export function CodeComparison({ dark = false }: { dark?: boolean }) {
   const [lang, setLang] = useState<Language>("python");
   const example = examples[lang];
+  const { visibleTokens, playing, done, skip, replay } = useTypewriter(
+    example.diffTokens,
+  );
 
   return (
     <>
+      <style>{`@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
+
       <div className="flex justify-center gap-1 mb-6">
         {(["python", "node"] as const).map((l) => (
           <button
@@ -142,8 +263,9 @@ export function CodeComparison({ dark = false }: { dark?: boolean }) {
             style={{
               fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
             }}
-            dangerouslySetInnerHTML={{ __html: example.before }}
-          />
+          >
+            {renderTokens(example.beforeTokens)}
+          </pre>
           <div className="mt-8 pt-6 border-t border-white/5">
             <span className="text-[10px] italic text-[#94a3b8]">
               {example.commentPrefix} No evaluation data captured
@@ -158,17 +280,37 @@ export function CodeComparison({ dark = false }: { dark?: boolean }) {
               <span className="w-2 h-2 rounded-full bg-[#0033FF] animate-pulse mr-2" />
               + Pipevals Evaluation
             </span>
-            <span className="text-[10px] text-[#0033FF] font-bold">
-              +8 lines
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-[#0033FF] font-bold">
+                +8 lines
+              </span>
+              <button
+                onClick={playing ? skip : replay}
+                className="text-[10px] font-bold text-[#94a3b8] hover:text-white transition-colors"
+              >
+                {playing ? "⏩ Skip" : "↺ Replay"}
+              </button>
+            </div>
           </div>
           <pre
-            className="grow text-[13px] leading-relaxed text-[#d4d4d4] overflow-x-auto whitespace-pre"
+            className="grow text-[13px] leading-relaxed text-[#d4d4d4] overflow-x-auto whitespace-pre relative"
             style={{
               fontFamily: "var(--font-jetbrains), ui-monospace, monospace",
             }}
-            dangerouslySetInnerHTML={{ __html: example.after }}
-          />
+          >
+            <span className="invisible" aria-hidden="true">{renderTokens(example.baseTokens)}{renderTokens(example.diffTokens)}</span>
+            <span className="absolute top-0 left-0">
+              {renderTokens(example.baseTokens)}{renderTokens(visibleTokens)}
+              {playing && (
+                <span
+                  className="text-[#569cd6]"
+                  style={{ animation: "cursor-blink 1s step-end infinite" }}
+                >
+                  |
+                </span>
+              )}
+            </span>
+          </pre>
           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] font-bold text-[#0033FF]">
               {example.commentPrefix} Pipeline runs, metrics stream to your
